@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Escape Room - Arduino Interface</title>
+  </head>
+  <body>
+    <div id="app">
+      <h1>Escape Room Rätsel</h1>
+      
+      <div class="card">
+        <button id="connect-btn" type="button">Arduino verbinden</button>
+        <p id="status-display" class="status-disconnected">Status: Nicht verbunden</p>
+      </div>
+
+      <div id="instructions" class="instructions">
+        <h3>Anleitung:</h3>
+        <ol>
+          <li>Arduino Uno mit dem Computer verbinden.</li>
+          <li>Klicke auf "Arduino verbinden" und wähle den korrekten Port aus.</li>
+          <li>Sobald "Verbunden" erscheint, drücke den Knopf am Arduino (Pin 2).</li>
+        </ol>
+      </div>
+
+      <div id="result-display" class="hidden">
+        <h2 id="solve-message">🎉 Rätsel gelöst!</h2>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -26,9 +26,12 @@ Dieses Projekt verbindet einen Arduino Uno mit einer Webseite über die Web Seri
 ### 1. Arduino Code hochladen
 1. Öffne die Datei `arduino_sketch/arduino_sketch.ino` in der Arduino IDE.
 2. Schließe deinen Arduino an den Computer an.
-3. Wähle unter `Werkzeuge` -> `Board` den "Arduino Uno" aus.
-4. Wähle unter `Werkzeuge` -> `Port` den entsprechenden Port aus.
-5. Klicke auf den "Hochladen"-Button (Pfeil nach rechts).
+3. **Board auswählen (Lösung für FQBN-Fehler):**
+   - Gehe auf **Werkzeuge (Tools)** -> **Board** -> **Arduino AVR Boards** und wähle **Arduino Uno** aus.
+   - In der Arduino IDE 2.x kannst du das Board auch direkt oben in der Dropdown-Liste auswählen.
+4. **Port auswählen:**
+   - Gehe auf **Werkzeuge (Tools)** -> **Port** und wähle den Port deines Arduinos aus.
+5. Klicke auf den **Hochladen**-Button (Pfeil nach rechts).
 
 ### 2. Web-Projekt starten
 1. Öffne ein Terminal im Projektverzeichnis.

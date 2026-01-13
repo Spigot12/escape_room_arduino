@@ -27,7 +27,17 @@ async function connect() {
     
   } catch (error) {
     console.error('Verbindungsfehler:', error);
-    updateStatus('Verbindung fehlgeschlagen', 'status-disconnected');
+    let errorMessage = 'Verbindung fehlgeschlagen';
+    
+    if (error.name === 'NotFoundError') {
+      errorMessage = 'Kein Gerät ausgewählt';
+    } else if (error.name === 'SecurityError') {
+      errorMessage = 'Sicherheitsfehler (HTTPS benötigt?)';
+    } else if (error.name === 'NetworkError') {
+      errorMessage = 'Port wird bereits verwendet';
+    }
+    
+    updateStatus(errorMessage, 'status-disconnected');
   }
 }
 

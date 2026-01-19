@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Level 3 - Escape Room</title>
+    <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+<div id="app">
+    <div class="game-header">
+        <button id="back-btn" class="back-btn">← Zurück</button>
+        <h1>Level 3: Das große Finale</h1>
+        <div></div>
+    </div>
+
+    <div class="level-content">
+        <div class="level-description">
+            <h2>👑 Der Schatz des Königs</h2>
+            <p>Du stehst vor der letzten Herausforderung. Der Schatz ist zum Greifen nah!</p>
+            <p><strong>Warnung:</strong> Dieses Level ist besonders knifflig!</p>
+        </div>
+
+        <div class="level-task">
+            <h3>Aufgabe:</h3>
+            <ol>
+                <li>Kombiniere dein Wissen aus Level 1 und 2</li>
+                <li>Erkenne das Muster</li>
+                <li>Drücke den Arduino-Button um den Schatz zu öffnen!</li>
+            </ol>
+        </div>
+
+        <div id="result-display" class="result-display hidden">
+            <h2>🏆 ALLE LEVEL GELÖST!</h2>
+            <p>Du hast es geschafft! Du bist ein wahrer Escape-Room-Meister! 🎉</p>
+            <button id="restart-btn" class="primary-btn">Nochmal spielen →</button>
+        </div>
+    </div>
+</div>
+<script type="module" src="/src/level.js"></script>
+</body>
+</html>

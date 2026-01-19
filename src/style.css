@@ -1,11 +1,10 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #111111;
+  background-color: #ffffff;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,93 +12,256 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+}
+
 #app {
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  width: 100%;
 }
 
+/* ===== TYPOGRAPHY ===== */
 h1 {
-  font-size: 3.2em;
+  font-size: 3.5rem;
+  font-weight: 800;
   line-height: 1.1;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
 }
 
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 0;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #666;
+  margin-bottom: 2.5rem;
+  font-weight: 500;
+}
+
+/* ===== CARDS ===== */
 .card {
-  padding: 2em;
-  border: 1px solid #444;
+  background-color: #ffffff;
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.connection-card {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.info-text {
+  font-size: 1.1rem;
+  color: #4b5563;
+  margin-bottom: 2rem;
+}
+
+/* ===== BUTTONS ===== */
+button {
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+}
+
+.primary-btn {
+  background-color: #10a37f;
+  color: white;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  margin: 1rem 0;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background-color: #1a7f64;
+  transform: scale(1.02);
+}
+
+.primary-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.primary-btn:disabled {
+  background-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.start-btn {
+  background-color: #2563eb;
+  color: white;
+  width: 100%;
+  padding: 1.2rem;
+  font-size: 1.2rem;
+  margin-top: 1.5rem;
+  display: block;
+  text-decoration: none;
+}
+
+.start-btn.disabled {
+  background-color: #f3f4f6;
+  color: #d1d5db;
+  pointer-events: none;
+}
+
+.start-btn.enabled {
+  background-color: #2563eb;
+}
+
+.start-btn.enabled:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* ===== STATUS ===== */
+#connection-status {
+  font-weight: 600;
+  margin: 1rem 0;
+  padding: 0.5rem;
   border-radius: 8px;
-  margin: 20px 0;
+  display: inline-block;
 }
 
 .status-disconnected {
-  color: #ff4d4d;
-  font-weight: bold;
+  color: #dc2626;
+  background-color: #fee2e2;
 }
 
 .status-connected {
-  color: #4dff4d;
-  font-weight: bold;
+  color: #16a34a;
+  background-color: #dcfce7;
 }
 
-.instructions {
+/* ===== GAME LEVEL STYLES ===== */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.back-btn {
+  background-color: #ffffff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 1rem;
+}
+
+.back-btn:hover {
+  background-color: #f9fafb;
+}
+
+.level-content {
   text-align: left;
-  background-color: #333;
-  padding: 1rem 2rem;
-  border-radius: 8px;
+}
+
+.level-description, .level-task {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+}
+
+.level-task h3 {
+  color: #2563eb;
+  margin-top: 0;
+}
+
+.result-display {
+  background-color: #dcfce7;
+  border: 2px solid #16a34a;
+  padding: 2rem;
+  border-radius: 20px;
+  text-align: center;
   margin-top: 2rem;
+  animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .hidden {
   display: none;
 }
 
-#result-display {
-  margin-top: 2rem;
-  padding: 2rem;
-  background-color: #1a472a;
-  border: 2px solid #4dff4d;
-  border-radius: 8px;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  70% { transform: scale(0.9); }
   100% { transform: scale(1); }
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* ===== DEBUG PANEL ===== */
+.debug-panel {
+  margin-top: 3rem;
+  text-align: left;
+  border-top: 2px dashed #d1d5db;
+  padding-top: 2rem;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-  .instructions {
-    background-color: #f0f0f0;
-  }
-  .card {
-    border-color: #ddd;
-  }
+.debug-panel h3 {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.debug-log {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  border-radius: 12px;
+  padding: 1rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.debug-btn {
+  background-color: transparent;
+  color: #6b7280;
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #d1d5db;
+  margin-top: 0.5rem;
+}
+
+.debug-btn:hover {
+  background-color: #f9fafb;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  h1 { font-size: 2.5rem; }
+  #app { padding: 1rem; }
+  .card { padding: 1.5rem; }
 }

@@ -1,115 +1,186 @@
 import './style.css'
+import * as ArduinoManager from './arduino-manager.js'
 
-// DOM Elemente
+// ===== STATE =====
+let debugLogs = [];
+const MAX_DEBUG_LOGS = 50;
+
+// ===== DOM ELEMENTE =====
+const connectionScreen = document.querySelector('#connection-screen');
 const connectBtn = document.querySelector('#connect-btn');
-const statusDisplay = document.querySelector('#status-display');
-const resultDisplay = document.querySelector('#result-display');
+const startBtn = document.querySelector('#start-btn');
+const connectionStatus = document.querySelector('#connection-status');
+const portStatus = document.querySelector('#port-status');
+const readLoopStatus = document.querySelector('#read-loop-status');
+const lastMessage = document.querySelector('#last-message');
+const logContent = document.querySelector('#log-content');
+const clearLogBtn = document.querySelector('#clear-log-btn');
+const testBtn = document.querySelector('#test-btn');
 
-let port;
-let reader;
+// ===== DEBUG FUNKTIONEN =====
+function addLog(message, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = `[${timestamp}] ${message}`;
+  debugLogs.push({ message: logEntry, type });
 
-/**
- * Funktion zum Verbinden mit dem Arduino
- */
+  if (debugLogs.length > MAX_DEBUG_LOGS) {
+    debugLogs.shift();
+  }
+
+  updateLogDisplay();
+  console.log(`[${type.toUpperCase()}]`, message);
+}
+
+function updateLogDisplay() {
+  logContent.innerHTML = debugLogs
+    .map(log => `<div class="log-${log.type}">${log.message}</div>`)
+    .join('');
+
+  logContent.scrollTop = logContent.scrollHeight;
+}
+
+function updateConnectionStatus(text, className) {
+  connectionStatus.textContent = `Status: ${text}`;
+  connectionStatus.className = className;
+}
+
+function updatePortStatus() {
+  if (ArduinoManager.isConnected()) {
+    portStatus.textContent = '✅ Port offen & lesbar';
+  } else {
+    portStatus.textContent = '❌ Kein Port geöffnet';
+  }
+}
+
+function updateReadLoopStatus() {
+  readLoopStatus.textContent = ArduinoManager.isReadLoopActive()
+    ? '✅ Aktiv (Daten werden gelesen)'
+    : '❌ Nicht aktiv';
+}
+
+function updateStartButton() {
+  if (ArduinoManager.isConnected() && ArduinoManager.isReadLoopActive()) {
+    startBtn.disabled = false;
+    startBtn.classList.remove('disabled');
+    startBtn.classList.add('enabled');
+    addLog('Start-Button aktiviert ✅', 'success');
+  } else {
+    startBtn.disabled = true;
+    startBtn.classList.add('disabled');
+    startBtn.classList.remove('enabled');
+  }
+}
+
+// ===== INITIALISIERUNG =====
+function init() {
+  addLog('System gestartet', 'info');
+  setupEventListeners();
+  setupArduinoListeners();
+}
+
+// ===== ARDUINO EVENTS =====
+function setupArduinoListeners() {
+  ArduinoManager.addEventListener('arduinoConnected', () => {
+    addLog('Arduino verbunden!', 'success');
+    updateConnectionStatus('Verbunden', 'status-connected');
+    updatePortStatus();
+    updateReadLoopStatus();
+    connectBtn.disabled = true;
+    connectBtn.textContent = '✓ Verbunden';
+    setTimeout(updateStartButton, 500);
+  });
+
+  ArduinoManager.addEventListener('arduinoDisconnected', () => {
+    addLog('Arduino getrennt', 'warn');
+    updateConnectionStatus('Nicht verbunden', 'status-disconnected');
+    updatePortStatus();
+    updateReadLoopStatus();
+    updateStartButton();
+    connectBtn.disabled = false;
+    connectBtn.textContent = 'Arduino verbinden';
+  });
+
+  ArduinoManager.addEventListener('arduinoMessage', (data) => {
+    addLog(`Nachricht empfangen: "${data.message}"`, 'success');
+    lastMessage.textContent = data.message;
+  });
+
+  ArduinoManager.addEventListener('arduinoSolved', () => {
+    addLog('SOLVED-Signal erkannt!', 'success');
+  });
+}
+
+// ===== ARDUINO VERBINDUNG =====
 async function connect() {
   try {
-    // Port anfordern (Benutzer muss ihn im Browser-Dialog auswählen)
-    port = await navigator.serial.requestPort();
-    
-    // Öffne den Port mit der im Arduino eingestellten Baudrate
-    await port.open({ baudRate: 9600 });
-    
-    updateStatus('Verbunden', 'status-connected');
-    connectBtn.disabled = true;
+    addLog('Verbindungsversuch gestartet...', 'info');
 
-    // Starte das Lesen der Daten
-    readLoop();
-    
-  } catch (error) {
-    console.error('Verbindungsfehler:', error);
-    let errorMessage = 'Verbindung fehlgeschlagen';
-    
-    if (error.name === 'NotFoundError') {
-      errorMessage = 'Kein Gerät ausgewählt';
-    } else if (error.name === 'SecurityError') {
-      errorMessage = 'Sicherheitsfehler (HTTPS benötigt?)';
-    } else if (error.name === 'NetworkError') {
-      errorMessage = 'Port wird bereits verwendet';
+    const result = await ArduinoManager.connectArduino();
+
+    if (!result.success) {
+      addLog(`Verbindungsfehler: ${result.message}`, 'error');
+      let errorMessage = 'Verbindung fehlgeschlagen';
+
+      if (result.message.includes('NotFoundError')) {
+        errorMessage = 'Kein Gerät ausgewählt';
+      } else if (result.message.includes('SecurityError')) {
+        errorMessage = 'Sicherheitsfehler (HTTPS benötigt?)';
+      } else if (result.message.includes('NetworkError')) {
+        errorMessage = 'Port wird bereits verwendet';
+      }
+
+      updateConnectionStatus(errorMessage, 'status-disconnected');
+      updateStartButton();
+    } else {
+      addLog('Port mit 9600 Baud geöffnet', 'success');
     }
-    
-    updateStatus(errorMessage, 'status-disconnected');
+  } catch (error) {
+    addLog(`Fehler: ${error.message}`, 'error');
   }
 }
 
-/**
- * Kontinuierliche Leseschleife für serielle Daten
- */
-async function readLoop() {
-  while (port.readable) {
-    const textDecoder = new TextDecoderStream();
-    const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-    reader = textDecoder.readable.getReader();
+// ===== ZUM SPIEL STARTEN =====
+function startGame() {
+  if (ArduinoManager.isConnected()) {
+    addLog('Spiel wird gestartet...', 'info');
+    window.location.href = '/level1.html';
+  } else {
+    addLog('Fehler: Arduino nicht verbunden!', 'error');
+  }
+}
 
+// ===== EVENT LISTENER =====
+function setupEventListeners() {
+  connectBtn.addEventListener('click', () => {
+    if ('serial' in navigator) {
+      connect();
+    } else {
+      addLog('Web Serial API nicht unterstützt!', 'error');
+      alert('Web Serial API wird von diesem Browser nicht unterstützt. Bitte verwende Chrome oder Edge.');
+    }
+  });
+
+  startBtn.addEventListener('click', startGame);
+
+  clearLogBtn.addEventListener('click', () => {
+    debugLogs = [];
+    updateLogDisplay();
+    addLog('Log geleert', 'info');
+  });
+
+  testBtn.addEventListener('click', async () => {
     try {
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) {
-          // Reader wurde gestoppt
-          break;
-        }
-        if (value) {
-          processMessage(value);
-        }
+      const result = await ArduinoManager.sendToArduino('TEST');
+      if (result.success) {
+        addLog('Test-Nachricht gesendet', 'info');
+      } else {
+        addLog(`Fehler beim Senden: ${result.message}`, 'error');
       }
     } catch (error) {
-      console.error('Lesefehler:', error);
-    } finally {
-      reader.releaseLock();
+      addLog(`Fehler: ${error.message}`, 'error');
     }
-  }
+  });
 }
 
-/**
- * Verarbeitet die empfangenen Nachrichten vom Arduino
- * @param {string} message 
- */
-function processMessage(message) {
-  // Entferne Leerzeichen/Zeilenumbrüche
-  const cleanMessage = message.trim();
-  console.log('Empfangen:', cleanMessage);
-
-  if (cleanMessage === 'SOLVED') {
-    handleSolve();
-  }
-}
-
-/**
- * Reaktion auf das gelöste Rätsel
- */
-function handleSolve() {
-  // Zeige das Resultat-Div an
-  resultDisplay.classList.remove('hidden');
-  
-  // Löse einen Alarm aus
-  alert('🎉 Herzlichen Glückwunsch! Das Rätsel wurde gelöst!');
-  
-  // Optional: Visuelle Bestätigung im Status
-  updateStatus('Rätsel gelöst!', 'status-connected');
-}
-
-/**
- * Hilfsfunktion zum Aktualisieren des Status-Textes
- */
-function updateStatus(text, className) {
-  statusDisplay.textContent = `Status: ${text}`;
-  statusDisplay.className = className;
-}
-
-// Event Listener
-connectBtn.addEventListener('click', () => {
-  if ('serial' in navigator) {
-    connect();
-  } else {
-    alert('Web Serial API wird von diesem Browser nicht unterstützt. Bitte verwende Chrome oder Edge.');
-  }
-});
+// ===== START =====
+init();

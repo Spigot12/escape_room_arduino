@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Level 2 - Escape Room</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="game-header">
+        <button id="back-btn" class="back-btn">← Zurück</button>
+        <h1>Level 2: Die verborgene Nachricht</h1>
+        <div></div>
+      </div>
+
+      <div class="level-content">
+        <div class="level-description">
+          <h2>📜 Geheime Botschaft</h2>
+          <p>In dieser antiken Scroll ist eine verschlüsselte Nachricht versteckt.</p>
+          <p><strong>Tipp:</strong> Die Buchstaben folgen einem Muster...</p>
+        </div>
+
+        <div class="level-task">
+          <h3>Aufgabe:</h3>
+          <ol>
+            <li>Dekodiere die Nachricht</li>
+            <li>Löse das Rätsel</li>
+            <li>Drücke den Arduino-Button zur Bestätigung!</li>
+          </ol>
+        </div>
+
+        <div id="result-display" class="result-display hidden">
+          <h2>🎉 Level 2 gelöst!</h2>
+          <p>Hervorragend! Du kommst dem Geheimnis näher!</p>
+          <button id="next-level-btn" class="primary-btn">Weiter zu Level 3 →</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/level.js"></script>
+  </body>
+</html>

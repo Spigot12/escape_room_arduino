@@ -30,8 +30,10 @@ const MAX_DEBUG_LOGS = 50;
 let canvas, ctx;
 let player = { x: 50, y: 200, radius: 15, speed: 3 };
 let collectibles = [];
+let obstacles = [];
 let collectedCount = 0;
 let totalCollectibles = 5;
+let totalObstacles = 4;
 let joystickX = 0, joystickY = 0;
 
 // ===== LOG FUNKTIONEN =====
@@ -346,6 +348,11 @@ function initJoystickGame() {
 
   collectedCount = 0;
   collectibles = [];
+  obstacles = [];
+
+  // Startposition des Spielers zurücksetzen
+  player.x = 50;
+  player.y = 200;
 
   // Erstelle mehrere sammelbare Punkte
   for (let i = 0; i < totalCollectibles; i++) {
@@ -357,7 +364,39 @@ function initJoystickGame() {
     });
   }
 
+  // Erstelle Hindernisse
+  for (let i = 0; i < totalObstacles; i++) {
+    obstacles.push({
+      x: Math.random() * (canvas.width - 150) + 100,
+      y: Math.random() * (canvas.height - 100) + 50,
+      radius: 15
+    });
+  }
+
   requestAnimationFrame(gameLoop);
+}
+
+function resetLevel2() {
+  addLog('Hindernis getroffen! Level wird zurückgesetzt.', 'error');
+  if (statusText) {
+    statusText.innerText = 'Autsch! Hindernis getroffen. Neustart...';
+    statusText.style.color = '#dc3545';
+  }
+  
+  collectedCount = 0;
+  player.x = 50;
+  player.y = 200;
+  
+  // Collectibles zurücksetzen
+  collectibles.forEach(item => item.collected = false);
+
+  // Status Text nach kurzer Zeit wiederherstellen
+  setTimeout(() => {
+    if (statusText && collectedCount === 0) {
+      statusText.innerText = 'Steuere den blauen Punkt zum grünen Ziel!';
+      statusText.style.color = '';
+    }
+  }, 2000);
 }
 
 function gameLoop() {
@@ -405,6 +444,37 @@ function gameLoop() {
     ctx.fill();
     ctx.strokeStyle = '#28a745';
     ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // Hindernisse zeichnen und Kollision prüfen
+  obstacles.forEach((obstacle) => {
+    const distance = Math.sqrt(
+      Math.pow(player.x - obstacle.x, 2) + Math.pow(player.y - obstacle.y, 2)
+    );
+
+    if (distance < player.radius + obstacle.radius) {
+      resetLevel2();
+      return;
+    }
+
+    // Hindernis zeichnen (rot)
+    ctx.beginPath();
+    ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#dc3545';
+    ctx.fill();
+    ctx.strokeStyle = '#a71d2a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // X in der Mitte zeichnen
+    ctx.beginPath();
+    ctx.moveTo(obstacle.x - 7, obstacle.y - 7);
+    ctx.lineTo(obstacle.x + 7, obstacle.y + 7);
+    ctx.moveTo(obstacle.x + 7, obstacle.y - 7);
+    ctx.lineTo(obstacle.x - 7, obstacle.y + 7);
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
     ctx.stroke();
   });
 

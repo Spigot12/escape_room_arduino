@@ -5,50 +5,62 @@
     <link rel="icon" type="image/svg+xml" href="/assets/images/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Level 1 - Escape Room</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   </head>
-  <body>
+  <body class="bg-white text-dark">
     <div id="arduino-indicator" class="arduino-status-indicator disconnected"></div>
-    <div id="app">
-      <div class="game-header">
-        <button id="back-btn" class="back-btn">← Zurück</button>
-        <h1>Level 1</h1>
-        <div style="width: 100px;"></div>
-      </div>
+    
+    <div class="container py-5">
+      <div id="app" class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+          
+          <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom">
+            <button id="back-btn" class="btn btn-dark btn-sm">
+              <i class="bi bi-arrow-left me-1"></i>Zurück
+            </button>
+            <h1 class="h4 mb-0 fw-bold">Experiment 01</h1>
+            <div style="width: 80px;"></div>
+          </div>
 
-      <div class="level-content">
-        <div class="card" style="margin-bottom: 2rem;">
-          <h2 style="margin-top: 0;">🔍 Das Geheimnis der Box</h2>
-          <p id="status-text" style="font-size: 1.2rem; font-weight: 600; color: #4b5563;">
-            System bereit. Drücke den Button am Arduino zum Starten.
-          </p>
-        </div>
+          <div class="level-content text-center">
+            <div class="minimal-card p-5 mb-5 shadow-sm">
+              <h2 class="display-5 fw-bold mb-4">Der Button</h2>
+              <p id="status-text" class="lead text-muted mb-0">
+                Drücke den physischen Button an deinem Arduino.
+              </p>
+            </div>
 
-        <div class="level-task">
-          <h3>Deine Aufgaben:</h3>
-          <ul id="task-list">
-            <li>Starte das System (Button drücken)</li>
-            <li>Gewähre Zugang (Button erneut drücken)</li>
-          </ul>
-        </div>
+            <div class="text-start mb-5">
+              <h3 class="small fw-bold text-muted text-uppercase mb-3 px-2">Aufgabenliste:</h3>
+              <ul id="task-list" class="list-group list-group-flush">
+                <li class="list-group-item">
+                  Erster Klick: System aufwecken
+                </li>
+                <li class="list-group-item">
+                  Zweiter Klick: Experiment abschließen
+                </li>
+              </ul>
+            </div>
 
-        <div id="code-section" class="card hidden" style="margin-top: 2rem;">
-          <h3>⌨️ Code-Eingabe</h3>
-          <p>Gib den Code ein, den du vom System erhalten hast.</p>
-          <input type="text" id="code-input" placeholder="Code hier eingeben..." 
-                 style="width: 100%; padding: 1.2rem; margin: 1rem 0; border: 2px solid #eeeeee; border-radius: 16px; font-size: 1.2rem; font-weight: 700;">
-          <button id="send-code-btn" class="primary-btn">Bestätigen</button>
-        </div>
-
-        <div id="result-display" class="result-display hidden">
-          <h2>🎉 Zugang gewährt!</h2>
-          <p style="font-size: 1.2rem; margin-bottom: 2rem;">Hervorragend! Du hast das erste Level gemeistert.</p>
-          <button id="next-level-btn" class="primary-btn" style="background: white; color: #10a37f; font-size: 1.3rem;">
-            Weiter zu Level 2 →
-          </button>
+            <div id="result-display" class="result-display hidden p-5 bg-light border-0 rounded-4 mb-4" style="display: none;">
+              <h2 class="display-5 fw-bold mb-3 text-success">
+                <i class="bi bi-patch-check-fill me-2"></i>Erfolg!
+              </h2>
+              <p class="lead mb-4 text-muted">Hervorragend! Das erste Experiment ist abgeschlossen.</p>
+              <button id="next-level-btn" class="btn btn-primary btn-lg px-5 shadow-sm">
+                Nächstes Experiment <i class="bi bi-arrow-right ms-2"></i>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="../scripts/entry-points/level.js"></script>
+    <script type="module" src="/scripts/entry-points/level.js"></script>
   </body>
 </html>

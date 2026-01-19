@@ -1,12 +1,17 @@
 #define BUTTON 2
-#define LDR A0
+#define LDR A1
 #define PIR 3
 #define BUZZER 4
 #define RELAY 5
-
 int level = 0;
 unsigned long darkStart = 0;
 String input = "";
+
+// Debouncing Variablen
+int lastButtonState = HIGH;
+int buttonState;
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
 
 void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
@@ -16,51 +21,73 @@ void setup() {
 
   digitalWrite(RELAY, LOW);
   Serial.begin(9600);
-  Serial.println("System bereit");
+  
+  level = 0;
+  darkStart = 0;
+  
+  while (!Serial) { ; }
+  delay(1000); 
 }
 
 void loop() {
-
   // Eingabe von Website
   if (Serial.available()) {
     input = Serial.readStringUntil('\n');
     input.trim();
+    
+    if (input == "RESET") {
+      level = 0;
+      darkStart = 0;
+      Serial.println("SYSTEM_RESET_OK");
+      tone(BUZZER, 500, 500);
+      delay(500); // Kleine Pause nach Reset
+      return; // Loop neu starten
+    }
   }
 
-  // LEVEL 0 – Start
-  if (level == 0 && digitalRead(BUTTON) == LOW) {
-    delay(50); // Kleines Delay zum Entprellen
-    if (digitalRead(BUTTON) == LOW) {
-      tone(BUZZER, 1000, 200);
-      Serial.println("System gestartet");
+  // Taster Abfrage mit Entprellung
+  int reading = digitalRead(BUTTON);
+  bool buttonPressed = false;
+
+  // Nur Taster prüfen, wenn wir in einem gültigen Level sind
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != buttonState) {
+      buttonState = reading;
+      if (buttonState == LOW) {
+        buttonPressed = true;
+      }
+    }
+  }
+  lastButtonState = reading;
+
+  // Logik basierend auf Button-Druck
+  if (buttonPressed) {
+    if (level == 0) {
       level = 1;
-      while(digitalRead(BUTTON) == LOW); // Warten bis Button losgelassen
-      delay(500);
+      Serial.println("L1_SYSTEM_START");
+      tone(BUZZER, 1000, 200);
     }
-  }
-
-  // LEVEL 1 – Button Druck für Lösung
-  if (level == 1 && digitalRead(BUTTON) == LOW) {
-    delay(50); // Kleines Delay zum Entprellen
-    if (digitalRead(BUTTON) == LOW) {
+    else if (level == 1) {
+      level = 2; 
+      Serial.println("L1_ZUGANG_OK");
       tone(BUZZER, 2000, 500);
-      Serial.println("Zugang gewährt");
-      level = 2; // Bereit für Level 2
-      while(digitalRead(BUTTON) == LOW); // Warten bis Button losgelassen
-      delay(500);
     }
   }
 
-  // Die restlichen Level-Logiken können hier bleiben, falls sie später manuell getriggert werden oder für Level 2/3 relevant sind
-  // LEVEL 2 - LDR (Beispielhaft, wenn level auf 2 gesetzt wird)
+  // LEVEL 2 - LDR (Lichtsensor)
   if (level == 2) {
     int light = analogRead(LDR);
     if (light < 200) {
       if (darkStart == 0) darkStart = millis();
       if (millis() - darkStart > 5000) {
-        Serial.println("CODE:427");
-        tone(BUZZER, 1500, 300);
-        level = 21; // Status für LDR gelöst
+        // Sofort lösen ohne Code-Eingabe
+        Serial.println("L2_GELOEST");
+        tone(BUZZER, 2000, 300);
+        level = 3;
         darkStart = 0;
       }
     } else {
@@ -68,22 +95,9 @@ void loop() {
     }
   }
 
-  // LEVEL 2 – Code prüfen
-  if (level == 21 && input.length() > 0) {
-    if (input == "427") {
-      Serial.println("Code korrekt – Bewegung erforderlich");
-      tone(BUZZER, 2000, 300);
-      level = 3;
-    } else {
-      Serial.println("Falscher Code");
-      tone(BUZZER, 300, 500);
-    }
-    input = "";
-  }
-
   // LEVEL 3 – PIR
   if (level == 3 && digitalRead(PIR) == HIGH) {
-    Serial.println("Zugang gewährt");
+    Serial.println("L3_ZUGANG_OK");
     digitalWrite(RELAY, HIGH);
     tone(BUZZER, 2500, 1000);
     level = 4;

@@ -15,15 +15,35 @@ const codeInput = document.querySelector('#code-input');
 const sendCodeBtn = document.querySelector('#send-code-btn');
 const taskListItems = document.querySelectorAll('#task-list li');
 
+// ===== STATE =====
+let level1Step = 0; // 0: Bereit, 1: System gestartet, 2: Zugang gewährt
+
 // ===== INITIALISIERUNG =====
 function init() {
+  console.log('--- LEVEL INIT START ---');
+  level1Step = 0; // Reset state
   setupEventListeners();
   setupArduinoListeners();
+  
+  // Sicherstellen, dass alles auf "Anfang" steht beim Laden
+  if (statusText) {
+    statusText.innerText = 'Warte auf Eingabe...';
+    statusText.style.color = '';
+  }
+  if (resultDisplay) {
+    console.log('Verstecke result-display initial');
+    resultDisplay.classList.add('hidden');
+  }
+  
   updateTaskUI(0);
 
   if (ArduinoManager.isConnected()) {
+    console.log('Level Init: Arduino ist bereits verbunden');
     updateIndicator(true);
+  } else {
+    console.log('Level Init: Arduino ist noch nicht verbunden');
   }
+  console.log('--- LEVEL INIT ENDE ---');
 }
 
 function updateIndicator(connected) {
@@ -54,44 +74,77 @@ function setupArduinoListeners() {
 
   ArduinoManager.addEventListener('arduinoMessage', (data) => {
     const msg = data.message.trim();
-    console.log('Arduino sagt:', msg);
+    if (!msg) return;
 
-    if (msg === 'System gestartet') {
-      console.log('Level 1: System gestartet erkannt');
-      if (statusText) statusText.innerText = 'System aktiv! Drücke den Button erneut für den Zugang.';
+    console.log('Arduino:', msg);
+
+    // LEVEL 1 LOGIK
+    if (msg === 'L1_SYSTEM_START') {
+      const isLevel1 = window.location.pathname.includes('level1');
+      if (!isLevel1) return;
+
+      console.log('Level 1: System gestartet (Nachricht empfangen)');
+      level1Step = 1; // Lokaler Status-Update
+      
+      if (statusText) {
+        statusText.innerText = 'System aktiv. Drücke den Button erneut.';
+        statusText.style.color = 'var(--success)';
+      }
       updateTaskUI(1);
     }
-    else if (msg === 'Zugang gewährt') {
-      console.log('Level 1: Zugang gewährt erkannt');
-      const pathname = window.location.pathname;
-      const isLevel1 = pathname.includes('level1') || pathname.endsWith('level1.html');
-      const isLevel2 = pathname.includes('level2') || pathname.endsWith('level2.html');
-      const isLevel3 = pathname.includes('level3') || pathname.endsWith('level3.html');
+    else if (msg === 'L1_ZUGANG_OK') {
+      const isLevel1 = window.location.pathname.includes('level1');
+      if (!isLevel1) return;
 
-      if (isLevel1) {
-        if (statusText) statusText.innerText = 'Zugang gewährt!';
-        handleSolve();
+      console.log('Level 1: Zugang OK (Nachricht empfangen), Aktueller Status:', level1Step);
+      
+      // Strikte Prüfung über lokale Variable
+      if (level1Step === 1) {
+        console.log('Level 1: BEDINGUNG ERFÜLLT. Zeige Erfolg an.');
+        level1Step = 2;
+        if (statusText) {
+          statusText.innerText = 'Erfolg!';
+          statusText.style.color = 'var(--success)';
+        }
         updateTaskUI(2);
-      } else if (isLevel2 || isLevel3) {
+        handleSolve();
+      } else {
+        console.log('Level 1: Ignoriere L1_ZUGANG_OK, da level1Step nicht 1 ist (Step war:', level1Step, ')');
+      }
+    }
+    // LEVEL 2 LOGIK
+    else if (msg === 'L2_GELOEST') {
+      const isLevel2 = window.location.pathname.includes('level2');
+      if (isLevel2) {
+        if (statusText) {
+          statusText.innerText = 'Licht stabilisiert.';
+          statusText.style.color = 'var(--success)';
+        }
         handleSolve();
         updateTaskUI(3);
       }
     }
-    else if (msg.startsWith('CODE:')) {
-      const code = msg.split(':')[1];
-      if (statusText) statusText.innerHTML = `LDR gelöst! <br><strong>Der Code lautet: ${code}</strong>`;
-      if (codeSection) codeSection.classList.remove('hidden');
-      updateTaskUI(2);
-    }
-    else if (msg === 'Code korrekt – Bewegung erforderlich') {
-      if (statusText) statusText.innerText = 'Code korrekt! Jetzt bewege dich vor dem Sensor.';
-      if (codeSection) codeSection.classList.add('hidden');
-      updateTaskUI(3);
+    // LEVEL 3 LOGIK
+    else if (msg === 'L3_ZUGANG_OK') {
+      const isLevel3 = window.location.pathname.includes('level3');
+      if (isLevel3) {
+        if (statusText) {
+          statusText.innerText = 'Bewegung erkannt!';
+          statusText.style.color = 'var(--success)';
+        }
+        handleSolve();
+        updateTaskUI(3);
+      }
     }
   });
 
   ArduinoManager.addEventListener('arduinoSolved', () => {
-    handleSolve();
+    // In Level 1 ignorieren wir das generische Solved-Signal,
+    // da wir hier zwei spezifische Button-Drücke brauchen.
+    const isLevel1 = window.location.pathname.includes('level1');
+    if (!isLevel1) {
+      handleSolve();
+    }
   });
 }
 
@@ -115,7 +168,7 @@ function setupEventListeners() {
   if (backBtn) {
     backBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = '/index.html';
+      window.location.href = '/pages/index.html';
     });
   }
 
@@ -130,9 +183,11 @@ function setupEventListeners() {
         codeInput.value = '';
       }
     });
+  }
 
+  if (codeInput) {
     codeInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendCodeBtn.click();
+      if (e.key === 'Enter' && sendCodeBtn) sendCodeBtn.click();
     });
   }
 
@@ -143,9 +198,9 @@ function setupEventListeners() {
       if (match) {
         const currentLevel = match[1];
         const nextLevel = parseInt(currentLevel) + 1;
-        window.location.href = `/level${nextLevel}.html`;
+        window.location.href = `/pages/level${nextLevel}.html`;
       } else {
-        window.location.href = '/';
+        window.location.href = '/pages/index.html';
       }
     });
   }
@@ -153,7 +208,7 @@ function setupEventListeners() {
   if (restartBtn) {
     restartBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = '/index.html';
+      window.location.href = '/pages/index.html';
     });
   }
 }
@@ -161,10 +216,34 @@ function setupEventListeners() {
 // ===== RÄTSEL GELÖST =====
 function handleSolve() {
   if (resultDisplay) {
+    console.log('🎉 handleSolve aufgerufen - Zeige DIV an');
+    resultDisplay.style.display = 'block';
     resultDisplay.classList.remove('hidden');
+
+    // Konfetti Effekt
+    if (typeof confetti === 'function') {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#007aff', '#34c759', '#ffcc00']
+      });
+    }
+
+    // Automatisch zum Erfolgs-Div scrollen
+    setTimeout(() => {
+      resultDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   }
   console.log('🎉 Level gelöst!');
 }
+
+// Sicherstellen, dass die DIV beim Laden wirklich weg ist
+window.addEventListener('load', () => {
+  if (resultDisplay) {
+    resultDisplay.style.display = 'none';
+  }
+});
 
 // ===== START =====
 init();

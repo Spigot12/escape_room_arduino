@@ -1,59 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
 :root {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color: #1a1a1a;
-  background-color: #f6f8fa;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --bg-color: #ffffff;
+  --text-main: #1a1a1a;
+  --text-muted: #666666;
+  --primary: #007aff;
+  --success: #34c759;
+  --warning: #ffcc00;
+  --danger: #ff3b30;
+  --border-color: #eeeeee;
+  --font-main: 'Inter', sans-serif;
 }
 
 body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  font-family: var(--font-main);
+  min-height: 100vh;
   margin: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  align-items: center;
 }
 
-#app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-  text-align: center;
-  width: 100%;
-}
-
-/* ===== TYPOGRAPHY ===== */
-h1 {
-  font-size: 4rem;
-  font-weight: 900;
-  line-height: 1;
-  margin-bottom: 1rem;
-  letter-spacing: -0.04em;
-  color: #000;
-}
-
-h2 {
-  font-size: 2.25rem;
+h1, h2, h3, h4, h5 {
   font-weight: 800;
-  margin-bottom: 1rem;
   letter-spacing: -0.02em;
 }
 
-.subtitle {
-  font-size: 1.5rem;
-  color: #666;
-  margin-bottom: 3rem;
-  font-weight: 500;
+.minimal-card {
+  background: white;
+  border: 2px solid var(--border-color);
+  border-radius: 24px;
+  padding: 2rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 640px) {
-  h1 { font-size: 2.5rem; }
-  #app { padding: 1rem; }
-  .card { padding: 1.5rem; }
+.minimal-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
 }
+
+.hidden { display: none !important; }

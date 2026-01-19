@@ -59,26 +59,32 @@ io.on('connection', (socket) => {
   console.log('Client verbunden:', socket.id);
 
   socket.emit('status', { connected: isConnected });
-  console.log('Initialer Status gesendet:', isConnected);
+  // console.log('Initialer Status gesendet:', isConnected);
 
-  if (isConnected) {
-    io.emit('status', { connected: true });
-  }
+  // if (isConnected) {
+  //   io.emit('status', { connected: true });
+  // }
 
   socket.on('get-status', () => {
     socket.emit('status', { connected: isConnected });
-    console.log('Status explizit angefragt. Gesendet:', isConnected);
   });
 
   socket.on('connect-arduino', async (data) => {
     const { path: portPath } = data;
 
-    if (arduinoPort && arduinoPort.isOpen) {
-      console.log('Schließe bestehende Verbindung zu:', arduinoPort.path);
-      await new Promise(resolve => arduinoPort.close(resolve));
+    // Wenn bereits verbunden, lehne neue Verbindung ab, außer es ist derselbe Port
+    if (isConnected && arduinoPort && arduinoPort.isOpen) {
+      if (arduinoPort.path === portPath) {
+        socket.emit('status', { connected: true });
+        return;
+      }
+      
+      socket.emit('error', { message: 'Es ist bereits ein Arduino verbunden. Bitte trenne die Verbindung zuerst.' });
+      return;
     }
 
     try {
+      console.log('Versuche Port zu öffnen:', portPath);
       arduinoPort = new SerialPort({
         path: portPath,
         baudRate: 9600,
@@ -87,30 +93,47 @@ io.on('connection', (socket) => {
 
       arduinoPort.open((err) => {
         if (err) {
+          console.error('SERIAL ERROR (Open):', err.message);
           socket.emit('error', { message: err.message });
           return;
         }
 
         isConnected = true;
-        console.log('Arduino verbunden auf:', portPath);
+        console.log('--- Arduino erfolgreich verbunden ---');
 
-        parser = arduinoPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+        parser = arduinoPort.pipe(new ReadlineParser({ delimiter: '\n' }));
 
         parser.on('data', (data) => {
           const message = data.toString().trim();
-          console.log('Arduino ->', message);
-          io.emit('arduino-data', message);
+          if (message) {
+            console.log('Arduino ->', message);
+            io.emit('arduino-data', message);
+          }
+        });
+
+        arduinoPort.on('error', (err) => {
+          console.error('SERIAL ERROR (Event):', err.message);
+          io.emit('error', { message: err.message });
         });
 
         arduinoPort.on('close', () => {
           isConnected = false;
-          console.log('Arduino Verbindung geschlossen');
+          console.log('--- Port geschlossen ---');
           io.emit('status', { connected: false });
         });
 
         io.emit('status', { connected: true });
+
+        // Sende ein RESET-Signal an den Arduino, damit er bei Level 0 startet
+        setTimeout(() => {
+          if (arduinoPort && arduinoPort.isOpen) {
+            console.log('Sende RESET an Arduino...');
+            arduinoPort.write('RESET\n');
+          }
+        }, 1000); 
       });
     } catch (error) {
+      console.error('CATCH ERROR:', error.message);
       socket.emit('error', { message: error.message });
     }
   });

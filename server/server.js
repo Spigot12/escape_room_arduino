@@ -22,10 +22,14 @@ let arduinoPort = null;
 let parser = null;
 let isConnected = false;
 
-// Statische Dateien aus dem Vite-Build-Ordner servieren (falls vorhanden)
-app.use(express.static(path.join(__dirname, 'dist')));
-// Falls wir im Root arbeiten (Entwicklung ohne dist)
-app.use(express.static(__dirname));
+// Statische Dateien aus dem Vite-Build-Ordner servieren
+app.use(express.static(path.join(__dirname, '../dist')));
+// Fallback für Entwicklung - serviere src/pages als Root für statische Dateien
+app.use(express.static(path.join(__dirname, '../src/pages')));
+// Erlaube Zugriff auf scripts und styles während der Entwicklung
+app.use('/scripts', express.static(path.join(__dirname, '../src/scripts')));
+app.use('/styles', express.static(path.join(__dirname, '../src/styles')));
+app.use('/assets', express.static(path.join(__dirname, '../src/assets')));
 
 // API Endpunkt zum Auflisten der Ports
 app.get('/api/ports', async (req, res) => {
@@ -40,25 +44,23 @@ app.get('/api/ports', async (req, res) => {
   }
 });
 
-// WICHTIG: Fallback für Single Page Application / HTML Dateien
+// Fallback für Single Page Application
 app.get('/level:id', (req, res) => {
   const levelId = req.params.id;
-  res.sendFile(path.join(__dirname, `level${levelId}.html`));
+  res.sendFile(path.join(__dirname, `../src/pages/level${levelId}.html`));
 });
 
 app.get('/level:id.html', (req, res) => {
   const levelId = req.params.id;
-  res.sendFile(path.join(__dirname, `level${levelId}.html`));
+  res.sendFile(path.join(__dirname, `../src/pages/level${levelId}.html`));
 });
 
 io.on('connection', (socket) => {
   console.log('Client verbunden:', socket.id);
-  
-  // Aktuellen Status senden
+
   socket.emit('status', { connected: isConnected });
   console.log('Initialer Status gesendet:', isConnected);
 
-  // Status an alle senden, falls jemand neu verbindet und der Arduino bereits offen ist
   if (isConnected) {
     io.emit('status', { connected: true });
   }
@@ -70,8 +72,7 @@ io.on('connection', (socket) => {
 
   socket.on('connect-arduino', async (data) => {
     const { path: portPath } = data;
-    
-    // Falls bereits eine Verbindung besteht, diese erst schließen
+
     if (arduinoPort && arduinoPort.isOpen) {
       console.log('Schließe bestehende Verbindung zu:', arduinoPort.path);
       await new Promise(resolve => arduinoPort.close(resolve));
@@ -89,15 +90,16 @@ io.on('connection', (socket) => {
           socket.emit('error', { message: err.message });
           return;
         }
-        
+
         isConnected = true;
         console.log('Arduino verbunden auf:', portPath);
-        
+
         parser = arduinoPort.pipe(new ReadlineParser({ delimiter: '\r\n' }));
-        
+
         parser.on('data', (data) => {
-          console.log('Arduino ->', data);
-          io.emit('arduino-data', data);
+          const message = data.toString().trim();
+          console.log('Arduino ->', message);
+          io.emit('arduino-data', message);
         });
 
         arduinoPort.on('close', () => {

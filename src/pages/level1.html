@@ -2,10 +2,9 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Level 1 - Escape Room</title>
-    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <div id="arduino-indicator" class="arduino-status-indicator disconnected"></div>
@@ -49,6 +48,7 @@
         </div>
       </div>
     </div>
-    <script type="module" src="/src/level.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="../scripts/entry-points/level.js"></script>
   </body>
 </html>

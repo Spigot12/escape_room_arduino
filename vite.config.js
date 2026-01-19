@@ -1,6 +1,21 @@
 import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
+  root: path.resolve(__dirname, 'src/pages'),
+  build: {
+    outDir: path.resolve(__dirname, 'dist'),
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'src/pages/index.html'),
+        level1: path.resolve(__dirname, 'src/pages/level1.html'),
+        level2: path.resolve(__dirname, 'src/pages/level2.html'),
+        level3: path.resolve(__dirname, 'src/pages/level3.html'),
+      },
+      external: []
+    }
+  },
   server: {
     proxy: {
       '/api': {

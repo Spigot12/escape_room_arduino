@@ -33,30 +33,34 @@ Dieses Projekt verbindet einen Arduino Uno mit einer Webseite über die Web Seri
    - Gehe auf **Werkzeuge (Tools)** -> **Port** und wähle den Port deines Arduinos aus.
 5. Klicke auf den **Hochladen**-Button (Pfeil nach rechts).
 
-### 2. Web-Projekt starten
+## Benutzung
+
+### 1. Web-Projekt starten
 1. Öffne ein Terminal im Projektverzeichnis.
-2. Installiere die Abhängigkeiten (falls noch nicht geschehen):
+2. Installiere die Abhängigkeiten:
    ```bash
    npm install
    ```
-3. Starte den Entwicklungsserver:
-   ```bash
-   npm run dev
-   ```
-4. Klicke auf den Link im Terminal (meistens `http://localhost:5173`), um die Seite im Browser zu öffnen.
+3. Starte das Projekt:
+   - **Entwicklung:** `npm run dev:all` (Startet Backend und Frontend mit Hot-Reload)
+   - **Produktion:** `npm run build` gefolgt von `npm start` (Alles läuft über Port 3000)
 
-## Benutzung
+### 2. Zugriff auf die Website
+- Im **Entwicklungsmodus**: Öffne `http://localhost:5173`.
+- Im **Produktionsmodus**: Öffne `http://localhost:3000`.
 
-1. Stelle sicher, dass der Arduino verbunden ist.
-2. Klicke auf der Webseite auf den Button **"Arduino verbinden"**.
-3. Wähle im Browser-Dialog deinen Arduino aus (oft als "Arduino Uno" oder "USB Serial" gelistet) und klicke auf "Verbinden".
-4. Der Status auf der Webseite sollte nun auf **"Verbunden"** wechseln.
-5. Drücke den physischen Knopf am Arduino.
-6. Die Webseite zeigt nun **"🎉 Rätsel gelöst!"** an und öffnet ein Alarm-Fenster.
+**Hinweis:** Das Backend *muss* laufen, damit die Verbindung zum Arduino funktioniert. Wenn du `npm run dev:all` nutzt, wird automatisch beides gestartet.
+
+### 3. Arduino verbinden
+1. Stelle sicher, dass der Arduino per USB verbunden ist.
+2. Wähle auf der Startseite den richtigen **Port** aus der Liste aus.
+3. Klicke auf **"🔌 Arduino verbinden"**.
+4. Wenn die Verbindung steht, wird der **"🚀 Spiel starten"** Button aktiv.
 
 ## Projektstruktur
 
-- `arduino_sketch/` - Enthält den C++ Code für den Arduino.
-- `index.html` - Das Grundgerüst der Webseite.
-- `src/main.js` - Die JavaScript-Logik für die Web Serial API.
-- `src/style.css` - Das Design der Webseite.
+- `arduino_sketch/` - C++ Code für den Arduino.
+- `src/pages/` - HTML-Seiten für die verschiedenen Level.
+- `src/scripts/` - JavaScript-Logik (Modularisiert).
+- `src/styles/` - CSS-Designs.
+- `server/` - Node.js Backend für die SerialPort-Kommunikation.

@@ -1,5 +1,7 @@
-import './style.css'
-import * as ArduinoManager from './arduino-manager.js'
+import '../../styles/style.css'
+import '../../styles/components.css'
+import '../../styles/animations.css'
+import * as ArduinoManager from '../arduino/arduino-manager.js'
 
 // ===== STATE =====
 let debugLogs = [];
@@ -60,7 +62,8 @@ function updateReadLoopStatus() {
 }
 
 function updateStartButton() {
-  if (ArduinoManager.isConnected() && ArduinoManager.isReadLoopActive()) {
+  const isConnected = ArduinoManager.isConnected();
+  if (isConnected) {
     startBtn.disabled = false;
     startBtn.classList.remove('disabled');
     startBtn.classList.add('enabled');
@@ -78,8 +81,7 @@ async function init() {
   setupEventListeners();
   setupArduinoListeners();
   await refreshPorts();
-  
-  // Falls bereits verbunden (z.B. zurück von Level), UI aktualisieren
+
   if (ArduinoManager.isConnected()) {
     updateUIOnConnect();
   }
@@ -89,7 +91,7 @@ async function refreshPorts() {
   addLog('Lade verfügbare Ports...', 'info');
   try {
     const ports = await ArduinoManager.listPorts();
-    
+
     if (portSelect) {
       if (ports.length > 0) {
         portSelect.innerHTML = ports.map(p => {
@@ -113,7 +115,7 @@ function updateUIOnConnect() {
   updateReadLoopStatus();
   connectBtn.disabled = true;
   connectBtn.textContent = '✓ Verbunden';
-  setTimeout(updateStartButton, 500);
+  updateStartButton();
 }
 
 // ===== ARDUINO EVENTS =====
@@ -134,7 +136,8 @@ function setupArduinoListeners() {
   });
 
   ArduinoManager.addEventListener('arduinoMessage', (data) => {
-    addLog(`Nachricht empfangen: "${data.message}"`, 'success');
+    const msg = data.message;
+    addLog(`Arduino: "${msg}"`, 'success');
   });
 
   ArduinoManager.addEventListener('arduinoSolved', () => {
@@ -181,7 +184,6 @@ function startGame() {
 function setupEventListeners() {
   connectBtn.addEventListener('click', connect);
   refreshPortsBtn.addEventListener('click', refreshPorts);
-
   startBtn.addEventListener('click', startGame);
 
   clearLogBtn.addEventListener('click', () => {

@@ -2,7 +2,7 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Escape Room - Arduino Interface</title>
   </head>
@@ -13,7 +13,7 @@
       <div id="connection-screen" class="screen">
         <h1>🔓 Escape Room</h1>
         <p class="subtitle">Verbinde deinen Arduino Uno R3</p>
-        
+    
         <div class="card connection-card">
           <div id="port-selection" class="port-selection">
             <select id="port-select" class="port-select">
@@ -21,35 +21,44 @@
             </select>
             <button id="refresh-ports-btn" class="back-btn" title="Ports aktualisieren">🔄</button>
           </div>
-          
+      
           <button id="connect-btn" type="button" class="primary-btn">
             🔌 Arduino verbinden
           </button>
-          
+      
           <div style="margin: 1.5rem 0;">
             <p id="connection-status" class="status-disconnected" style="font-weight: 800; padding: 0.8rem 1.5rem; border-radius: 12px;">
               Status: Nicht verbunden
             </p>
           </div>
-          
+      
           <button id="start-btn" type="button" class="start-btn disabled">
             🚀 Spiel starten
           </button>
         </div>
 
-        <!-- DEBUG PANEL - Dezent am Ende -->
-        <div id="debug-panel" class="debug-panel" style="max-width: 550px; margin: 4rem auto 0; opacity: 0.6;">
-          <h3 style="font-size: 1rem; color: #888;">🔧 Technischer Status</h3>
-          <div style="display: flex; justify-content: space-around; font-size: 0.9rem; margin-bottom: 1rem; font-weight: 600;">
-            <p>Port: <span id="port-status">Aus</span></p>
-            <p>Loop: <span id="read-loop-status">Aus</span></p>
+        <!-- DEBUG PANEL -->
+        <div id="debug-panel" class="debug-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>🔧 Technischer Status</h3>
+            <div style="display: flex; gap: 8px;">
+              <button id="test-btn" class="debug-btn">Test Senden</button>
+              <button id="clear-log-btn" class="debug-btn">Log leeren</button>
+            </div>
           </div>
-          <div id="debug-log" class="debug-log" style="height: 100px;">
+          
+          <div style="display: flex; justify-content: space-around; font-size: 0.9rem; margin: 1rem 0; font-weight: 600; background: #fff; padding: 0.8rem; border-radius: 12px; border: 1px solid #eee;">
+            <p style="margin: 0;">Port: <span id="port-status">Aus</span></p>
+            <p style="margin: 0;">Loop: <span id="read-loop-status">Aus</span></p>
+          </div>
+          
+          <div id="debug-log" class="debug-log">
             <div id="log-content"></div>
           </div>
         </div>
       </div>
     </div>
-    <script type="module" src="/src/main.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="../scripts/entry-points/main.js"></script>
   </body>
 </html>

@@ -1,13 +1,21 @@
-
 /**
  * Globales Arduino Manager mit WebSocket-Backend
  * Diese Datei verwaltet die Arduino-Verbindung über ein Node.js Backend
  */
-import { io } from "/socket.io/socket.io.esm.min.js";
+// import { io } from "/socket.io/socket.io.esm.min.js";
 
-const socket = io({
+// Wir nutzen die globale io Instanz, die vom Server bereitgestellt wird
+// Oder wir importieren sie korrekt, falls Vite sie auflösen kann.
+// Da sie in vite.config.js als external markiert ist, 
+// sollte sie zur Laufzeit verfügbar sein, wenn das Skript im HTML geladen wird.
+
+const socket = typeof io !== 'undefined' ? io({
     transports: ['websocket']
-});
+}) : null;
+
+if (!socket) {
+    console.error("Socket.io (io) ist nicht definiert! Prüfe ob /socket.io/socket.io.js geladen wurde.");
+}
 
 let globalIsConnected = false;
 
@@ -36,27 +44,24 @@ function dispatchEvent(event, data) {
     if (listeners[event]) {
         listeners[event].forEach(callback => callback(data));
     }
-    
-    // UI Update bei Statusänderung
+
     if (event === 'arduinoConnected' || event === 'arduinoDisconnected') {
         updateGlobalStatusUI();
     }
 
-    // Auch als globales Event senden
     window.dispatchEvent(new CustomEvent(`arduino:${event}`, { detail: data }));
 }
 
 // Initialer Status-Check für die UI
 if (typeof document !== 'undefined') {
-    // Sofortiger Check, falls das DOM bereits geladen ist
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
         setTimeout(updateGlobalStatusUI, 100);
     }
-    
+
     window.addEventListener('load', () => {
         updateGlobalStatusUI();
     });
-    
+
     document.addEventListener('DOMContentLoaded', () => {
         updateGlobalStatusUI();
     });
@@ -65,7 +70,6 @@ if (typeof document !== 'undefined') {
 function updateGlobalStatusUI() {
     const indicator = document.querySelector('#arduino-indicator');
     if (indicator) {
-        console.log('Update Indicator UI. Connected:', globalIsConnected, 'Path:', window.location.pathname);
         if (globalIsConnected) {
             indicator.classList.remove('disconnected');
             indicator.classList.add('connected');
@@ -77,41 +81,41 @@ function updateGlobalStatusUI() {
 }
 
 // ===== SOCKET LISTENERS =====
-socket.on('connect', () => {
-    console.log('Socket.io verbunden');
+if (socket) {
+    socket.on('connect', () => {
+        console.log('Socket.io verbunden');
+        socket.emit('get-status');
+    });
+
+    socket.on('status', (data) => {
+        console.log('Verbindungsstatus vom Server:', data.connected);
+        globalIsConnected = data.connected;
+
+        updateGlobalStatusUI();
+
+        if (globalIsConnected) {
+            dispatchEvent('arduinoConnected', {});
+        } else {
+            dispatchEvent('arduinoDisconnected', {});
+        }
+    });
+
     socket.emit('get-status');
-});
 
-socket.on('status', (data) => {
-    console.log('Verbindungsstatus vom Server:', data.connected);
-    globalIsConnected = data.connected;
-    
-    // UI Update triggern
-    updateGlobalStatusUI();
-    
-    if (globalIsConnected) {
-        dispatchEvent('arduinoConnected', {});
-    } else {
-        dispatchEvent('arduinoDisconnected', {});
-    }
-});
+    socket.on('arduino-data', (data) => {
+        console.log('Rohdaten vom Arduino:', data);
+        const cleanData = data.toString().trim();
+        dispatchEvent('arduinoMessage', { message: cleanData });
 
-// Fordere den aktuellen Status explizit an, falls die Verbindung bereits steht
-socket.emit('get-status');
+        if (cleanData === 'SOLVED') {
+            dispatchEvent('arduinoSolved', {});
+        }
+    });
 
-socket.on('arduino-data', (data) => {
-    console.log('Rohdaten vom Arduino:', data);
-    const cleanData = data.trim();
-    dispatchEvent('arduinoMessage', { message: cleanData });
-    
-    if (cleanData === 'SOLVED') {
-        dispatchEvent('arduinoSolved', {});
-    }
-});
-
-socket.on('error', (data) => {
-    console.error('Socket Fehler:', data.message);
-});
+    socket.on('error', (data) => {
+        console.error('Socket Fehler:', data.message);
+    });
+}
 
 // ===== ARDUINO VERBINDUNG =====
 export async function listPorts() {
@@ -128,10 +132,10 @@ export async function listPorts() {
 
 export async function connectArduino(portPath) {
     if (!portPath) return { success: false, message: 'Kein Port ausgewählt' };
-    
+    if (!socket) return { success: false, message: 'Keine Socket-Verbindung' };
+
     socket.emit('connect-arduino', { path: portPath });
-    
-    // Wir warten kurz auf die Bestätigung via 'status' Event
+
     return new Promise((resolve) => {
         const checkStatus = (data) => {
             if (data.connected) {
@@ -140,8 +144,7 @@ export async function connectArduino(portPath) {
             }
         };
         socket.on('status', checkStatus);
-        
-        // Timeout nach 5 Sekunden
+
         setTimeout(() => {
             socket.off('status', checkStatus);
             if (!globalIsConnected) {
@@ -152,7 +155,7 @@ export async function connectArduino(portPath) {
 }
 
 export async function disconnectArduino() {
-    socket.emit('disconnect-arduino');
+    if (socket) socket.emit('disconnect-arduino');
 }
 
 // ===== STATUS GETTERS =====
@@ -161,14 +164,13 @@ export function isConnected() {
 }
 
 export function isReadLoopActive() {
-    // Da das Backend liest, ist die "Loop" immer aktiv wenn verbunden
     return globalIsConnected;
 }
 
 // ===== SENDE-FUNKTION =====
 export async function sendToArduino(message) {
-    if (!globalIsConnected) {
-        return { success: false, message: 'Arduino nicht verbunden' };
+    if (!globalIsConnected || !socket) {
+        return { success: false, message: 'Arduino nicht verbunden oder Socket fehlt' };
     }
 
     socket.emit('send-to-arduino', message);

@@ -5,12 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "server": "node server.js",
-    "dev:all": "node server.js & vite",
+    "server": "node server/server.js",
+    "dev:all": "node server/server.js & vite",
     "build": "vite build",
     "preview": "vite preview",
-    "server": "node server.js",
-    "start": "node server.js"
+    "start": "node server/server.js"
   },
   "dependencies": {
     "express": "^4.18.2",

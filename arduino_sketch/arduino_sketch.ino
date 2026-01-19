@@ -3,6 +3,12 @@
 #define PIR 3
 #define BUZZER 4
 #define RELAY 5
+
+// KY-023 Joystick
+#define JOY_X A0
+#define JOY_Y A1
+#define JOY_BUTTON 3
+
 int level = 0;
 unsigned long darkStart = 0;
 String input = "";
@@ -12,6 +18,11 @@ int lastButtonState = HIGH;
 int buttonState;
 unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
+
+// Joystick Kalibrierung
+const int CENTER_X = 512;
+const int CENTER_Y = 512;
+const int DEADZONE = 100;
 
 void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
@@ -78,21 +89,35 @@ void loop() {
     }
   }
 
-  // LEVEL 2 - LDR (Lichtsensor)
+  // LEVEL 2 - Joystick Game
   if (level == 2) {
-    int light = analogRead(LDR);
-    if (light < 200) {
-      if (darkStart == 0) darkStart = millis();
-      if (millis() - darkStart > 5000) {
-        // Sofort lösen ohne Code-Eingabe
-        Serial.println("L2_GELOEST");
-        tone(BUZZER, 2000, 300);
-        level = 3;
-        darkStart = 0;
-      }
-    } else {
+    // Joystick Werte lesen
+    int rawX = analogRead(JOY_X);
+    int rawY = analogRead(JOY_Y);
+    bool joyButtonPressed = !digitalRead(JOY_BUTTON);
+
+    // Normalisieren (-100 bis 100)
+    int x = normalizeAxis(rawX, CENTER_X);
+    int y = normalizeAxis(rawY, CENTER_Y);
+
+    // Joystick Daten senden
+    Serial.print("JOYSTICK:");
+    Serial.print(x);
+    Serial.print(",");
+    Serial.print(y);
+    Serial.print(",");
+    Serial.println(joyButtonPressed ? "1" : "0");
+
+    // Prüfe ob Level gelöst (wird vom Frontend gesendet)
+    if (input == "L2_SOLVED") {
+      Serial.println("L2_GELOEST");
+      tone(BUZZER, 2000, 300);
+      level = 3;
       darkStart = 0;
+      input = "";
     }
+
+    delay(50);
   }
 
   // LEVEL 3 – PIR
@@ -101,5 +126,21 @@ void loop() {
     digitalWrite(RELAY, HIGH);
     tone(BUZZER, 2500, 1000);
     level = 4;
+  }
+}
+
+int normalizeAxis(int rawValue, int center) {
+  int diff = rawValue - center;
+
+  // Deadzone anwenden
+  if (abs(diff) < DEADZONE) {
+    return 0;
+  }
+
+  // Auf -100 bis 100 mappen
+  if (diff > 0) {
+    return map(diff, DEADZONE, 512 - center, 0, 100);
+  } else {
+    return map(diff, -DEADZONE, center - 512, 0, -100);
   }
 }

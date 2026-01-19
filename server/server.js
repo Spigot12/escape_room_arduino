@@ -177,3 +177,20 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server läuft auf http://localhost:${PORT}`);
 });
+
+// Cleanup beim Beenden des Servers
+function cleanup() {
+  console.log('\n--- Server wird beendet ---');
+  if (arduinoPort && arduinoPort.isOpen) {
+    console.log('Schließe Arduino-Verbindung...');
+    arduinoPort.close(() => {
+      console.log('Arduino-Verbindung geschlossen');
+      process.exit(0);
+    });
+  } else {
+    process.exit(0);
+  }
+}
+
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);

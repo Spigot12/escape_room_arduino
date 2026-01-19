@@ -24,36 +24,59 @@
               <i class="bi bi-arrow-left me-1"></i>Zurück
             </button>
             <h1 class="h4 mb-0 fw-bold">Experiment 02</h1>
-            <div style="width: 80px;"></div>
+            <button id="toggle-log-btn" class="btn btn-outline-secondary btn-sm" title="System Log anzeigen">
+              <i class="bi bi-terminal"></i>
+            </button>
+          </div>
+
+          <!-- LOG PANEL (versteckt by default) -->
+          <div id="log-panel" class="mb-4" style="display: none;">
+            <div class="card shadow-sm">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="small fw-bold">System Log</span>
+                <button id="clear-log-btn" class="btn btn-link btn-sm text-muted text-decoration-none p-0">Clear</button>
+              </div>
+              <div class="card-body p-3" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; background: #f8f9fa;">
+                <div id="log-content"></div>
+              </div>
+            </div>
           </div>
 
           <div class="level-content text-center">
             <div class="minimal-card p-5 mb-5 shadow-sm">
-              <h2 class="display-5 fw-bold mb-4">Das Licht</h2>
+              <h2 class="display-5 fw-bold mb-4">Joystick Game</h2>
               <p id="status-text" class="lead text-muted mb-0">
-                Verdecke den Lichtsensor auf deinem Arduino.
+                Steuere den blauen Punkt zum grünen Ziel!
               </p>
             </div>
 
+            <!-- Game Canvas -->
+            <div class="mb-5 d-flex justify-content-center">
+              <canvas id="game-canvas" width="600" height="400" style="border: 3px solid #333; border-radius: 12px; background: #f8f9fa;"></canvas>
+            </div>
+
             <div class="text-start mb-5">
-              <h3 class="small fw-bold text-muted text-uppercase mb-3 px-2">Aufgabenliste:</h3>
+              <h3 class="small fw-bold text-muted text-uppercase mb-3 px-2">Steuerung:</h3>
               <ul id="task-list" class="list-group list-group-flush">
                 <li class="list-group-item">
-                  Lichtsensor (LDR) abdecken
+                  <i class="bi bi-joystick me-2"></i>Joystick bewegen = Spieler steuern
                 </li>
                 <li class="list-group-item">
-                  Für 5 Sekunden dunkel halten
+                  <i class="bi bi-circle-fill text-primary me-2"></i>Blauer Punkt = Deine Position
+                </li>
+                <li class="list-group-item">
+                  <i class="bi bi-circle-fill text-success me-2"></i>Grüner Punkt = Ziel
                 </li>
               </ul>
             </div>
 
             <div id="result-display" class="result-display hidden p-5 bg-light border-0 rounded-4 mb-4" style="display: none;">
-              <h2 class="display-5 fw-bold mb-3 text-warning">
-                <i class="bi bi-lightbulb-fill me-2"></i>Warte...
+              <h2 class="display-5 fw-bold mb-3 text-success">
+                <i class="bi bi-trophy-fill me-2"></i>Level geschafft!
               </h2>
-              <p class="lead mb-4 text-muted">Lichtwerte stabilisiert. Experiment abgeschlossen.</p>
+              <p class="lead mb-4 text-muted">Du hast das Ziel erreicht!</p>
               <button id="next-level-btn" class="btn btn-primary btn-lg px-5 shadow-sm">
-                Nächstes Experiment <i class="bi bi-arrow-right ms-2"></i>
+                Nächstes Level <i class="bi bi-arrow-right ms-2"></i>
               </button>
             </div>
           </div>

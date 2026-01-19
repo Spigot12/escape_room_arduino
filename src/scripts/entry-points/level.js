@@ -14,17 +14,65 @@ const codeSection = document.querySelector('#code-section');
 const codeInput = document.querySelector('#code-input');
 const sendCodeBtn = document.querySelector('#send-code-btn');
 const taskListItems = document.querySelectorAll('#task-list li');
+const toggleLogBtn = document.querySelector('#toggle-log-btn');
+const logPanel = document.querySelector('#log-panel');
+const logContent = document.querySelector('#log-content');
+const clearLogBtn = document.querySelector('#clear-log-btn');
 
 // ===== STATE =====
 let level1Step = 0; // 0: Bereit, 1: System gestartet, 2: Zugang gewährt
+
+// ===== LOG STATE =====
+let debugLogs = [];
+const MAX_DEBUG_LOGS = 50;
+
+// ===== JOYSTICK GAME STATE (Level 2) =====
+let canvas, ctx;
+let player = { x: 50, y: 200, radius: 15, speed: 3 };
+let collectibles = [];
+let collectedCount = 0;
+let totalCollectibles = 5;
+let joystickX = 0, joystickY = 0;
+
+// ===== LOG FUNKTIONEN =====
+function addLog(message, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = `[${timestamp}] ${message}`;
+  debugLogs.push({ message: logEntry, type });
+
+  if (debugLogs.length > MAX_DEBUG_LOGS) {
+    debugLogs.shift();
+  }
+
+  updateLogDisplay();
+  console.log(`[${type.toUpperCase()}]`, message);
+}
+
+function updateLogDisplay() {
+  if (!logContent) return;
+  logContent.innerHTML = debugLogs
+    .map(log => `<div style="color: ${getLogColor(log.type)}">${log.message}</div>`)
+    .join('');
+  logContent.scrollTop = logContent.scrollHeight;
+}
+
+function getLogColor(type) {
+  switch(type) {
+    case 'success': return '#28a745';
+    case 'error': return '#dc3545';
+    case 'warn': return '#ffc107';
+    default: return '#6c757d';
+  }
+}
 
 // ===== INITIALISIERUNG =====
 function init() {
   console.log('--- LEVEL INIT START ---');
   level1Step = 0; // Reset state
+  addLog('Level gestartet', 'info');
   setupEventListeners();
   setupArduinoListeners();
-  
+
   // Sicherstellen, dass alles auf "Anfang" steht beim Laden
   if (statusText) {
     statusText.innerText = 'Warte auf Eingabe...';
@@ -34,8 +82,14 @@ function init() {
     console.log('Verstecke result-display initial');
     resultDisplay.classList.add('hidden');
   }
-  
+
   updateTaskUI(0);
+
+  // Level 2: Joystick Game initialisieren
+  const isLevel2 = window.location.pathname.includes('level2');
+  if (isLevel2) {
+    initJoystickGame();
+  }
 
   if (ArduinoManager.isConnected()) {
     console.log('Level Init: Arduino ist bereits verbunden');
@@ -64,11 +118,13 @@ function setupArduinoListeners() {
 
   ArduinoManager.addEventListener('arduinoConnected', () => {
     console.log('Level: Arduino verbunden Event empfangen');
+    addLog('Arduino verbunden', 'success');
     updateIndicator(true);
   });
 
   ArduinoManager.addEventListener('arduinoDisconnected', () => {
     console.log('Level: Arduino getrennt Event empfangen');
+    addLog('Arduino getrennt', 'warn');
     updateIndicator(false);
   });
 
@@ -77,6 +133,11 @@ function setupArduinoListeners() {
     if (!msg) return;
 
     console.log('Arduino:', msg);
+
+    // Log nur bestimmte Nachrichten (nicht JOYSTICK Spam)
+    if (!msg.startsWith('JOYSTICK:')) {
+      addLog(`Arduino: ${msg}`, 'info');
+    }
 
     // LEVEL 1 LOGIK
     if (msg === 'L1_SYSTEM_START') {
@@ -112,12 +173,20 @@ function setupArduinoListeners() {
         console.log('Level 1: Ignoriere L1_ZUGANG_OK, da level1Step nicht 1 ist (Step war:', level1Step, ')');
       }
     }
-    // LEVEL 2 LOGIK
+    // LEVEL 2 LOGIK - Joystick Daten
+    else if (msg.startsWith('JOYSTICK:')) {
+      const isLevel2 = window.location.pathname.includes('level2');
+      if (isLevel2) {
+        const parts = msg.replace('JOYSTICK:', '').split(',');
+        joystickX = parseInt(parts[0]) || 0;
+        joystickY = parseInt(parts[1]) || 0;
+      }
+    }
     else if (msg === 'L2_GELOEST') {
       const isLevel2 = window.location.pathname.includes('level2');
       if (isLevel2) {
         if (statusText) {
-          statusText.innerText = 'Licht stabilisiert.';
+          statusText.innerText = 'Ziel erreicht!';
           statusText.style.color = 'var(--success)';
         }
         handleSolve();
@@ -165,6 +234,28 @@ function updateTaskUI(activeIndex) {
 
 // ===== EVENT LISTENER =====
 function setupEventListeners() {
+  if (toggleLogBtn) {
+    toggleLogBtn.addEventListener('click', () => {
+      if (logPanel) {
+        if (logPanel.style.display === 'none') {
+          logPanel.style.display = 'block';
+          toggleLogBtn.classList.add('active');
+        } else {
+          logPanel.style.display = 'none';
+          toggleLogBtn.classList.remove('active');
+        }
+      }
+    });
+  }
+
+  if (clearLogBtn) {
+    clearLogBtn.addEventListener('click', () => {
+      debugLogs = [];
+      updateLogDisplay();
+      addLog('Log geleert', 'info');
+    });
+  }
+
   if (backBtn) {
     backBtn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -236,6 +327,95 @@ function handleSolve() {
     }, 100);
   }
   console.log('🎉 Level gelöst!');
+}
+
+// ===== JOYSTICK GAME (Level 2) =====
+function initJoystickGame() {
+  canvas = document.getElementById('game-canvas');
+  if (!canvas) return;
+
+  ctx = canvas.getContext('2d');
+
+  collectedCount = 0;
+  collectibles = [];
+
+  // Erstelle mehrere sammelbare Punkte
+  for (let i = 0; i < totalCollectibles; i++) {
+    collectibles.push({
+      x: Math.random() * (canvas.width - 100) + 50,
+      y: Math.random() * (canvas.height - 100) + 50,
+      radius: 12,
+      collected: false
+    });
+  }
+
+  requestAnimationFrame(gameLoop);
+}
+
+function gameLoop() {
+  if (!canvas || !ctx) return;
+
+  // Canvas leeren
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Spieler bewegen basierend auf Joystick
+  player.x += (joystickX / 100) * player.speed;
+  player.y += (joystickY / 100) * player.speed;
+
+  // Grenzen prüfen
+  player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
+  player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+
+  // Sammelbare Punkte zeichnen und Kollision prüfen
+  collectibles.forEach((item, index) => {
+    if (item.collected) return;
+
+    const distance = Math.sqrt(
+      Math.pow(player.x - item.x, 2) + Math.pow(player.y - item.y, 2)
+    );
+
+    if (distance < player.radius + item.radius) {
+      // Punkt eingesammelt!
+      item.collected = true;
+      collectedCount++;
+
+      if (statusText) {
+        statusText.innerText = `${collectedCount}/${totalCollectibles} Punkte gesammelt`;
+      }
+
+      // Alle Punkte gesammelt?
+      if (collectedCount >= totalCollectibles) {
+        ArduinoManager.sendToArduino('L2_SOLVED');
+        return;
+      }
+    }
+
+    // Nicht eingesammelte Punkte zeichnen (grün)
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#34c759';
+    ctx.fill();
+    ctx.strokeStyle = '#28a745';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // Spieler zeichnen (blau)
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#007aff';
+  ctx.fill();
+  ctx.strokeStyle = '#0056b3';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  // Info anzeigen
+  ctx.fillStyle = '#333';
+  ctx.font = '14px monospace';
+  ctx.fillText(`Punkte: ${collectedCount}/${totalCollectibles}`, 10, 20);
+  ctx.fillText(`Joystick: X=${joystickX} Y=${joystickY}`, 10, 40);
+
+  requestAnimationFrame(gameLoop);
 }
 
 // Sicherstellen, dass die DIV beim Laden wirklich weg ist

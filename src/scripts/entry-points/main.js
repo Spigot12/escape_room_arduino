@@ -36,11 +36,16 @@ function addLog(message, type = 'info') {
 }
 
 function updateLogDisplay() {
+  if (!logContent) return;
+
   logContent.innerHTML = debugLogs
     .map(log => `<div class="log-${log.type}">${log.message}</div>`)
     .join('');
 
-  logContent.scrollTop = logContent.scrollHeight;
+  // Automatisch nach unten scrollen
+  requestAnimationFrame(() => {
+    logContent.scrollTop = logContent.scrollHeight;
+  });
 }
 
 function updateConnectionStatus(text, className) {

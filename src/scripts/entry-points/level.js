@@ -50,10 +50,18 @@ function addLog(message, type = 'info') {
 
 function updateLogDisplay() {
   if (!logContent) return;
+
   logContent.innerHTML = debugLogs
     .map(log => `<div style="color: ${getLogColor(log.type)}">${log.message}</div>`)
     .join('');
-  logContent.scrollTop = logContent.scrollHeight;
+
+  // Automatisch nach unten scrollen - sowohl im logContent als auch im Parent (card-body)
+  requestAnimationFrame(() => {
+    logContent.scrollTop = logContent.scrollHeight;
+    if (logContent.parentElement) {
+      logContent.parentElement.scrollTop = logContent.parentElement.scrollHeight;
+    }
+  });
 }
 
 function getLogColor(type) {

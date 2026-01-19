@@ -121,11 +121,16 @@ if (socket) {
         } else if (wasConnected && !globalIsConnected) {
             console.log('Manager: Dispatching arduinoDisconnected');
             dispatchEvent('arduinoDisconnected', { connected: false });
+        } else {
+            // Auch wenn sich der Status nicht geändert hat, feuern wir ein StatusUpdate für neue UI-Komponenten
+            const event = new CustomEvent('arduinoStatusUpdate', { detail: { connected: globalIsConnected } });
+            window.dispatchEvent(event);
         }
         
         // Immer ein generisches Status-Update feuern für die UI-Synchronisation
-        console.log('Manager: Dispatching arduinoStatusUpdate (generic), connected:', globalIsConnected);
-        window.dispatchEvent(new CustomEvent('arduinoStatusUpdate', { detail: { connected: globalIsConnected } }));
+        // Aber nur wenn wir nicht gerade ein Connected/Disconnected Event gefeuert haben, 
+        // um Redundanz zu vermeiden (obwohl updateGlobalStatusUI das bereits tut)
+        // console.log('Manager: Status update processed, connected:', globalIsConnected);
     });
 
     if (socket.connected) {
@@ -165,29 +170,63 @@ export async function connectArduino(portPath) {
     if (!portPath) return { success: false, message: 'Kein Port ausgewählt' };
     if (!socket) return { success: false, message: 'Keine Socket-Verbindung' };
 
-    socket.emit('connect-arduino', { path: portPath });
+    console.log('Manager: connectArduino aufgerufen mit Port:', portPath);
 
     return new Promise((resolve) => {
-        const checkStatus = (data) => {
-            if (data.connected) {
-                socket.off('status', checkStatus);
+        let resolved = false;
+
+        const onStatus = (data) => {
+            console.log('Manager: connectArduino - Status empfangen:', data);
+            if (data.connected && !resolved) {
+                resolved = true;
+                socket.off('status', onStatus);
+                socket.off('error', onError);
+                clearTimeout(timeoutId);
+                console.log('Manager: Verbindung erfolgreich, resolve...');
                 resolve({ success: true, message: 'Verbunden' });
             }
         };
-        socket.on('status', checkStatus);
 
-        // Erhöhtes Timeout auf 10 Sekunden
-        setTimeout(() => {
-            socket.off('status', checkStatus);
-            if (!globalIsConnected) {
-                resolve({ success: false, message: 'Timeout bei der Verbindung (Arduino reagiert nicht)' });
+        const onError = (data) => {
+            console.log('Manager: connectArduino - Error empfangen:', data);
+            if (!resolved) {
+                resolved = true;
+                socket.off('status', onStatus);
+                socket.off('error', onError);
+                clearTimeout(timeoutId);
+                resolve({ success: false, message: data.message });
+            }
+        };
+
+        socket.on('status', onStatus);
+        socket.on('error', onError);
+
+        const timeoutId = setTimeout(() => {
+            if (!resolved) {
+                resolved = true;
+                socket.off('status', onStatus);
+                socket.off('error', onError);
+                console.log('Manager: Timeout erreicht, globalIsConnected:', globalIsConnected);
+                if (!globalIsConnected) {
+                    resolve({ success: false, message: 'Timeout bei der Verbindung (Arduino reagiert nicht)' });
+                } else {
+                    resolve({ success: true, message: 'Verbunden' });
+                }
             }
         }, 10000);
+
+        console.log('Manager: Sende connect-arduino Event...');
+        socket.emit('connect-arduino', { path: portPath });
     });
 }
 
 export async function disconnectArduino() {
-    if (socket) socket.emit('disconnect-arduino');
+    console.log('Manager: disconnectArduino aufgerufen');
+    if (socket) {
+        socket.emit('disconnect-arduino');
+    } else {
+        console.error('Manager: Kein Socket vorhanden zum Trennen');
+    }
 }
 
 // ===== STATUS GETTERS =====

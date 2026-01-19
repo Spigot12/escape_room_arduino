@@ -78,8 +78,10 @@ io.on('connection', (socket) => {
         socket.emit('status', { connected: true });
         return;
       }
-      
-      socket.emit('error', { message: 'Es ist bereits ein Arduino verbunden. Bitte trenne die Verbindung zuerst.' });
+
+      console.log('Verbindung abgelehnt: Arduino ist bereits verbunden');
+      io.emit('status', { connected: true });
+      socket.emit('error', { message: 'Es ist bereits ein Arduino verbunden. Nur eine gleichzeitige Verbindung ist erlaubt.' });
       return;
     }
 
@@ -122,6 +124,8 @@ io.on('connection', (socket) => {
           io.emit('status', { connected: false });
         });
 
+        // Sende Status sowohl an den anfragenden Client als auch an alle anderen
+        socket.emit('status', { connected: true });
         io.emit('status', { connected: true });
 
         // Sende ein RESET-Signal an den Arduino, damit er bei Level 0 startet
@@ -149,8 +153,22 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect-arduino', () => {
+    console.log('Trennungs-Anfrage vom Client erhalten');
     if (arduinoPort && arduinoPort.isOpen) {
-      arduinoPort.close();
+      arduinoPort.close((err) => {
+        if (err) {
+          console.error('Fehler beim Schließen des Ports:', err.message);
+          socket.emit('error', { message: 'Fehler beim Trennen: ' + err.message });
+        } else {
+          console.log('Port manuell geschlossen');
+          isConnected = false;
+          io.emit('status', { connected: false });
+        }
+      });
+    } else {
+      console.log('Trennen nicht möglich: Kein Port offen oder bereits geschlossen');
+      isConnected = false;
+      io.emit('status', { connected: false });
     }
   });
 });

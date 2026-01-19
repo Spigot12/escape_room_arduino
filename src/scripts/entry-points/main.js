@@ -46,6 +46,18 @@ function updateLogDisplay() {
 function updateConnectionStatus(text, className) {
   if (!connectionStatus) return;
   
+  // Guard: Wenn wir bereits "Verbunden" sind, erlauben wir keine Änderung zu "Wartet..." oder "Nicht verbunden"
+  // außer es kommt explizit ein Disconnect-Event (das wird über className oder spezifischen Text gesteuert)
+  const currentText = connectionStatus.textContent;
+  if (currentText.includes('Verbunden') && 
+      (text.toLowerCase() === 'waiting...' || 
+       text.toLowerCase() === 'not connected' || 
+       text.toLowerCase() === 'connecting...' ||
+       text.toLowerCase() === 'connection failed')) {
+    console.log('Main: Unterbinde Status-Wechsel von Verbunden zu', text);
+    return;
+  }
+
   // Übersetzung ins Deutsche
   let statusText = text;
   if (text.toLowerCase() === 'waiting...') statusText = 'Wartet...';
@@ -54,7 +66,10 @@ function updateConnectionStatus(text, className) {
   if (text.toLowerCase() === 'connection failed') statusText = 'Verbindung fehlgeschlagen';
   if (text.toLowerCase() === 'connecting...') statusText = 'Prüfe Verbindung...';
 
-  connectionStatus.textContent = `Status: ${statusText}`;
+  const newStatusString = `Status: ${statusText}`;
+  if (connectionStatus.textContent === newStatusString) return;
+
+  connectionStatus.textContent = newStatusString;
   
   if (statusText === 'Verbunden') {
     connectionStatus.style.color = 'var(--bs-success)';
@@ -85,13 +100,15 @@ function updateReadLoopStatus() {
 
 function updateStartButton() {
   const isConnected = ArduinoManager.isConnected();
-  console.log('Main: updateStartButton, isConnected:', isConnected);
   if (!startBtn) return; // Guard clause
   
   if (isConnected) {
-    startBtn.disabled = false;
-    startBtn.classList.remove('disabled');
-    startBtn.classList.add('enabled');
+    if (startBtn.disabled || startBtn.classList.contains('disabled')) {
+        console.log('Main: Aktiviere Start-Button');
+        startBtn.disabled = false;
+        startBtn.classList.remove('disabled');
+        startBtn.classList.add('enabled');
+    }
     // Verhindert mehrfaches Loggen
     if (startBtn.getAttribute('data-notified') !== 'true') {
         addLog('Start-Button aktiviert ✅', 'success');
@@ -110,61 +127,23 @@ async function init() {
   addLog('System gestartet', 'info');
   setupEventListeners();
   setupArduinoListeners();
-  
+
   // Zuerst UI-Status prüfen (Persistenz beim Zurückgehen)
   const currentlyConnected = ArduinoManager.isConnected();
   console.log('Main: Initialer Check (init), isConnected:', currentlyConnected);
-  
+
   if (currentlyConnected) {
     console.log('Main: Arduino ist bereits verbunden beim Laden');
     updateUIOnConnect();
   } else {
-    // Wenn wir noch nicht wissen ob verbunden, zeigen wir "Prüfe Verbindung..." 
-    // Aber nur wenn der Status noch auf dem Standard-HTML-Wert steht, um Überschreiben zu vermeiden
-    const currentStatusText = connectionStatus ? connectionStatus.textContent : '';
-    if (!currentStatusText.includes('Verbunden')) {
-        updateConnectionStatus('connecting...', 'status-disconnected');
+    // Status bleibt auf Standard
+    if (connectionStatus) {
+      connectionStatus.textContent = 'Status: Nicht verbunden';
+      connectionStatus.style.color = 'var(--bs-secondary)';
     }
-    
-    // Falls der Manager schon Daten hat aber das Event verpasst wurde
-    // Wir machen mehrere Checks in kurzen Abständen
-    [50, 150, 300, 600, 1000].forEach(delay => {
-        setTimeout(() => {
-            if (ArduinoManager.isConnected()) {
-                console.log(`Main: Check nach ${delay}ms: Verbunden!`);
-                updateUIOnConnect();
-            }
-        }, delay);
-    });
   }
 
   await refreshPorts();
-
-  // Falls nach den Ports immer noch nicht verbunden sind, forciere eine Status-Abfrage
-  if (!ArduinoManager.isConnected()) {
-      console.log('Main: Noch nicht verbunden nach Port-Refresh, triggere get-status über Socket...');
-      // Wir senden ein Event an das Fenster, damit der Manager es hört und get-status sendet
-      window.dispatchEvent(new CustomEvent('arduino:requestStatus'));
-  }
-
-  // Falls nach dem Port-Laden der Status immer noch unbekannt ist, 
-  // aber der Socket verbunden ist, triggern wir nochmal eine Status-Abfrage
-  setTimeout(() => {
-    const finalCheck = ArduinoManager.isConnected();
-    console.log('Main: Finaler Verbindungs-Check nach 2.5s, isConnected:', finalCheck);
-    
-    if (finalCheck) {
-      updateUIOnConnect();
-    } else {
-       console.log('Main: Kein Arduino nach 2.5s gefunden. Aktueller Text:', connectionStatus ? connectionStatus.textContent : 'null');
-       // Wenn nach 2.5 Sekunden immer noch nichts da ist, gehen wir auf "Wartet..."
-       // Wir prüfen auf beide Varianten (Prüfe... und Verbinde...)
-       const currentText = connectionStatus ? connectionStatus.textContent : '';
-       if (currentText.includes('Prüfe Verbindung...') || currentText.includes('Verbinde...')) {
-         updateConnectionStatus('waiting...', 'status-disconnected');
-       }
-    }
-  }, 2500); // Etwas großzügigeres Timeout
 }
 
 async function refreshPorts() {
@@ -190,12 +169,22 @@ async function refreshPorts() {
 }
 
 function updateUIOnConnect() {
-  console.log('Main: updateUIOnConnect aufgerufen');
+  // console.log('Main: updateUIOnConnect aufgerufen');
   
   // Guard: Wenn wir schon verbunden anzeigen, nichts tun (verhindert Flackern/Logs)
   if (connectionStatus && connectionStatus.textContent.includes('Verbunden')) {
     // Sicherstellen, dass der Start-Button trotzdem korrekt gesetzt ist (falls er durch ein Reset-Event deaktiviert wurde)
     updateStartButton();
+    // Prüfe ob der Connect-Button korrekt aussieht
+    if (connectBtn && !connectBtn.innerHTML.includes('Verbunden')) {
+        connectBtn.disabled = true;
+        connectBtn.classList.add('disabled');
+        connectBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Verbunden';
+    }
+    // Prüfe ob Trennen-Button sichtbar ist
+    if (disconnectBtn && disconnectBtn.classList.contains('hidden')) {
+        disconnectBtn.classList.remove('hidden');
+    }
     return;
   }
 
@@ -214,9 +203,9 @@ function updateUIOnConnect() {
   }
   
   updateStartButton();
+  addLog('Arduino verbunden!', 'success');
 }
 
-// ===== ARDUINO EVENTS =====
 function setupArduinoListeners() {
   // Listen for the manager's state changes
   window.addEventListener('arduinoStatusUpdate', (event) => {
@@ -225,30 +214,48 @@ function setupArduinoListeners() {
     if (connected) {
       updateUIOnConnect();
     } else {
-      // Nur auf "nicht verbunden" setzen, wenn wir nicht gerade "Prüfe Verbindung..." anzeigen
+      // Nur auf "nicht verbunden" setzen, wenn wir nicht gerade "Prüfe Verbindung..." oder "Verbinde..." anzeigen
       const currentText = connectionStatus ? connectionStatus.textContent : '';
-      if (connectionStatus && !currentText.includes('Prüfe Verbindung...') && !currentText.includes('Verbinde...')) {
-        updateConnectionStatus('not connected', 'status-disconnected');
+      if (connectionStatus && 
+          !currentText.includes('Verbunden') && 
+          !currentText.includes('Prüfe Verbindung...') && 
+          !currentText.includes('Verbinde...')) {
+        // Forciere Status-Update auf "Nicht verbunden"
+        connectionStatus.textContent = 'Status: Nicht verbunden';
+        connectionStatus.style.color = 'var(--bs-secondary)';
       }
     }
   });
 
   ArduinoManager.addEventListener('arduinoConnected', () => {
     console.log('Main: arduinoConnected Event vom Manager empfangen');
-    addLog('Arduino verbunden!', 'success');
     updateUIOnConnect();
   });
 
   ArduinoManager.addEventListener('arduinoDisconnected', () => {
+    console.log('Main: arduinoDisconnected Event vom Manager empfangen');
     addLog('Arduino getrennt', 'warn');
-    updateConnectionStatus('not connected', 'status-disconnected');
+    
+    // Forciere Status-Update auf "Nicht verbunden"
+    if (connectionStatus) {
+      connectionStatus.textContent = 'Status: Nicht verbunden';
+      connectionStatus.style.color = 'var(--bs-secondary)';
+    }
+    
     updatePortStatus();
     updateReadLoopStatus();
     updateStartButton();
-    connectBtn.disabled = false;
-    connectBtn.classList.remove('disabled');
-    connectBtn.innerHTML = '<i class="bi bi-plug-fill me-2"></i>Arduino verbinden';
-    if (disconnectBtn) disconnectBtn.classList.add('hidden');
+    
+    if (connectBtn) {
+      connectBtn.disabled = false;
+      connectBtn.classList.remove('disabled');
+      connectBtn.innerHTML = '<i class="bi bi-plug-fill me-2"></i>Arduino verbinden';
+    }
+    
+    if (disconnectBtn) {
+      disconnectBtn.classList.add('hidden');
+      console.log('Main: Trennen-Button versteckt');
+    }
   });
 
   ArduinoManager.addEventListener('arduinoMessage', (data) => {
@@ -270,7 +277,7 @@ function setupArduinoListeners() {
 
 // ===== ARDUINO VERBINDUNG =====
 async function connect() {
-  if (connectBtn.disabled) return; // Verhindert Mehrfachklicks
+  if (connectBtn.disabled && !connectBtn.innerHTML.includes('Verbunden')) return; // Verhindert Mehrfachklicks, außer wir wollen re-connecten
 
   try {
     const selectedPort = portSelect.value;
@@ -293,15 +300,16 @@ async function connect() {
 
     if (!result.success) {
       addLog(`Verbindungsfehler: ${result.message}`, 'error');
-      updateConnectionStatus('Connection failed', 'status-disconnected');
+      // Update status manually since the guard might prevent updateConnectionStatus
+      connectionStatus.textContent = 'Status: Verbindung fehlgeschlagen';
+      connectionStatus.style.color = 'var(--bs-secondary)';
+      
       connectBtn.disabled = false;
       connectBtn.classList.remove('disabled');
       connectBtn.innerHTML = '<i class="bi bi-plug-fill me-2"></i>Arduino verbinden';
       updateStartButton();
     } else {
-      addLog('Verbindung erfolgreich hergestellt', 'success');
-      // Update UI manually in case the event was already dispatched or missed
-      updateUIOnConnect();
+      // updateUIOnConnect wird durch das Event aufgerufen
     }
   } catch (error) {
     addLog(`Fehler: ${error.message}`, 'error');
@@ -332,6 +340,8 @@ function setupEventListeners() {
   
   if (disconnectBtn) {
     disconnectBtn.addEventListener('click', () => {
+      console.log('Main: Trennen-Button geklickt');
+      addLog('Trennen angefordert...', 'info');
       ArduinoManager.disconnectArduino();
     });
   }
@@ -339,24 +349,28 @@ function setupEventListeners() {
   refreshPortsBtn.addEventListener('click', refreshPorts);
   startBtn.addEventListener('click', startGame);
 
-  clearLogBtn.addEventListener('click', () => {
-    debugLogs = [];
-    updateLogDisplay();
-    addLog('Log geleert', 'info');
-  });
+  if (clearLogBtn) {
+    clearLogBtn.addEventListener('click', () => {
+      debugLogs = [];
+      updateLogDisplay();
+      addLog('Log geleert', 'info');
+    });
+  }
 
-  testBtn.addEventListener('click', async () => {
-    try {
-      const result = await ArduinoManager.sendToArduino('TEST');
-      if (result.success) {
-        addLog('Test-Nachricht gesendet', 'info');
-      } else {
-        addLog(`Fehler beim Senden: ${result.message}`, 'error');
+  if (testBtn) {
+    testBtn.addEventListener('click', async () => {
+      try {
+        const result = await ArduinoManager.sendToArduino('TEST');
+        if (result.success) {
+          addLog('Test-Nachricht gesendet', 'info');
+        } else {
+          addLog(`Fehler beim Senden: ${result.message}`, 'error');
+        }
+      } catch (error) {
+        addLog(`Fehler: ${error.message}`, 'error');
       }
-    } catch (error) {
-      addLog(`Fehler: ${error.message}`, 'error');
-    }
-  });
+    });
+  }
 }
 
 // ===== HELPER =====

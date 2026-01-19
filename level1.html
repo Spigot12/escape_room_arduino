@@ -8,33 +8,44 @@
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
+    <div id="arduino-indicator" class="arduino-status-indicator disconnected"></div>
     <div id="app">
       <div class="game-header">
         <button id="back-btn" class="back-btn">← Zurück</button>
-        <h1>Level 1: Das erste Rätsel</h1>
-        <div></div>
+        <h1>Level 1</h1>
+        <div style="width: 100px;"></div>
       </div>
 
       <div class="level-content">
-        <div class="level-description">
-          <h2>🔍 Das Geheimnis der Box</h2>
-          <p>Du findest eine mysteriöse Box. Um sie zu öffnen, musst du die richtige Kombination finden.</p>
-          <p><strong>Hinweis:</strong> Der Arduino-Button ist dein Schlüssel!</p>
+        <div class="card" style="margin-bottom: 2rem;">
+          <h2 style="margin-top: 0;">🔍 Das Geheimnis der Box</h2>
+          <p id="status-text" style="font-size: 1.2rem; font-weight: 600; color: #4b5563;">
+            System bereit. Drücke den Button am Arduino zum Starten.
+          </p>
         </div>
 
         <div class="level-task">
-          <h3>Aufgabe:</h3>
-          <ol>
-            <li>Schau dir die Box genau an</li>
-            <li>Finde die Zahlenreihe</li>
-            <li>Drücke den Arduino-Button wenn du bereit bist!</li>
-          </ol>
+          <h3>Deine Aufgaben:</h3>
+          <ul id="task-list">
+            <li>Starte das System (Button drücken)</li>
+            <li>Gewähre Zugang (Button erneut drücken)</li>
+          </ul>
+        </div>
+
+        <div id="code-section" class="card hidden" style="margin-top: 2rem;">
+          <h3>⌨️ Code-Eingabe</h3>
+          <p>Gib den Code ein, den du vom System erhalten hast.</p>
+          <input type="text" id="code-input" placeholder="Code hier eingeben..." 
+                 style="width: 100%; padding: 1.2rem; margin: 1rem 0; border: 2px solid #eeeeee; border-radius: 16px; font-size: 1.2rem; font-weight: 700;">
+          <button id="send-code-btn" class="primary-btn">Bestätigen</button>
         </div>
 
         <div id="result-display" class="result-display hidden">
-          <h2>🎉 Rätsel gelöst!</h2>
-          <p>Glückwunsch! Du hast Level 1 erfolgreich abgeschlossen!</p>
-          <button id="next-level-btn" class="primary-btn">Weiter zu Level 2 →</button>
+          <h2>🎉 Zugang gewährt!</h2>
+          <p style="font-size: 1.2rem; margin-bottom: 2rem;">Hervorragend! Du hast das erste Level gemeistert.</p>
+          <button id="next-level-btn" class="primary-btn" style="background: white; color: #10a37f; font-size: 1.3rem;">
+            Weiter zu Level 2 →
+          </button>
         </div>
       </div>
     </div>

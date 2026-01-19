@@ -8,11 +8,12 @@ const MAX_DEBUG_LOGS = 50;
 // ===== DOM ELEMENTE =====
 const connectionScreen = document.querySelector('#connection-screen');
 const connectBtn = document.querySelector('#connect-btn');
+const portSelect = document.querySelector('#port-select');
+const refreshPortsBtn = document.querySelector('#refresh-ports-btn');
 const startBtn = document.querySelector('#start-btn');
 const connectionStatus = document.querySelector('#connection-status');
 const portStatus = document.querySelector('#port-status');
 const readLoopStatus = document.querySelector('#read-loop-status');
-const lastMessage = document.querySelector('#last-message');
 const logContent = document.querySelector('#log-content');
 const clearLogBtn = document.querySelector('#clear-log-btn');
 const testBtn = document.querySelector('#test-btn');
@@ -72,22 +73,54 @@ function updateStartButton() {
 }
 
 // ===== INITIALISIERUNG =====
-function init() {
+async function init() {
   addLog('System gestartet', 'info');
   setupEventListeners();
   setupArduinoListeners();
+  await refreshPorts();
+  
+  // Falls bereits verbunden (z.B. zurück von Level), UI aktualisieren
+  if (ArduinoManager.isConnected()) {
+    updateUIOnConnect();
+  }
+}
+
+async function refreshPorts() {
+  addLog('Lade verfügbare Ports...', 'info');
+  try {
+    const ports = await ArduinoManager.listPorts();
+    
+    if (portSelect) {
+      if (ports.length > 0) {
+        portSelect.innerHTML = ports.map(p => {
+          const name = p.friendlyName || p.manufacturer || p.path;
+          return `<option value="${p.path}">${name} (${p.path})</option>`;
+        }).join('');
+        addLog(`${ports.length} Ports gefunden`, 'success');
+      } else {
+        portSelect.innerHTML = '<option value="">Keine Ports gefunden</option>';
+        addLog('Keine Ports gefunden. Ist der Server gestartet?', 'warn');
+      }
+    }
+  } catch (error) {
+    addLog(`Fehler beim Laden der Ports: ${error.message}`, 'error');
+  }
+}
+
+function updateUIOnConnect() {
+  updateConnectionStatus('Verbunden', 'status-connected');
+  updatePortStatus();
+  updateReadLoopStatus();
+  connectBtn.disabled = true;
+  connectBtn.textContent = '✓ Verbunden';
+  setTimeout(updateStartButton, 500);
 }
 
 // ===== ARDUINO EVENTS =====
 function setupArduinoListeners() {
   ArduinoManager.addEventListener('arduinoConnected', () => {
     addLog('Arduino verbunden!', 'success');
-    updateConnectionStatus('Verbunden', 'status-connected');
-    updatePortStatus();
-    updateReadLoopStatus();
-    connectBtn.disabled = true;
-    connectBtn.textContent = '✓ Verbunden';
-    setTimeout(updateStartButton, 500);
+    updateUIOnConnect();
   });
 
   ArduinoManager.addEventListener('arduinoDisconnected', () => {
@@ -102,7 +135,6 @@ function setupArduinoListeners() {
 
   ArduinoManager.addEventListener('arduinoMessage', (data) => {
     addLog(`Nachricht empfangen: "${data.message}"`, 'success');
-    lastMessage.textContent = data.message;
   });
 
   ArduinoManager.addEventListener('arduinoSolved', () => {
@@ -113,26 +145,22 @@ function setupArduinoListeners() {
 // ===== ARDUINO VERBINDUNG =====
 async function connect() {
   try {
-    addLog('Verbindungsversuch gestartet...', 'info');
+    const selectedPort = portSelect.value;
+    if (!selectedPort) {
+      alert('Bitte wähle einen Port aus!');
+      return;
+    }
 
-    const result = await ArduinoManager.connectArduino();
+    addLog(`Verbindungsversuch mit ${selectedPort}...`, 'info');
+
+    const result = await ArduinoManager.connectArduino(selectedPort);
 
     if (!result.success) {
       addLog(`Verbindungsfehler: ${result.message}`, 'error');
-      let errorMessage = 'Verbindung fehlgeschlagen';
-
-      if (result.message.includes('NotFoundError')) {
-        errorMessage = 'Kein Gerät ausgewählt';
-      } else if (result.message.includes('SecurityError')) {
-        errorMessage = 'Sicherheitsfehler (HTTPS benötigt?)';
-      } else if (result.message.includes('NetworkError')) {
-        errorMessage = 'Port wird bereits verwendet';
-      }
-
-      updateConnectionStatus(errorMessage, 'status-disconnected');
+      updateConnectionStatus('Verbindung fehlgeschlagen', 'status-disconnected');
       updateStartButton();
     } else {
-      addLog('Port mit 9600 Baud geöffnet', 'success');
+      addLog('Verbindung über Backend hergestellt', 'success');
     }
   } catch (error) {
     addLog(`Fehler: ${error.message}`, 'error');
@@ -151,14 +179,8 @@ function startGame() {
 
 // ===== EVENT LISTENER =====
 function setupEventListeners() {
-  connectBtn.addEventListener('click', () => {
-    if ('serial' in navigator) {
-      connect();
-    } else {
-      addLog('Web Serial API nicht unterstützt!', 'error');
-      alert('Web Serial API wird von diesem Browser nicht unterstützt. Bitte verwende Chrome oder Edge.');
-    }
-  });
+  connectBtn.addEventListener('click', connect);
+  refreshPortsBtn.addEventListener('click', refreshPorts);
 
   startBtn.addEventListener('click', startGame);
 

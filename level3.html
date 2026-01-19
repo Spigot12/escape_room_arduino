@@ -8,33 +8,38 @@
     <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
+<div id="arduino-indicator" class="arduino-status-indicator disconnected"></div>
 <div id="app">
     <div class="game-header">
         <button id="back-btn" class="back-btn">← Zurück</button>
-        <h1>Level 3: Das große Finale</h1>
-        <div></div>
+        <h1>Level 3</h1>
+        <div style="width: 100px;"></div>
     </div>
 
     <div class="level-content">
-        <div class="level-description">
-            <h2>👑 Der Schatz des Königs</h2>
-            <p>Du stehst vor der letzten Herausforderung. Der Schatz ist zum Greifen nah!</p>
+        <div class="card" style="margin-bottom: 2rem;">
+            <h2 style="margin-top: 0;">👑 Der Schatz des Königs</h2>
+            <p style="font-size: 1.2rem; color: #4b5563;">
+                Du stehst vor der letzten Herausforderung. Der Schatz ist zum Greifen nah!
+            </p>
             <p><strong>Warnung:</strong> Dieses Level ist besonders knifflig!</p>
         </div>
 
         <div class="level-task">
-            <h3>Aufgabe:</h3>
-            <ol>
+            <h3>Deine Aufgaben:</h3>
+            <ul id="task-list">
                 <li>Kombiniere dein Wissen aus Level 1 und 2</li>
                 <li>Erkenne das Muster</li>
-                <li>Drücke den Arduino-Button um den Schatz zu öffnen!</li>
-            </ol>
+                <li>Drücke den Arduino-Button um den Schatz zu öffnen</li>
+            </ul>
         </div>
 
         <div id="result-display" class="result-display hidden">
-            <h2>🏆 ALLE LEVEL GELÖST!</h2>
-            <p>Du hast es geschafft! Du bist ein wahrer Escape-Room-Meister! 🎉</p>
-            <button id="restart-btn" class="primary-btn">Nochmal spielen →</button>
+            <h2 style="font-size: 3rem;">🏆 FINALE!</h2>
+            <p style="font-size: 1.5rem; margin-bottom: 2rem;">Du hast alle Level gelöst und bist ein wahrer Meister! 🎉</p>
+            <button id="restart-btn" class="primary-btn" style="background: white; color: #10a37f; font-size: 1.3rem;">
+                Nochmal spielen →
+            </button>
         </div>
     </div>
 </div>

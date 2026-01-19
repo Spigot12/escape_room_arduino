@@ -7,33 +7,45 @@
     <title>Escape Room - Arduino Interface</title>
   </head>
   <body>
+    <div id="arduino-indicator" class="arduino-status-indicator disconnected"></div>
     <div id="app">
       <!-- CONNECTION SCREEN -->
       <div id="connection-screen" class="screen">
         <h1>🔓 Escape Room</h1>
-        <p class="subtitle">Arduino Uno R3 verbinden</p>
+        <p class="subtitle">Verbinde deinen Arduino Uno R3</p>
         
         <div class="card connection-card">
-          <p class="info-text">Bitte verbinde deinen Arduino, um zu beginnen</p>
-          <button id="connect-btn" type="button" class="primary-btn">Arduino verbinden</button>
-          <div>
-            <p id="connection-status" class="status-disconnected">Status: Nicht verbunden</p>
+          <div id="port-selection" class="port-selection">
+            <select id="port-select" class="port-select">
+              <option value="">Lade verfügbare Ports...</option>
+            </select>
+            <button id="refresh-ports-btn" class="back-btn" title="Ports aktualisieren">🔄</button>
           </div>
           
-          <button id="start-btn" type="button" class="start-btn disabled">🎮 Spiel starten</button>
+          <button id="connect-btn" type="button" class="primary-btn">
+            🔌 Arduino verbinden
+          </button>
           
-          <!-- DEBUG PANEL -->
-          <div id="debug-panel" class="debug-panel">
-            <h3>🔧 Debug-Info</h3>
-            <p><strong>Port Status:</strong> <span id="port-status">Kein Port</span></p>
-            <p><strong>Leseschleife:</strong> <span id="read-loop-status">Nicht aktiv</span></p>
-            <p><strong>Zuletzt empfangen:</strong> <span id="last-message">Warten...</span></p>
-            <div id="debug-log" class="debug-log">
-              <h4>Log:</h4>
-              <div id="log-content"></div>
-            </div>
-            <button id="clear-log-btn" class="debug-btn">Log löschen</button>
-            <button id="test-btn" class="debug-btn">Test-Nachricht senden</button>
+          <div style="margin: 1.5rem 0;">
+            <p id="connection-status" class="status-disconnected" style="font-weight: 800; padding: 0.8rem 1.5rem; border-radius: 12px;">
+              Status: Nicht verbunden
+            </p>
+          </div>
+          
+          <button id="start-btn" type="button" class="start-btn disabled">
+            🚀 Spiel starten
+          </button>
+        </div>
+
+        <!-- DEBUG PANEL - Dezent am Ende -->
+        <div id="debug-panel" class="debug-panel" style="max-width: 550px; margin: 4rem auto 0; opacity: 0.6;">
+          <h3 style="font-size: 1rem; color: #888;">🔧 Technischer Status</h3>
+          <div style="display: flex; justify-content: space-around; font-size: 0.9rem; margin-bottom: 1rem; font-weight: 600;">
+            <p>Port: <span id="port-status">Aus</span></p>
+            <p>Loop: <span id="read-loop-status">Aus</span></p>
+          </div>
+          <div id="debug-log" class="debug-log" style="height: 100px;">
+            <div id="log-content"></div>
           </div>
         </div>
       </div>

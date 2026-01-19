@@ -2,6 +2,7 @@ import '../../styles/style.css'
 import '../../styles/components.css'
 import '../../styles/animations.css'
 import * as ArduinoManager from '../arduino/arduino-manager.js'
+import { isAuthenticated } from '../auth.js'
 
 // ===== STATE =====
 let debugLogs = [];
@@ -105,8 +106,13 @@ function updateReadLoopStatus() {
 
 function updateStartButton() {
   const isConnected = ArduinoManager.isConnected();
+  const userAuthenticated = isAuthenticated();
   if (!startBtn) return; // Guard clause
-  
+
+  const startHint = document.getElementById('start-hint');
+  const startHintText = document.getElementById('start-hint-text');
+
+  // Button is enabled if Arduino is connected (user can be anonymous)
   if (isConnected) {
     if (startBtn.disabled || startBtn.classList.contains('disabled')) {
         console.log('Main: Aktiviere Start-Button');
@@ -114,6 +120,19 @@ function updateStartButton() {
         startBtn.classList.remove('disabled');
         startBtn.classList.add('enabled');
     }
+
+    // Show hint if not authenticated (playing anonymously)
+    if (!userAuthenticated) {
+      if (startHint && startHintText) {
+        startHintText.innerHTML = '<span class="text-warning">Du spielst als <strong>Anonym</strong>. Jetzt <a href="#" class="text-decoration-underline" data-bs-toggle="modal" data-bs-target="#authModal">anmelden</a>, um im Leaderboard zu erscheinen</span>';
+        startHint.style.display = 'block';
+      }
+    } else {
+      if (startHint) {
+        startHint.style.display = 'none';
+      }
+    }
+
     // Verhindert mehrfaches Loggen
     if (startBtn.getAttribute('data-notified') !== 'true') {
         addLog('Start-Button aktiviert ✅', 'success');
@@ -124,6 +143,12 @@ function updateStartButton() {
     startBtn.classList.add('disabled');
     startBtn.classList.remove('enabled');
     startBtn.removeAttribute('data-notified');
+
+    // Show hint about what's missing
+    if (startHint && startHintText) {
+      startHintText.innerHTML = '<span class="text-muted">Bitte verbinde zuerst dein Arduino.</span>';
+      startHint.style.display = 'block';
+    }
   }
 }
 
@@ -212,6 +237,12 @@ function updateUIOnConnect() {
 }
 
 function setupArduinoListeners() {
+  // Listen for auth status changes
+  window.addEventListener('authStatusChanged', (event) => {
+    console.log('Main: authStatusChanged empfangen', event.detail);
+    updateStartButton();
+  });
+
   // Listen for the manager's state changes
   window.addEventListener('arduinoStatusUpdate', (event) => {
     const connected = event.detail.connected;
@@ -221,9 +252,9 @@ function setupArduinoListeners() {
     } else {
       // Nur auf "nicht verbunden" setzen, wenn wir nicht gerade "Prüfe Verbindung..." oder "Verbinde..." anzeigen
       const currentText = connectionStatus ? connectionStatus.textContent : '';
-      if (connectionStatus && 
-          !currentText.includes('Verbunden') && 
-          !currentText.includes('Prüfe Verbindung...') && 
+      if (connectionStatus &&
+          !currentText.includes('Verbunden') &&
+          !currentText.includes('Prüfe Verbindung...') &&
           !currentText.includes('Verbinde...')) {
         // Forciere Status-Update auf "Nicht verbunden"
         connectionStatus.textContent = 'Status: Nicht verbunden';
@@ -326,17 +357,24 @@ async function connect() {
 
 // ===== ZUM SPIEL STARTEN =====
 async function startGame() {
-  if (ArduinoManager.isConnected()) {
-    addLog('Sende Reset-Signal an Arduino...', 'info');
-    await ArduinoManager.sendToArduino('RESET'); // Sicherstellen, dass Level 0 aktiv ist
-    
-    addLog('Spiel wird gestartet...', 'info');
-    setTimeout(() => {
-      window.location.href = '/pages/level1.html';
-    }, 500);
-  } else {
+  if (!ArduinoManager.isConnected()) {
     addLog('Fehler: Arduino nicht verbunden!', 'error');
+    return;
   }
+
+  // Allow anonymous play - no authentication required
+  if (!isAuthenticated()) {
+    addLog('Spiel wird im Anonym-Modus gestartet...', 'info');
+  } else {
+    addLog('Spiel wird gestartet...', 'info');
+  }
+
+  addLog('Sende Reset-Signal an Arduino...', 'info');
+  await ArduinoManager.sendToArduino('RESET'); // Sicherstellen, dass Level 0 aktiv ist
+
+  setTimeout(() => {
+    window.location.href = '/pages/level1.html';
+  }, 500);
 }
 
 // ===== EVENT LISTENER =====

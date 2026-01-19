@@ -92,3 +92,90 @@
 .log-success { color: var(--success); font-weight: bold; }
 .log-warn { color: var(--warning); }
 .log-error { color: var(--danger); }
+
+/* ===== AUTH BUTTONS ===== */
+.auth-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--text-main);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+}
+
+.auth-btn:hover {
+  transform: scale(1.1);
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.auth-btn:active {
+  transform: scale(0.95);
+}
+
+.auth-btn.logout-btn:hover {
+  border-color: var(--danger);
+  background: var(--danger);
+}
+
+/* ===== AUTH MODAL ===== */
+.auth-modal {
+  border-radius: 24px;
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+}
+
+.auth-modal .modal-header {
+  padding: 1.5rem 2rem 1rem;
+}
+
+.auth-modal .modal-body {
+  padding: 1rem 2rem 2rem;
+}
+
+.auth-modal .modal-title {
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+/* ===== AUTH FORM INPUTS ===== */
+.auth-input {
+  border-radius: 12px !important;
+  border: 2px solid var(--border-color) !important;
+  padding: 0.8rem 1rem !important;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: #f9f9fb !important;
+}
+
+.auth-input:focus {
+  border-color: var(--primary) !important;
+  background: white !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
+}
+
+.auth-input.is-invalid {
+  border-color: var(--danger) !important;
+}
+
+.auth-form .form-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* ===== AUTH ERROR ===== */
+.auth-error {
+  border-radius: 12px;
+  border: 2px solid var(--danger);
+  background: #fff5f5;
+  color: var(--danger);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+}

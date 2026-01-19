@@ -5,6 +5,9 @@ import { SerialPort } from 'serialport';
 import { ReadlineParser } from '@serialport/parser-readline';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import bcrypt from 'bcrypt';
+import session from 'express-session';
+import fs from 'fs/promises';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,13 +17,194 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
+
+// Middleware
+app.use(express.json());
+app.use(session({
+  secret: 'escape-room-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, // set to true if using HTTPS
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
 
 let arduinoPort = null;
 let parser = null;
 let isConnected = false;
+
+// User management functions
+const USERS_FILE = path.join(__dirname, 'users.json');
+
+async function loadUsers() {
+  try {
+    const data = await fs.readFile(USERS_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    return [];
+  }
+}
+
+async function saveUsers(users) {
+  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2));
+}
+
+// Authentication routes
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, password, passwordConfirm } = req.body;
+
+    if (!username || !password || !passwordConfirm) {
+      return res.status(400).json({ error: 'Alle Felder sind erforderlich' });
+    }
+
+    if (password !== passwordConfirm) {
+      return res.status(400).json({ error: 'Passwörter stimmen nicht überein' });
+    }
+
+    if (username.length < 3) {
+      return res.status(400).json({ error: 'Benutzername muss mindestens 3 Zeichen lang sein' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Passwort muss mindestens 6 Zeichen lang sein' });
+    }
+
+    const users = await loadUsers();
+
+    if (users.find(u => u.username === username)) {
+      return res.status(400).json({ error: 'Benutzername bereits vergeben' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    users.push({ username, password: hashedPassword });
+    await saveUsers(users);
+
+    req.session.user = { username };
+    res.json({ success: true, username });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Benutzername und Passwort erforderlich' });
+    }
+
+    const users = await loadUsers();
+    const user = users.find(u => u.username === username);
+
+    if (!user) {
+      return res.status(401).json({ error: 'Ungültige Anmeldedaten' });
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Ungültige Anmeldedaten' });
+    }
+
+    req.session.user = { username };
+    res.json({ success: true, username });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy();
+  res.json({ success: true });
+});
+
+app.get('/api/check-auth', (req, res) => {
+  if (req.session.user) {
+    res.json({ authenticated: true, username: req.session.user.username });
+  } else {
+    res.json({ authenticated: false });
+  }
+});
+
+// Leaderboard management
+const LEADERBOARD_FILE = path.join(__dirname, 'leaderboard.json');
+
+async function loadLeaderboard() {
+  try {
+    const data = await fs.readFile(LEADERBOARD_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    return [];
+  }
+}
+
+async function saveLeaderboard(leaderboard) {
+  await fs.writeFile(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
+}
+
+// Get leaderboard (top 10)
+app.get('/api/leaderboard', async (req, res) => {
+  try {
+    const leaderboard = await loadLeaderboard();
+    // Sort by time (ascending) and return top 10
+    const sorted = leaderboard.sort((a, b) => a.time - b.time).slice(0, 10);
+    res.json(sorted);
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+// Submit score to leaderboard
+app.post('/api/leaderboard', async (req, res) => {
+  try {
+    const { username, time } = req.body;
+
+    if (!username || !time) {
+      return res.status(400).json({ error: 'Benutzername und Zeit erforderlich' });
+    }
+
+    if (typeof time !== 'number' || time <= 0) {
+      return res.status(400).json({ error: 'Ungültige Zeit' });
+    }
+
+    const leaderboard = await loadLeaderboard();
+
+    // Check if user already has a score
+    const existingIndex = leaderboard.findIndex(entry => entry.username === username);
+
+    if (existingIndex !== -1) {
+      // Update if new time is better (faster)
+      if (time < leaderboard[existingIndex].time) {
+        leaderboard[existingIndex].time = time;
+        leaderboard[existingIndex].date = new Date().toISOString();
+      } else {
+        return res.json({ success: true, message: 'Keine Verbesserung', improved: false });
+      }
+    } else {
+      // Add new entry
+      leaderboard.push({
+        username,
+        time,
+        date: new Date().toISOString()
+      });
+    }
+
+    await saveLeaderboard(leaderboard);
+    res.json({ success: true, message: 'Score gespeichert', improved: true });
+  } catch (error) {
+    console.error('Submit score error:', error);
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
 
 // Statische Dateien aus dem Vite-Build-Ordner servieren
 app.use(express.static(path.join(__dirname, '../dist')));

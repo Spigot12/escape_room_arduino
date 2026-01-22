@@ -34,6 +34,41 @@
               <button id="toggle-log-btn" class="btn btn-outline-secondary btn-sm" title="System Log anzeigen">
                 <i class="bi bi-terminal"></i>
               </button>
+              <button id="toggle-wiring-btn" class="btn btn-outline-info btn-sm" title="Verkabelung anzeigen">
+                <i class="bi bi-diagram-3"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- WIRING PANEL (versteckt by default) -->
+          <div id="wiring-panel" class="mb-4" style="display: none;">
+            <div class="card shadow-sm border-info">
+              <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                <span class="small fw-bold">
+                  <i class="bi bi-diagram-3 me-2"></i>Verkabelung Level 1
+                </span>
+              </div>
+              <div class="card-body p-3" style="font-family: monospace; font-size: 0.9rem;">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h6 class="fw-bold text-info mb-2">Komponenten:</h6>
+                    <ul class="list-unstyled mb-3">
+                      <li><i class="bi bi-circle-fill text-primary me-2" style="font-size: 0.5rem;"></i>Button (Taster)</li>
+                      <li><i class="bi bi-circle-fill text-warning me-2" style="font-size: 0.5rem;"></i>Buzzer (optional)</li>
+                    </ul>
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="fw-bold text-info mb-2">Pin-Belegung:</h6>
+                    <ul class="list-unstyled mb-0">
+                      <li><code>BUTTON → Pin 2</code></li>
+                      <li><code>BUZZER → Pin 4</code></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Drücke den Button 2x um das Level zu lösen</small>
+                </div>
+              </div>
             </div>
           </div>
 

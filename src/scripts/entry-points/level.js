@@ -18,6 +18,8 @@ const toggleLogBtn = document.querySelector('#toggle-log-btn');
 const logPanel = document.querySelector('#log-panel');
 const logContent = document.querySelector('#log-content');
 const clearLogBtn = document.querySelector('#clear-log-btn');
+const toggleWiringBtn = document.querySelector('#toggle-wiring-btn');
+const wiringPanel = document.querySelector('#wiring-panel');
 const prevLevelBtn = document.querySelector('#prev-level-btn');
 const nextLevelBtnNav = document.querySelector('#next-level-btn-nav');
 const gameOverOverlay = document.querySelector('#game-over-overlay');
@@ -434,6 +436,20 @@ function setupEventListeners() {
       debugLogs = [];
       updateLogDisplay();
       addLog('Log geleert', 'info');
+    });
+  }
+
+  if (toggleWiringBtn) {
+    toggleWiringBtn.addEventListener('click', () => {
+      if (wiringPanel) {
+        if (wiringPanel.style.display === 'none') {
+          wiringPanel.style.display = 'block';
+          toggleWiringBtn.classList.add('active');
+        } else {
+          wiringPanel.style.display = 'none';
+          toggleWiringBtn.classList.remove('active');
+        }
+      }
     });
   }
 

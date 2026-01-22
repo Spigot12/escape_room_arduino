@@ -163,6 +163,62 @@
         </div>
       </div>
     </div>
+
+    <!-- Credits -->
+    <div class="position-fixed bottom-0 end-0 m-3" style="z-index: 1000;">
+      <div class="credits-badge" title="von Sherwin, Patrick, Filip, Dario, Nikola">
+        von FIA 6d 24W
+      </div>
+    </div>
+
+    <style>
+      .credits-badge {
+        background: rgba(0, 0, 0, 0.05);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+        cursor: help;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .credits-badge:hover {
+        background: rgba(0, 0, 0, 0.1);
+        color: #495057;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .credits-badge:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        right: 0;
+        margin-bottom: 8px;
+        padding: 10px 16px;
+        background: #333;
+        color: white;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        animation: fadeIn 0.2s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>

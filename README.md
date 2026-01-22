@@ -12,7 +12,7 @@ Dieses Projekt verbindet einen Arduino Uno mit einer Webseite über die Web Seri
 
 - **Software:**
   - Ein moderner Browser, der die **Web Serial API** unterstützt (Google Chrome, Microsoft Edge oder Opera).
-  - Arduino IDE (zum Hochladen des Codes auf den Arduino).
+  - Arduino CLI (zum Hochladen des Codes auf den Arduino).
   - Node.js (zum Ausführen des Web-Projekts).
 
 ## Hardware-Aufbau
@@ -23,35 +23,55 @@ Dieses Projekt verbindet einen Arduino Uno mit einer Webseite über die Web Seri
 
 ## Einrichtung
 
-### 1. Arduino Code hochladen
-1. Öffne die Datei `arduino_sketch/arduino_sketch.ino` in der Arduino IDE.
-2. Schließe deinen Arduino an den Computer an.
-3. **Board auswählen (Lösung für FQBN-Fehler):**
-   - Gehe auf **Werkzeuge (Tools)** -> **Board** -> **Arduino AVR Boards** und wähle **Arduino Uno** aus.
-   - In der Arduino IDE 2.x kannst du das Board auch direkt oben in der Dropdown-Liste auswählen.
-4. **Port auswählen:**
-   - Gehe auf **Werkzeuge (Tools)** -> **Port** und wähle den Port deines Arduinos aus.
-5. Klicke auf den **Hochladen**-Button (Pfeil nach rechts).
+### 1. Arduino CLI installieren
+```bash
+brew install arduino-cli
+```
+
+**Board-Konfiguration (nur beim ersten Mal):**
+```bash
+arduino-cli core update-index
+arduino-cli core install arduino:avr
+```
+
+### 2. Arduino Code hochladen
+**Methode 1: Mit npm (empfohlen)**
+1. Schließe deinen Arduino an den Computer an.
+2. Führe aus:
+   ```bash
+   npm run arduino:upload
+   ```
+
+**Methode 2: Manuell mit Arduino CLI**
+```bash
+arduino-cli compile --fqbn arduino:avr:uno arduino_sketch
+arduino-cli upload -p /dev/cu.usbmodem* --fqbn arduino:avr:uno arduino_sketch
+```
+
+**Troubleshooting:**
+- **"Port not found"** → Arduino nicht angeschlossen oder falscher Port
+- **"FQBN not found"** → Board-Konfiguration fehlt (siehe oben)
+- **"Permission denied"** → Arduino IDE schließen (blockiert den Port)
 
 ## Benutzung
 
-### 1. Web-Projekt starten
-1. Öffne ein Terminal im Projektverzeichnis.
-2. Installiere die Abhängigkeiten:
-   ```bash
-   npm install
-   ```
-3. Starte das Projekt:
+### 1. Projekt-Abhängigkeiten installieren
+```bash
+npm install
+```
+
+### 2. Web-Projekt starten
+1. Starte das Projekt:
    - **Entwicklung:** `npm run dev:all` (Startet Backend und Frontend mit Hot-Reload)
    - **Produktion:** `npm run build` gefolgt von `npm start` (Alles läuft über Port 3000)
 
-### 2. Zugriff auf die Website
+### 3. Zugriff auf die Website
 - Im **Entwicklungsmodus**: Öffne `http://localhost:5173`.
 - Im **Produktionsmodus**: Öffne `http://localhost:3000`.
 
 **Hinweis:** Das Backend *muss* laufen, damit die Verbindung zum Arduino funktioniert. Wenn du `npm run dev:all` nutzt, wird automatisch beides gestartet.
 
-### 3. Arduino verbinden
+### 4. Arduino verbinden
 1. Stelle sicher, dass der Arduino per USB verbunden ist.
 2. Wähle auf der Startseite den richtigen **Port** aus der Liste aus.
 3. Klicke auf **"🔌 Arduino verbinden"**.

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Level 6 - Escape Room</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  </head>
+  <body class="bg-white text-dark">
+    <div id="arduino-indicator" class="arduino-status-indicator disconnected"></div>
+
+    <div class="container py-5">
+      <div id="app" class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+
+          <div class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom">
+            <button id="back-btn" class="btn btn-dark btn-sm">
+              <i class="bi bi-arrow-left me-1"></i>Zurück
+            </button>
+            <h1 class="h4 mb-0 fw-bold">Level 06</h1>
+            <div class="d-flex gap-2">
+              <button id="prev-level-btn" class="btn btn-outline-warning btn-sm" title="Vorheriges Level">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <button id="next-level-btn-nav" class="btn btn-outline-warning btn-sm" title="Nächstes Level">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+              <button id="toggle-log-btn" class="btn btn-outline-secondary btn-sm" title="System Log anzeigen">
+                <i class="bi bi-terminal"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- LOG PANEL (versteckt by default) -->
+          <div id="log-panel" class="mb-4" style="display: none;">
+            <div class="card shadow-sm">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="small fw-bold">System Log</span>
+                <button id="clear-log-btn" class="btn btn-link btn-sm text-muted text-decoration-none p-0">Clear</button>
+              </div>
+              <div class="card-body p-3" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; background: #f8f9fa;">
+                <div id="log-content"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="level-content text-center">
+            <div class="minimal-card p-5 mb-5 shadow-sm">
+              <h2 class="display-5 fw-bold mb-4">🧊 Eisblock-Rätsel</h2>
+              <p id="status-text" class="lead text-muted mb-0">
+                Erwärme den Temperatursensor um den Eisblock zu schmelzen!
+              </p>
+            </div>
+
+            <!-- Temperature Display -->
+            <div class="mb-5">
+              <div class="card shadow-sm">
+                <div class="card-body p-4">
+                  <h3 class="mb-3">
+                    <i class="bi bi-thermometer-half text-primary me-2"></i>
+                    Aktuelle Temperatur
+                  </h3>
+                  <div id="temp-display" class="display-4 fw-bold text-primary">--°C</div>
+                  <div class="mt-3">
+                    <small class="text-muted">Zieltemperatur: ≥ 22°C</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ice Block -->
+            <div class="mb-5">
+              <div id="ice-container" class="position-relative d-inline-block">
+                <div id="ice-block" class="ice-block">
+                  <div class="ice-surface"></div>
+                  <div id="hidden-code" class="hidden-code">
+                    <span id="code-value">????</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Code Input (versteckt bis Eis geschmolzen) -->
+            <div id="code-input-section" class="mb-5" style="display: none;">
+              <div class="card shadow-sm">
+                <div class="card-body p-4">
+                  <h4 class="mb-3">
+                    <i class="bi bi-key-fill text-warning me-2"></i>
+                    Gib den Code ein
+                  </h4>
+                  <div class="input-group input-group-lg justify-content-center">
+                    <input type="text" id="code-input" class="form-control text-center" maxlength="4"
+                           placeholder="Code eingeben" style="max-width: 200px; font-size: 2rem; letter-spacing: 10px;">
+                    <button id="submit-code-btn" class="btn btn-primary btn-lg">
+                      <i class="bi bi-check-lg me-2"></i>Prüfen
+                    </button>
+                  </div>
+                  <div id="code-message" class="mt-3"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-start mb-5">
+              <h3 class="small fw-bold text-muted text-uppercase mb-3 px-2">Hinweise:</h3>
+              <ul id="task-list" class="list-group list-group-flush">
+                <li class="list-group-item">
+                  <i class="bi bi-fire text-danger me-2"></i>Erwärme den KY-013 Temperatursensor mit deinen Fingern oder einem Feuerzeug
+                </li>
+                <li class="list-group-item">
+                  <i class="bi bi-snow text-info me-2"></i>Der Eisblock schmilzt bei ≥ 22°C
+                </li>
+                <li class="list-group-item">
+                  <i class="bi bi-key-fill text-warning me-2"></i>Unter dem Eis versteckt sich ein 4-stelliger Code
+                </li>
+              </ul>
+            </div>
+
+            <div id="result-display" class="result-display hidden p-5 bg-light border-0 rounded-4 mb-4" style="display: none;">
+              <h2 class="display-5 fw-bold mb-3 text-success">
+                <i class="bi bi-trophy-fill me-2"></i>Alle Level geschafft!
+              </h2>
+              <p class="lead mb-3 text-muted">Herzlichen Glückwunsch! Du hast alle Challenges gemeistert!</p>
+
+              <div id="completion-info" class="mb-4">
+                <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
+                  <div class="text-center">
+                    <div class="small text-muted text-uppercase fw-bold">Deine Zeit</div>
+                    <div id="final-time" class="display-6 fw-bold text-primary">--:--</div>
+                  </div>
+                </div>
+                <div id="leaderboard-status" class="alert alert-info small">
+                  <i class="bi bi-hourglass-split me-2"></i>Wird gespeichert...
+                </div>
+              </div>
+
+              <div class="d-grid gap-2">
+                <a href="/pages/leaderboard.html" class="btn btn-warning btn-lg shadow-sm">
+                  <i class="bi bi-trophy-fill me-2"></i>Leaderboard ansehen
+                </a>
+                <button id="restart-btn" class="btn btn-outline-primary btn-lg shadow-sm">
+                  <i class="bi bi-house-fill me-2"></i>Zur Startseite
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <style>
+      .ice-block {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        background: linear-gradient(135deg, #e0f7ff 0%, #b3e5fc 50%, #81d4fa 100%);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(129, 212, 250, 0.5), inset 0 0 60px rgba(255,255,255,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 1s ease;
+        overflow: hidden;
+      }
+
+      .ice-surface {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23ffffff" fill-opacity="0.1" x="0" y="0" width="50" height="50"/><rect fill="%23ffffff" fill-opacity="0.1" x="50" y="50" width="50" height="50"/></svg>');
+        background-size: 50px 50px;
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      .ice-block.melted {
+        opacity: 0.3;
+        transform: scale(0.8);
+        box-shadow: 0 0 20px rgba(129, 212, 250, 0.2);
+      }
+
+      .hidden-code {
+        position: relative;
+        z-index: 2;
+        font-size: 4rem;
+        font-weight: bold;
+        color: transparent;
+        transition: all 1s ease;
+        font-family: 'Courier New', monospace;
+        text-shadow: none;
+        user-select: none;
+      }
+
+      .ice-block.melted .hidden-code {
+        color: #333;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        animation: reveal 1s ease forwards;
+      }
+
+      @keyframes reveal {
+        0% {
+          opacity: 0;
+          transform: scale(0.8);
+          filter: blur(10px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+          filter: blur(0);
+        }
+      }
+    </style>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module" src="/scripts/auth-check.js"></script>
+<script type="module" src="/scripts/entry-points/level.js"></script>
+</body>
+</html>

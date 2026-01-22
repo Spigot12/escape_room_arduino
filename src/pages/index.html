@@ -15,14 +15,17 @@
   <body class="bg-white text-dark">
     <div id="arduino-indicator" class="arduino-status-indicator disconnected"></div>
 
-    <!-- Login/Register Button -->
-    <div class="position-fixed top-0 start-0 m-3" style="z-index: 1050;">
+    <!-- Login/Register & Leaderboard Buttons -->
+    <div class="position-fixed top-0 start-0 m-3 d-flex gap-2" style="z-index: 1050;">
       <button id="auth-btn" class="auth-btn" data-bs-toggle="modal" data-bs-target="#authModal" title="Login / Registrieren">
         <i class="bi bi-person-circle"></i>
       </button>
       <button id="logout-btn" class="auth-btn logout-btn d-none" title="Logout">
         <i class="bi bi-box-arrow-right"></i>
       </button>
+      <a href="/pages/leaderboard.html" class="auth-btn" title="Leaderboard ansehen">
+        <i class="bi bi-trophy-fill"></i>
+      </a>
     </div>
 
     <!-- Auth Modal -->

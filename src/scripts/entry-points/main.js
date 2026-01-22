@@ -369,6 +369,20 @@ async function startGame() {
     addLog('Spiel wird gestartet...', 'info');
   }
 
+  // Timer starten
+  try {
+    const response = await fetch('/api/timer/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (response.ok) {
+      addLog('Timer gestartet ⏱️', 'success');
+    }
+  } catch (error) {
+    console.error('Timer start fehler:', error);
+  }
+
   addLog('Sende Reset-Signal an Arduino...', 'info');
   await ArduinoManager.sendToArduino('RESET'); // Sicherstellen, dass Level 0 aktiv ist
 

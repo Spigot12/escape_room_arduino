@@ -134,6 +134,9 @@ app.get('/api/check-auth', (req, res) => {
   }
 });
 
+// Timer management (in-memory, per session)
+const userTimers = new Map(); // username -> { startTime, endTime }
+
 // Leaderboard management
 const LEADERBOARD_FILE = path.join(__dirname, 'leaderboard.json');
 
@@ -149,6 +152,101 @@ async function loadLeaderboard() {
 async function saveLeaderboard(leaderboard) {
   await fs.writeFile(LEADERBOARD_FILE, JSON.stringify(leaderboard, null, 2));
 }
+
+// Timer endpoints
+app.post('/api/timer/start', (req, res) => {
+  try {
+    const username = req.session.user?.username || 'guest';
+    const startTime = Date.now();
+
+    userTimers.set(username, { startTime, endTime: null });
+    console.log(`Timer started for ${username} at ${new Date(startTime).toISOString()}`);
+
+    res.json({ success: true, startTime });
+  } catch (error) {
+    console.error('Timer start error:', error);
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+app.post('/api/timer/stop', async (req, res) => {
+  try {
+    const username = req.session.user?.username || 'guest';
+    const endTime = Date.now();
+
+    const timer = userTimers.get(username);
+
+    if (!timer || !timer.startTime) {
+      return res.status(400).json({ error: 'Kein Timer gestartet' });
+    }
+
+    const timeInMs = endTime - timer.startTime;
+    const timeInSeconds = Math.floor(timeInMs / 1000);
+    const minutes = Math.floor(timeInSeconds / 60);
+    const seconds = timeInSeconds % 60;
+    const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    console.log(`Timer stopped for ${username}: ${formattedTime} (${timeInMs}ms)`);
+
+    // Timer löschen
+    userTimers.delete(username);
+
+    // Leaderboard aktualisieren (immer, auch für Anonym)
+    let saved = false;
+    let rank = null;
+
+    const leaderboard = await loadLeaderboard();
+
+    if (req.session.user) {
+      // Eingeloggter User
+      const existingIndex = leaderboard.findIndex(entry => entry.username === username);
+
+      if (existingIndex !== -1) {
+        if (timeInMs < leaderboard[existingIndex].time) {
+          leaderboard[existingIndex].time = timeInMs;
+          leaderboard[existingIndex].date = new Date().toISOString();
+          saved = true;
+        }
+      } else {
+        leaderboard.push({
+          username,
+          time: timeInMs,
+          date: new Date().toISOString()
+        });
+        saved = true;
+      }
+    } else {
+      // Anonymer User - erstelle eindeutigen Namen mit Timestamp
+      const anonymousName = `Anonym_${Date.now().toString().slice(-6)}`;
+      leaderboard.push({
+        username: anonymousName,
+        time: timeInMs,
+        date: new Date().toISOString()
+      });
+      saved = true;
+    }
+
+    if (saved) {
+      await saveLeaderboard(leaderboard);
+      // Berechne Rang
+      const sorted = leaderboard.sort((a, b) => a.time - b.time);
+      const finalUsername = req.session.user?.username || leaderboard[leaderboard.length - 1].username;
+      rank = sorted.findIndex(entry => entry.username === finalUsername) + 1;
+    }
+
+    res.json({
+      success: true,
+      time: timeInMs,
+      formattedTime,
+      saved,
+      rank,
+      anonymous: !req.session.user
+    });
+  } catch (error) {
+    console.error('Timer stop error:', error);
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
 
 // Get leaderboard (top 10)
 app.get('/api/leaderboard', async (req, res) => {

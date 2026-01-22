@@ -88,9 +88,17 @@ function escapeHtml(text) {
 }
 
 // Event listeners
-backBtn?.addEventListener('click', () => {
-  window.location.href = '/';
-});
+if (backBtn) {
+  backBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Gehe zur vorherigen Seite zurück, oder zur Startseite falls keine History
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
+  });
+}
 
 // Initialize
 loadLeaderboard();

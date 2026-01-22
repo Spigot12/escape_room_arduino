@@ -342,7 +342,9 @@ function setupArduinoListeners() {
     else if (msg.startsWith('TEMP:')) {
       const isLevel6 = window.location.pathname.includes('level6');
       if (isLevel6) {
-        const temp = parseFloat(msg.split(':')[1]);
+        const rawTemp = parseFloat(msg.split(':')[1]);
+        // Temperatur umkehren: 50 - rawTemp (damit höhere Sensorwerte = niedrigere Temp)
+        const temp = 50 - rawTemp;
         currentTemp = temp;
 
         const tempDisplay = document.getElementById('temp-display');
@@ -350,20 +352,27 @@ function setupArduinoListeners() {
           tempDisplay.textContent = `${temp.toFixed(1)}°C`;
 
           // Farbe ändern je nach Temperatur
-          if (temp >= 22) {
-            tempDisplay.style.color = '#dc3545'; // Rot
-          } else if (temp >= 18) {
+          if (temp >= 30) {
+            tempDisplay.style.color = '#dc3545'; // Rot (warm = schmelzen)
+          } else if (temp >= 25) {
             tempDisplay.style.color = '#ffc107'; // Gelb
           } else {
-            tempDisplay.style.color = '#007aff'; // Blau
+            tempDisplay.style.color = '#007aff'; // Blau (kalt)
           }
+        }
+
+        // Eisblock schmelzen wenn Temperatur >= 28°C
+        if (temp >= 28 && !iceMeltedFlag) {
+          meltIceBlock();
         }
       }
     }
     else if (msg === 'ICE_MELTED') {
       const isLevel6 = window.location.pathname.includes('level6');
       if (isLevel6) {
-        meltIceBlock();
+        if (!iceMeltedFlag) {
+          meltIceBlock();
+        }
       }
     }
     else if (msg === 'L6_SOLVED') {
@@ -643,8 +652,11 @@ function initLevel6() {
   console.log('Level 6: Temperatur initialisiert');
   generatedCode = generateRandomCode();
 
-  // Code wird generiert, aber NICHT angezeigt - bleibt als "????"
-  // Der Code wird erst beim Schmelzen des Eises sichtbar
+  // Code sofort anzeigen (wird aber vom Eisblock überdeckt)
+  const codeValue = document.getElementById('code-value');
+  if (codeValue) {
+    codeValue.textContent = generatedCode;
+  }
 
   addLog('Level 6 gestartet', 'info');
   addLog(`Generierter Code: ${generatedCode}`, 'info');
@@ -676,16 +688,17 @@ function generateRandomCode() {
 
 function meltIceBlock() {
   const iceBlock = document.getElementById('ice-block');
+  const hiddenCode = document.getElementById('hidden-code');
   const codeInputSection = document.getElementById('code-input-section');
-  const codeValue = document.getElementById('code-value');
 
+  // Eisblock schmelzen
   if (iceBlock) {
     iceBlock.classList.add('melted');
   }
 
-  // Jetzt den Code anzeigen
-  if (codeValue) {
-    codeValue.textContent = generatedCode;
+  // Code sichtbar machen
+  if (hiddenCode) {
+    hiddenCode.classList.add('show');
   }
 
   if (codeInputSection) {

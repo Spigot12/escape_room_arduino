@@ -2,20 +2,15 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <title>Mini-Charakter mit WASD</title>
+    <title>Map</title>
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
       body {
         background: #222;
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
+        margin: 0;
         font-family: Arial, sans-serif;
         color: #fff;
       }
@@ -35,26 +30,28 @@
         overflow: hidden;
       }
 
-      /* Karte */
       #map {
         position: absolute;
-        width: 1600px; /* größere Map als Viewport */
-        height: 900px;
+        width: 2000px;
+        height: 1200px;
         background: #2b2b2b;
       }
 
-      /* Räume (einfach als farbige Rechtecke) */
       .room {
         position: absolute;
         border: 2px solid #000;
         background: #555;
       }
 
-      .room.task {
+      .task {
         background: #6b8e23;
       }
 
-      /* Charakter */
+      .locked {
+        background: #8b0000;
+        border: 3px solid #ff0000;
+      }
+
       #player {
         position: absolute;
         width: 30px;
@@ -64,7 +61,6 @@
         border: 2px solid #000;
       }
 
-      /* Inventar unten */
       #ui {
         width: 800px;
         height: 100px;
@@ -81,16 +77,20 @@
         height: 60px;
         border: 2px solid #777;
         background: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 30px;
       }
 
-      .slot.active {
-        border-color: #ffcc00;
-      }
-
-      #info {
-        margin-left: 20px;
-        font-size: 14px;
-        color: #ccc;
+      #interaction {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid #fff;
+        display: none;
       }
     </style>
   </head>
@@ -100,126 +100,145 @@
         <div id="map">
           <!-- Räume -->
           <div
-            class="room"
-            style="left: 50px; top: 50px; width: 300px; height: 200px"
-          ></div>
-          <div
+            id="room1"
             class="room task"
             style="left: 500px; top: 80px; width: 250px; height: 200px"
           ></div>
           <div
-            class="room"
-            style="left: 300px; top: 400px; width: 350px; height: 250px"
-          ></div>
-          <div
-            class="room task"
-            style="left: 1000px; top: 500px; width: 300px; height: 250px"
+            id="room2"
+            class="room locked"
+            style="left: 500px; top: 320px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Spieler -->
+          <div
+            class="room"
+            style="left: 100px; top: 600px; width: 300px; height: 200px"
+          ></div>
+          <div
+            class="room"
+            style="left: 900px; top: 200px; width: 350px; height: 250px"
+          ></div>
+          <div
+            class="room"
+            style="left: 1400px; top: 700px; width: 300px; height: 250px"
+          ></div>
+
           <div id="player"></div>
+          <div id="interaction">Drücke E</div>
         </div>
       </div>
 
       <div id="ui">
-        <div class="slot active"></div>
+        <div id="slot1" class="slot"></div>
         <div class="slot"></div>
         <div class="slot"></div>
         <div class="slot"></div>
         <div class="slot"></div>
-        <div id="info">
-          WASD zum Bewegen. Räume mit grünlicher Farbe sind Aufgabenräume
-          (später: Interaktionen, Items, etc.).
-        </div>
       </div>
     </div>
 
     <script>
-      const gameArea = document.getElementById("game-area");
-      const map = document.getElementById("map");
       const player = document.getElementById("player");
+      const map = document.getElementById("map");
+      const interaction = document.getElementById("interaction");
+      const slot1 = document.getElementById("slot1");
 
-      const mapWidth = 1600;
-      const mapHeight = 900;
-      const viewWidth = 800;
-      const viewHeight = 450;
+      const room1 = document.getElementById("room1");
+      const room2 = document.getElementById("room2");
 
-      const playerSize = 30;
       let playerX = 200;
       let playerY = 200;
       const speed = 3;
 
-      const keys = {
-        w: false,
-        a: false,
-        s: false,
-        d: false,
-      };
+      const keys = { w: false, a: false, s: false, d: false };
 
-      function updatePlayerPosition() {
-        let dx = 0;
-        let dy = 0;
+      let canEnterLevel1 = false;
 
-        if (keys.w) dy -= speed;
-        if (keys.s) dy += speed;
-        if (keys.a) dx -= speed;
-        if (keys.d) dx += speed;
+      function updateInventory() {
+        const hasKey = localStorage.getItem("level1_key") === "true";
+        slot1.innerText = hasKey ? "🔑" : "";
+      }
 
-        playerX += dx;
-        playerY += dy;
+      updateInventory();
 
-        // Begrenzung auf Map
-        if (playerX < 0) playerX = 0;
-        if (playerY < 0) playerY = 0;
-        if (playerX > mapWidth - playerSize) playerX = mapWidth - playerSize;
-        if (playerY > mapHeight - playerSize) playerY = mapHeight - playerSize;
+      function rectsOverlap(r1, r2) {
+        return !(
+          r1.x > r2.x + r2.width ||
+          r1.x + r1.width < r2.x ||
+          r1.y > r2.y + r2.height ||
+          r1.y + r1.height < r2.y
+        );
+      }
+
+      function updateCamera() {
+        const viewWidth = 800;
+        const viewHeight = 450;
+
+        let camX = playerX - viewWidth / 2;
+        let camY = playerY - viewHeight / 2;
+
+        camX = Math.max(0, Math.min(camX, 2000 - viewWidth));
+        camY = Math.max(0, Math.min(camY, 1200 - viewHeight));
+
+        map.style.left = -camX + "px";
+        map.style.top = -camY + "px";
+      }
+
+      function update() {
+        if (keys.w) playerY -= speed;
+        if (keys.s) playerY += speed;
+        if (keys.a) playerX -= speed;
+        if (keys.d) playerX += speed;
 
         player.style.left = playerX + "px";
         player.style.top = playerY + "px";
 
-        centerCameraOnPlayer();
-      }
+        updateCamera();
 
-      function centerCameraOnPlayer() {
-        // Kamera folgt dem Spieler, aber bleibt innerhalb der Map
-        let cameraX = playerX - viewWidth / 2 + playerSize / 2;
-        let cameraY = playerY - viewHeight / 2 + playerSize / 2;
+        const p = player.getBoundingClientRect();
+        const r1 = room1.getBoundingClientRect();
+        const r2 = room2.getBoundingClientRect();
 
-        if (cameraX < 0) cameraX = 0;
-        if (cameraY < 0) cameraY = 0;
-        if (cameraX > mapWidth - viewWidth) cameraX = mapWidth - viewWidth;
-        if (cameraY > mapHeight - viewHeight) cameraY = mapHeight - viewHeight;
+        const hasKey = localStorage.getItem("level1_key") === "true";
 
-        map.style.left = -cameraX + "px";
-        map.style.top = -cameraY + "px";
-      }
+        if (rectsOverlap(p, r1)) {
+          interaction.style.display = "block";
+          interaction.innerText = "Drücke E für Level 1";
+          canEnterLevel1 = true;
+        } else {
+          interaction.style.display = "none";
+          canEnterLevel1 = false;
+        }
 
-      function gameLoop() {
-        updatePlayerPosition();
-        requestAnimationFrame(gameLoop);
+        if (rectsOverlap(p, r2)) {
+          if (!hasKey) {
+            interaction.style.display = "block";
+            interaction.innerText = "Verschlossen – Schlüssel nötig";
+            playerY -= speed * 2;
+          } else {
+            interaction.style.display = "block";
+            interaction.innerText = "Raum geöffnet!";
+          }
+        }
+
+        requestAnimationFrame(update);
       }
 
       window.addEventListener("keydown", (e) => {
-        const key = e.key.toLowerCase();
-        if (key === "w") keys.w = true;
-        if (key === "a") keys.a = true;
-        if (key === "s") keys.s = true;
-        if (key === "d") keys.d = true;
+        const k = e.key.toLowerCase();
+        if (keys[k] !== undefined) keys[k] = true;
+
+        if (k === "e" && canEnterLevel1) {
+          window.location.href = "level1.html";
+        }
       });
 
       window.addEventListener("keyup", (e) => {
-        const key = e.key.toLowerCase();
-        if (key === "w") keys.w = false;
-        if (key === "a") keys.a = false;
-        if (key === "s") keys.s = false;
-        if (key === "d") keys.d = false;
+        const k = e.key.toLowerCase();
+        if (keys[k] !== undefined) keys[k] = false;
       });
 
-      // Startposition setzen und Kamera zentrieren
-      player.style.left = playerX + "px";
-      player.style.top = playerY + "px";
-      centerCameraOnPlayer();
-      requestAnimationFrame(gameLoop);
+      update();
     </script>
   </body>
 </html>

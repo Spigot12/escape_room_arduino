@@ -184,6 +184,21 @@
       let canOpenRedRoom = false;
       let canEnterRedRoom = false;
 
+      // RAUM KOORDINATEN (absolute Positionen auf der Map)
+      const room2Coords = {
+        x: 500,
+        y: 320,
+        width: 250,
+        height: 200,
+      };
+
+      const room1Coords = {
+        x: 500,
+        y: 80,
+        width: 250,
+        height: 200,
+      };
+
       // INVENTAR UPDATE
       function updateInventory() {
         const hasKey = localStorage.getItem("level1_key") === "true";
@@ -199,7 +214,7 @@
         window.location.reload();
       });
 
-      // KOLLISION
+      // KOLLISION (für absolute Map-Koordinaten)
       function rectsOverlap(r1, r2) {
         return !(
           r1.x > r2.x + r2.width ||
@@ -240,29 +255,19 @@
         if (playerX > 2000 - 30) playerX = 2000 - 30;
         if (playerY > 1200 - 30) playerY = 1200 - 30;
 
-        const p = player.getBoundingClientRect();
-        const r2 = room2.getBoundingClientRect();
-
         const redRoomOpen = localStorage.getItem("red_room_open") === "true";
 
         // BLOCKIERUNG: Spieler darf NICHT in den roten Raum, wenn er geschlossen ist
         if (!redRoomOpen) {
-          const nextRect = {
+          const playerRect = {
             x: playerX,
             y: playerY,
             width: 30,
             height: 30,
           };
 
-          const roomRect = {
-            x: r2.left,
-            y: r2.top,
-            width: r2.width,
-            height: r2.height,
-          };
-
-          // Wenn der nächste Schritt in den Raum führen würde → Bewegung abbrechen
-          if (rectsOverlap(nextRect, roomRect)) {
+          // Wenn der Spieler in den roten Raum kollidiert → Bewegung rückgängig machen
+          if (rectsOverlap(playerRect, room2Coords)) {
             playerX = oldX;
             playerY = oldY;
           }
@@ -273,7 +278,6 @@
 
         updateCamera();
 
-        const r1 = room1.getBoundingClientRect();
         const hasKey = localStorage.getItem("level1_key") === "true";
 
         interaction.style.left = playerX - 25 + "px";
@@ -284,22 +288,44 @@
         canOpenRedRoom = false;
         canEnterRedRoom = false;
 
+        const playerRect = {
+          x: playerX,
+          y: playerY,
+          width: 30,
+          height: 30,
+        };
+
         // GRÜNER RAUM
-        if (rectsOverlap(player.getBoundingClientRect(), r1)) {
+        if (rectsOverlap(playerRect, room1Coords)) {
           interaction.style.display = "block";
           interaction.innerText = "E";
           canEnterLevel1 = true;
         }
 
-        // ROTER RAUM GESCHLOSSEN
-        if (!redRoomOpen) {
-          const touchingBorder =
-            p.bottom >= r2.top &&
-            p.top <= r2.bottom &&
-            (Math.abs(p.right - r2.left) < 10 ||
-              Math.abs(p.left - r2.right) < 10);
+        // ROTER RAUM GESCHLOSSEN - Schlüssel verwenden
+        if (!redRoomOpen && hasKey) {
+          // Prüfen ob Spieler am Rand des roten Raums steht
+          const touchingLeft =
+            Math.abs(playerX + 30 - room2Coords.x) < 10 &&
+            playerY + 30 > room2Coords.y &&
+            playerY < room2Coords.y + room2Coords.height;
 
-          if (touchingBorder && hasKey) {
+          const touchingRight =
+            Math.abs(playerX - (room2Coords.x + room2Coords.width)) < 10 &&
+            playerY + 30 > room2Coords.y &&
+            playerY < room2Coords.y + room2Coords.height;
+
+          const touchingTop =
+            Math.abs(playerY + 30 - room2Coords.y) < 10 &&
+            playerX + 30 > room2Coords.x &&
+            playerX < room2Coords.x + room2Coords.width;
+
+          const touchingBottom =
+            Math.abs(playerY - (room2Coords.y + room2Coords.height)) < 10 &&
+            playerX + 30 > room2Coords.x &&
+            playerX < room2Coords.x + room2Coords.width;
+
+          if (touchingLeft || touchingRight || touchingTop || touchingBottom) {
             interaction.style.display = "block";
             interaction.innerText = "E";
             canOpenRedRoom = true;
@@ -311,7 +337,7 @@
           room2.classList.remove("locked");
           room2.classList.add("open");
 
-          if (rectsOverlap(player.getBoundingClientRect(), r2)) {
+          if (rectsOverlap(playerRect, room2Coords)) {
             interaction.style.display = "block";
             interaction.innerText = "E";
             canEnterRedRoom = true;

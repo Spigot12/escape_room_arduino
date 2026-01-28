@@ -41,6 +41,8 @@ let collectedCount = 0;
 let totalCollectibles = 5;
 let totalObstacles = 4;
 let joystickX = 0, joystickY = 0;
+let lastJoystickUpdate = 0;
+const JOYSTICK_TIMEOUT_MS = 500;
 
 // ===== MAZE GAME STATE (Level 3) =====
 let walls = [];
@@ -187,6 +189,16 @@ function updateIndicator(connected) {
   }
 }
 
+function getEffectiveJoystick() {
+  if (!ArduinoManager.isConnected()) {
+    return { x: 0, y: 0 };
+  }
+  if (!lastJoystickUpdate || Date.now() - lastJoystickUpdate > JOYSTICK_TIMEOUT_MS) {
+    return { x: 0, y: 0 };
+  }
+  return { x: joystickX, y: joystickY };
+}
+
 // ===== ARDUINO EVENTS =====
 function setupArduinoListeners() {
   console.log('Setup Arduino Listeners gestartet');
@@ -201,6 +213,9 @@ function setupArduinoListeners() {
     console.log('Level: Arduino getrennt Event empfangen');
     addLog('Arduino getrennt', 'warn');
     updateIndicator(false);
+    joystickX = 0;
+    joystickY = 0;
+    lastJoystickUpdate = 0;
   });
 
   ArduinoManager.addEventListener('arduinoMessage', (data) => {
@@ -257,6 +272,7 @@ function setupArduinoListeners() {
         const parts = msg.replace('JOYSTICK:', '').split(',');
         joystickX = parseInt(parts[0]) || 0;
         joystickY = parseInt(parts[1]) || 0;
+        lastJoystickUpdate = Date.now();
       }
     }
     else if (msg === 'L2_GELOEST') {
@@ -852,6 +868,9 @@ function initJoystickGame() {
   collectedCount = 0;
   collectibles = [];
   obstacles = [];
+  joystickX = 0;
+  joystickY = 0;
+  lastJoystickUpdate = 0;
 
   // Startposition des Spielers zurücksetzen
   player.x = 50;
@@ -970,8 +989,9 @@ function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Spieler bewegen basierend auf Joystick
-  player.x += (joystickX / 100) * player.speed;
-  player.y += (joystickY / 100) * player.speed;
+  const { x: joyX, y: joyY } = getEffectiveJoystick();
+  player.x += (joyX / 100) * player.speed;
+  player.y += (joyY / 100) * player.speed;
 
   // Grenzen prüfen
   player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
@@ -1055,7 +1075,7 @@ function gameLoop() {
   ctx.fillStyle = '#333';
   ctx.font = '14px monospace';
   ctx.fillText(`Punkte: ${collectedCount}/${totalCollectibles}`, 10, 20);
-  ctx.fillText(`Joystick: X=${joystickX} Y=${joystickY}`, 10, 40);
+  ctx.fillText(`Joystick: X=${joyX} Y=${joyY}`, 10, 40);
 
   requestAnimationFrame(gameLoop);
 }
@@ -1072,6 +1092,9 @@ function initMazeGame() {
   player.y = 30;
   player.radius = 12;
   player.speed = 2.5;
+  joystickX = 0;
+  joystickY = 0;
+  lastJoystickUpdate = 0;
 
   // Zielposition
   goal = { x: 550, y: 350, radius: 20 };
@@ -1139,8 +1162,9 @@ function mazeGameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Neue Position berechnen
-  let newX = player.x + (joystickX / 100) * player.speed;
-  let newY = player.y + (joystickY / 100) * player.speed;
+  const { x: joyX, y: joyY } = getEffectiveJoystick();
+  let newX = player.x + (joyX / 100) * player.speed;
+  let newY = player.y + (joyY / 100) * player.speed;
 
   // Kollision mit Wänden prüfen
   if (checkWallCollision(newX, newY)) {
@@ -1195,7 +1219,7 @@ function mazeGameLoop() {
   ctx.fillStyle = '#fff';
   ctx.font = '14px monospace';
   ctx.textAlign = 'left';
-  ctx.fillText(`Joystick: X=${joystickX} Y=${joystickY}`, 10, 20);
+  ctx.fillText(`Joystick: X=${joyX} Y=${joyY}`, 10, 20);
 
   requestAnimationFrame(mazeGameLoop);
 }

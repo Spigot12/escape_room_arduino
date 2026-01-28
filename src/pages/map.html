@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mini-Charakter mit WASD</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        color: #fff;
+      }
+
+      #game-container {
+        display: flex;
+        flex-direction: column;
+        border: 2px solid #555;
+        background: #111;
+      }
+
+      #game-area {
+        position: relative;
+        width: 800px;
+        height: 450px;
+        background: #333;
+        overflow: hidden;
+      }
+
+      /* Karte */
+      #map {
+        position: absolute;
+        width: 1600px; /* größere Map als Viewport */
+        height: 900px;
+        background: #2b2b2b;
+      }
+
+      /* Räume (einfach als farbige Rechtecke) */
+      .room {
+        position: absolute;
+        border: 2px solid #000;
+        background: #555;
+      }
+
+      .room.task {
+        background: #6b8e23;
+      }
+
+      /* Charakter */
+      #player {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: #ffcc00;
+        border-radius: 4px;
+        border: 2px solid #000;
+      }
+
+      /* Inventar unten */
+      #ui {
+        width: 800px;
+        height: 100px;
+        background: #1a1a1a;
+        border-top: 2px solid #555;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .slot {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #777;
+        background: #222;
+      }
+
+      .slot.active {
+        border-color: #ffcc00;
+      }
+
+      #info {
+        margin-left: 20px;
+        font-size: 14px;
+        color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="game-area">
+        <div id="map">
+          <!-- Räume -->
+          <div
+            class="room"
+            style="left: 50px; top: 50px; width: 300px; height: 200px"
+          ></div>
+          <div
+            class="room task"
+            style="left: 500px; top: 80px; width: 250px; height: 200px"
+          ></div>
+          <div
+            class="room"
+            style="left: 300px; top: 400px; width: 350px; height: 250px"
+          ></div>
+          <div
+            class="room task"
+            style="left: 1000px; top: 500px; width: 300px; height: 250px"
+          ></div>
+
+          <!-- Spieler -->
+          <div id="player"></div>
+        </div>
+      </div>
+
+      <div id="ui">
+        <div class="slot active"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div class="slot"></div>
+        <div id="info">
+          WASD zum Bewegen. Räume mit grünlicher Farbe sind Aufgabenräume
+          (später: Interaktionen, Items, etc.).
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const gameArea = document.getElementById("game-area");
+      const map = document.getElementById("map");
+      const player = document.getElementById("player");
+
+      const mapWidth = 1600;
+      const mapHeight = 900;
+      const viewWidth = 800;
+      const viewHeight = 450;
+
+      const playerSize = 30;
+      let playerX = 200;
+      let playerY = 200;
+      const speed = 3;
+
+      const keys = {
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+      };
+
+      function updatePlayerPosition() {
+        let dx = 0;
+        let dy = 0;
+
+        if (keys.w) dy -= speed;
+        if (keys.s) dy += speed;
+        if (keys.a) dx -= speed;
+        if (keys.d) dx += speed;
+
+        playerX += dx;
+        playerY += dy;
+
+        // Begrenzung auf Map
+        if (playerX < 0) playerX = 0;
+        if (playerY < 0) playerY = 0;
+        if (playerX > mapWidth - playerSize) playerX = mapWidth - playerSize;
+        if (playerY > mapHeight - playerSize) playerY = mapHeight - playerSize;
+
+        player.style.left = playerX + "px";
+        player.style.top = playerY + "px";
+
+        centerCameraOnPlayer();
+      }
+
+      function centerCameraOnPlayer() {
+        // Kamera folgt dem Spieler, aber bleibt innerhalb der Map
+        let cameraX = playerX - viewWidth / 2 + playerSize / 2;
+        let cameraY = playerY - viewHeight / 2 + playerSize / 2;
+
+        if (cameraX < 0) cameraX = 0;
+        if (cameraY < 0) cameraY = 0;
+        if (cameraX > mapWidth - viewWidth) cameraX = mapWidth - viewWidth;
+        if (cameraY > mapHeight - viewHeight) cameraY = mapHeight - viewHeight;
+
+        map.style.left = -cameraX + "px";
+        map.style.top = -cameraY + "px";
+      }
+
+      function gameLoop() {
+        updatePlayerPosition();
+        requestAnimationFrame(gameLoop);
+      }
+
+      window.addEventListener("keydown", (e) => {
+        const key = e.key.toLowerCase();
+        if (key === "w") keys.w = true;
+        if (key === "a") keys.a = true;
+        if (key === "s") keys.s = true;
+        if (key === "d") keys.d = true;
+      });
+
+      window.addEventListener("keyup", (e) => {
+        const key = e.key.toLowerCase();
+        if (key === "w") keys.w = false;
+        if (key === "a") keys.a = false;
+        if (key === "s") keys.s = false;
+        if (key === "d") keys.d = false;
+      });
+
+      // Startposition setzen und Kamera zentrieren
+      player.style.left = playerX + "px";
+      player.style.top = playerY + "px";
+      centerCameraOnPlayer();
+      requestAnimationFrame(gameLoop);
+    </script>
+  </body>
+</html>

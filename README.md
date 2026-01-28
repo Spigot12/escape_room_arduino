@@ -73,6 +73,45 @@ npm install
    - **Produktion:** `npm run build` gefolgt von `npm start` (Alles läuft über Port 3000)
    - **Ohne Arduino-Upload:** `npm run dev:all:no-arduino` (praktisch auf Rechnern ohne Arduino CLI)
 
+### Arduino-Start mit `npm run dev:all`
+Wenn `npm run dev:all` bei dir nicht startet, liegt es meist am Arduino-Upload (der laeuft vor dem Serverstart).
+
+1. Arduino CLI ist installiert?
+   ```bash
+   arduino-cli version
+   ```
+2. Board und Port werden erkannt?
+   ```bash
+   arduino-cli board list
+   ```
+   Erwartet wird ein Eintrag fuer Arduino Uno mit einem Port wie `/dev/cu.usbmodem...` (macOS) bzw. `COM...` (Windows).
+3. Falls kein Port erscheint: Kabel/USB-Adapter pruefen oder anderes Kabel testen.
+4. Falls das Board fehlt oder FQBN-Fehler kommen:
+   ```bash
+   arduino-cli core update-index
+   arduino-cli core install arduino:avr
+   ```
+5. Upload manuell testen:
+   ```bash
+   arduino-cli compile --fqbn arduino:avr:uno arduino_sketch
+   arduino-cli upload -p /dev/cu.usbmodemXXXX --fqbn arduino:avr:uno arduino_sketch
+   ```
+   Unter Windows statt `/dev/cu.usbmodemXXXX` den COM-Port einsetzen, z. B. `COM3`.
+
+#### Beispiel: macOS
+```bash
+arduino-cli board list
+arduino-cli compile --fqbn arduino:avr:uno arduino_sketch
+arduino-cli upload -p /dev/cu.usbmodem12301 --fqbn arduino:avr:uno arduino_sketch
+```
+
+#### Beispiel: Windows (PowerShell)
+```powershell
+arduino-cli board list
+arduino-cli compile --fqbn arduino:avr:uno arduino_sketch
+arduino-cli upload -p COM3 --fqbn arduino:avr:uno arduino_sketch
+```
+
 ### Vite Proxy richtig einrichten (bei Proxy-Fehlern)
 Wenn im Terminal Meldungen wie `http proxy error` oder `ECONNREFUSED` auftauchen, laeuft das Backend nicht oder auf einem anderen Port. Der Vite-Dev-Server leitet `/api` und `/socket.io` standardmaessig an `http://localhost:3000` weiter.
 

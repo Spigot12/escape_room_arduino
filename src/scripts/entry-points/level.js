@@ -65,6 +65,11 @@ let level5Progress = 0;
 let currentTemp = 0;
 let iceMeltedFlag = false;
 let generatedCode = "";
+let level6SensorConnected = false;
+
+// ===== LEVEL 7 STATE (Mikrofon) =====
+let soundValue = 0;
+const SOUND_THRESHOLD = 600;
 
 // ===== LOG FUNKTIONEN =====
 function addLog(message, type = 'info') {
@@ -153,6 +158,12 @@ function init() {
   const isLevel6 = window.location.pathname.includes('level6');
   if (isLevel6) {
     initLevel6();
+  }
+
+  // Level 7: Mikrofon initialisieren
+  const isLevel7 = window.location.pathname.includes('level7');
+  if (isLevel7) {
+    initLevel7();
   }
 
   if (ArduinoManager.isConnected()) {
@@ -341,6 +352,21 @@ function setupArduinoListeners() {
       }
     }
     // LEVEL 6 LOGIK - Temperatur
+    else if (msg === 'TEMP_DISCONNECTED') {
+      const isLevel6 = window.location.pathname.includes('level6');
+      if (isLevel6) {
+        level6SensorConnected = false;
+        const tempDisplay = document.getElementById('temp-display');
+        if (tempDisplay) {
+          tempDisplay.textContent = '--';
+          tempDisplay.style.color = '#6c757d';
+        }
+        if (statusText) {
+          statusText.innerText = 'Temperatursensor nicht verbunden.';
+          statusText.style.color = '#dc3545';
+        }
+      }
+    }
     else if (msg.startsWith('TEMP:')) {
       const isLevel6 = window.location.pathname.includes('level6');
       if (isLevel6) {
@@ -348,6 +374,7 @@ function setupArduinoListeners() {
         // Temperatur umkehren: 50 - rawTemp (damit höhere Sensorwerte = niedrigere Temp)
         const temp = 50 - rawTemp;
         currentTemp = temp;
+        level6SensorConnected = true;
 
         const tempDisplay = document.getElementById('temp-display');
         if (tempDisplay) {
@@ -363,10 +390,11 @@ function setupArduinoListeners() {
           }
         }
 
-        // Eisblock schmelzen wenn Temperatur >= 28°C
-        if (temp >= 28 && !iceMeltedFlag) {
-          meltIceBlock();
+        if (!iceMeltedFlag && statusText) {
+          statusText.innerText = 'Erwärme den Temperatursensor um den Eisblock zu schmelzen!';
+          statusText.style.color = '';
         }
+
       }
     }
     else if (msg === 'ICE_MELTED') {
@@ -386,6 +414,52 @@ function setupArduinoListeners() {
         }
         handleLevel6Complete();
         updateTaskUI(4);
+      }
+    }
+    // LEVEL 7 LOGIK - Mikrofon
+    else if (msg.startsWith('SOUND:')) {
+      const isLevel7 = window.location.pathname.includes('level7');
+      if (isLevel7) {
+        const value = parseInt(msg.split(':')[1]);
+        soundValue = value;
+
+        const soundDisplay = document.getElementById('sound-display');
+        if (soundDisplay) {
+          soundDisplay.textContent = `🔊 ${value}`;
+        }
+
+        const soundBar = document.getElementById('sound-bar');
+        if (soundBar) {
+          let percent = Math.min((value / SOUND_THRESHOLD) * 100, 100);
+          soundBar.style.width = percent + '%';
+        }
+      }
+    }
+    else if (msg === 'SOUND_SOLVED') {
+      const isLevel7 = window.location.pathname.includes('level7');
+      if (isLevel7) {
+        const soundSuccess = document.getElementById('sound-success');
+        if (soundSuccess) {
+          soundSuccess.classList.remove('d-none');
+        }
+        addLog('Aufgabe (Schall) gelöst!', 'success');
+        if (statusText) {
+          statusText.innerText = 'Schall-Schlüssel gefunden!';
+          statusText.style.color = 'var(--success)';
+        }
+        updateTaskUI(2);
+        handleSolve();
+      }
+    }
+    else if (msg === 'L7_SOLVED') {
+      const isLevel7 = window.location.pathname.includes('level7');
+      if (isLevel7) {
+        if (statusText) {
+          statusText.innerText = 'Schall-Schlüssel gefunden!';
+          statusText.style.color = 'var(--success)';
+        }
+        handleSolve();
+        updateTaskUI(2);
       }
     }
   });
@@ -666,12 +740,24 @@ function resetLEDs() {
 // ===== LEVEL 6 FUNCTIONS =====
 function initLevel6() {
   console.log('Level 6: Temperatur initialisiert');
+  level6SensorConnected = false;
   generatedCode = generateRandomCode();
 
   // Code sofort anzeigen (wird aber vom Eisblock überdeckt)
   const codeValue = document.getElementById('code-value');
   if (codeValue) {
     codeValue.textContent = generatedCode;
+  }
+
+  const tempDisplay = document.getElementById('temp-display');
+  if (tempDisplay) {
+    tempDisplay.textContent = '--';
+    tempDisplay.style.color = '#6c757d';
+  }
+
+  if (statusText) {
+    statusText.innerText = 'Temperatursensor nicht verbunden.';
+    statusText.style.color = '#dc3545';
   }
 
   addLog('Level 6 gestartet', 'info');
@@ -750,6 +836,12 @@ async function checkLevel6Code() {
   }
 }
 
+// ===== LEVEL 7 FUNCTIONS =====
+function initLevel7() {
+  console.log('Level 7: Mikrofon initialisiert');
+  addLog('Level 7 gestartet', 'info');
+}
+
 // ===== JOYSTICK GAME (Level 2) =====
 function initJoystickGame() {
   canvas = document.getElementById('game-canvas');
@@ -765,26 +857,86 @@ function initJoystickGame() {
   player.x = 50;
   player.y = 200;
 
-  // Erstelle mehrere sammelbare Punkte
-  for (let i = 0; i < totalCollectibles; i++) {
-    collectibles.push({
-      x: Math.random() * (canvas.width - 100) + 50,
-      y: Math.random() * (canvas.height - 100) + 50,
-      radius: 12,
-      collected: false
-    });
-  }
-
-  // Erstelle Hindernisse
-  for (let i = 0; i < totalObstacles; i++) {
-    obstacles.push({
-      x: Math.random() * (canvas.width - 150) + 100,
-      y: Math.random() * (canvas.height - 100) + 50,
-      radius: 15
-    });
-  }
+  spawnLevel2Obstacles();
+  spawnLevel2Collectibles();
 
   requestAnimationFrame(gameLoop);
+}
+
+function spawnLevel2Obstacles() {
+  obstacles = [];
+  const minObstacleGap = 10;
+  for (let i = 0; i < totalObstacles; i++) {
+    let placed = false;
+    let tries = 0;
+
+    while (!placed && tries < 50) {
+      const candidate = {
+        x: Math.random() * (canvas.width - 150) + 100,
+        y: Math.random() * (canvas.height - 100) + 50,
+        radius: 15
+      };
+
+      const tooCloseToOther = obstacles.some((obstacle) => {
+        const distance = Math.hypot(candidate.x - obstacle.x, candidate.y - obstacle.y);
+        return distance < candidate.radius + obstacle.radius + minObstacleGap;
+      });
+
+      if (!tooCloseToOther) {
+        obstacles.push(candidate);
+        placed = true;
+      }
+
+      tries += 1;
+    }
+
+    if (!placed) {
+      obstacles.push({
+        x: Math.random() * (canvas.width - 150) + 100,
+        y: Math.random() * (canvas.height - 100) + 50,
+        radius: 15
+      });
+    }
+  }
+}
+
+function spawnLevel2Collectibles() {
+  collectibles = [];
+  const safePadding = 20;
+  for (let i = 0; i < totalCollectibles; i++) {
+    let placed = false;
+    let tries = 0;
+
+    while (!placed && tries < 50) {
+      const candidate = {
+        x: Math.random() * (canvas.width - 100) + 50,
+        y: Math.random() * (canvas.height - 100) + 50,
+        radius: 12,
+        collected: false
+      };
+
+      const tooCloseToObstacle = obstacles.some((obstacle) => {
+        const distance = Math.hypot(candidate.x - obstacle.x, candidate.y - obstacle.y);
+        return distance < candidate.radius + obstacle.radius + safePadding;
+      });
+
+      if (!tooCloseToObstacle) {
+        collectibles.push(candidate);
+        placed = true;
+      }
+
+      tries += 1;
+    }
+
+    if (!placed) {
+      collectibles.push({
+        x: Math.random() * (canvas.width - 100) + 50,
+        y: Math.random() * (canvas.height - 100) + 50,
+        radius: 12,
+        collected: false
+      });
+    }
+  }
 }
 
 function resetLevel2() {
@@ -798,8 +950,9 @@ function resetLevel2() {
   player.x = 50;
   player.y = 200;
   
-  // Collectibles zurücksetzen
-  collectibles.forEach(item => item.collected = false);
+  // Hindernisse und Collectibles neu platzieren
+  spawnLevel2Obstacles();
+  spawnLevel2Collectibles();
 
   // Status Text nach kurzer Zeit wiederherstellen
   setTimeout(() => {

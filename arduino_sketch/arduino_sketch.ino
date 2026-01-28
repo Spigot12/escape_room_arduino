@@ -18,6 +18,9 @@
 // Level 6: Temperatursensor KY-013
 #define TEMP_PIN A2
 
+// Level 7: Mikrofon KY-037
+#define MIC_PIN A3
+
 int level = 0;
 unsigned long darkStart = 0;
 String input = "";
@@ -39,9 +42,15 @@ int correctOrder[4] = {1, 3, 0, 2}; // Button 2, 4, 1, 3
 int currentStep = 0;
 bool lastBtnState[4] = {HIGH, HIGH, HIGH, HIGH};
 
-// Level 6: Temperatur
-const float TEMP_THRESHOLD = 22.0;
+// Level 6: Temperatur (Website-Umrechnung: 50 - rawTemp)
+const float TEMP_THRESHOLD = 30.0;
 bool iceMelted = false;
+unsigned long tempAboveStart = 0;
+bool tempAboveActive = false;
+
+// Level 7: Mikrofon
+const int SOUND_THRESHOLD = 600;
+bool soundSolved = false;
 
 void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
@@ -61,6 +70,9 @@ void setup() {
   darkStart = 0;
   currentStep = 0;
   iceMelted = false;
+  tempAboveStart = 0;
+  tempAboveActive = false;
+  soundSolved = false;
 
   while (!Serial) { ; }
   delay(1000);
@@ -111,7 +123,15 @@ void loop() {
     if (input == "SET_LEVEL_6") {
       level = 6;
       iceMelted = false;
+      tempAboveStart = 0;
+      tempAboveActive = false;
       Serial.println("LEVEL_SET_6");
+      return;
+    }
+    if (input == "SET_LEVEL_7") {
+      level = 7;
+      soundSolved = false;
+      Serial.println("LEVEL_SET_7");
       return;
     }
   }
@@ -274,21 +294,41 @@ void loop() {
 
   // LEVEL 6 - Temperatur Eisblock
   if (level == 6) {
-    float temp = readTemperature();
+    int analogValue = analogRead(TEMP_PIN);
+    bool tempConnected = analogValue > 5 && analogValue < 1018;
+    float temp = readTemperature(analogValue);
 
     // Sende Temperatur alle 500ms
     static unsigned long lastTempSend = 0;
     if (millis() - lastTempSend >= 500) {
-      Serial.print("TEMP:");
-      Serial.println(temp);
+      if (tempConnected) {
+        Serial.print("TEMP:");
+        Serial.println(temp);
+      } else {
+        Serial.println("TEMP_DISCONNECTED");
+      }
       lastTempSend = millis();
     }
 
-    // Prüfe ob Eis geschmolzen
-    if (!iceMelted && temp >= TEMP_THRESHOLD) {
-      iceMelted = true;
-      Serial.println("ICE_MELTED");
-      tone(BUZZER, 1500, 500);
+    // Prüfe ob Eis geschmolzen (mind. 3s über Schwelle, Website-Wert)
+    if (!tempConnected) {
+      tempAboveActive = false;
+      tempAboveStart = 0;
+    } else if (!iceMelted) {
+      float websiteTemp = 50.0 - temp;
+      if (websiteTemp >= TEMP_THRESHOLD) {
+        if (!tempAboveActive) {
+          tempAboveActive = true;
+          tempAboveStart = millis();
+        } else if (millis() - tempAboveStart >= 3000) {
+          iceMelted = true;
+          Serial.println("ICE_MELTED");
+          tone(BUZZER, 1500, 500);
+        }
+      } else {
+        tempAboveActive = false;
+        tempAboveStart = 0;
+      }
     }
 
     // Prüfe Code vom Frontend
@@ -299,10 +339,34 @@ void loop() {
       input = "";
     }
   }
+
+  // LEVEL 7 - Mikrofon
+  if (level == 7) {
+    // Mikrofon Wert lesen
+    int micValue = analogRead(MIC_PIN);
+    Serial.print("SOUND:");
+    Serial.println(micValue);
+
+    // Prüfe Sound Threshold
+    if (!soundSolved && micValue >= SOUND_THRESHOLD) {
+      soundSolved = true;
+      Serial.println("SOUND_SOLVED");
+      tone(BUZZER, 2000, 300);
+    }
+
+    // Aufgabe gelöst?
+    if (soundSolved) {
+      Serial.println("L7_SOLVED");
+      tone(BUZZER, 3000, 1500);
+      level = 8; // Nächstes Level oder Ende
+      input = "";
+    }
+
+    delay(500);
+  }
 }
 
-float readTemperature() {
-  int analogValue = analogRead(TEMP_PIN);
+float readTemperature(int analogValue) {
   float voltage = analogValue * 5.0 / 1023.0;
   float temperature = voltage * 10.0; // KY-013 Näherung
   return temperature;

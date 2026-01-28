@@ -24,8 +24,14 @@ Dieses Projekt verbindet einen Arduino Uno mit einer Webseite über die Web Seri
 ## Einrichtung
 
 ### 1. Arduino CLI installieren
+**macOS:**
 ```bash
 brew install arduino-cli
+```
+
+**Windows (PowerShell, optional via winget):**
+```powershell
+winget install ArduinoSA.CLI
 ```
 
 **Board-Konfiguration (nur beim ersten Mal):**
@@ -56,6 +62,7 @@ arduino-cli upload -p /dev/cu.usbmodem* --fqbn arduino:avr:uno arduino_sketch
 ## Benutzung
 
 ### 1. Projekt-Abhängigkeiten installieren
+**macOS / Windows:**
 ```bash
 npm install
 ```

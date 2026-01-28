@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "server": "node server/server.js",
-    "dev:all": "npm run arduino:upload; node server/server.js & vite",
+    "dev:all": "npm run arduino:upload && concurrently \"npm run server\" \"npm run dev\"",
+    "dev:all:no-arduino": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "vite build",
     "preview": "vite preview",
     "start": "node server/server.js",
@@ -20,6 +21,7 @@
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
+    "concurrently": "^9.2.0",
     "vite": "^7.2.4"
   }
 }

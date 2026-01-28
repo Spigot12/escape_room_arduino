@@ -71,6 +71,18 @@ npm install
 1. Starte das Projekt:
    - **Entwicklung:** `npm run dev:all` (Startet Backend und Frontend mit Hot-Reload)
    - **Produktion:** `npm run build` gefolgt von `npm start` (Alles läuft über Port 3000)
+   - **Ohne Arduino-Upload:** `npm run dev:all:no-arduino` (praktisch auf Rechnern ohne Arduino CLI)
+
+### Vite Proxy richtig einrichten (bei Proxy-Fehlern)
+Wenn im Terminal Meldungen wie `http proxy error` oder `ECONNREFUSED` auftauchen, laeuft das Backend nicht oder auf einem anderen Port. Der Vite-Dev-Server leitet `/api` und `/socket.io` standardmaessig an `http://localhost:3000` weiter.
+
+1. Stelle sicher, dass das Backend laeuft:
+   - Entweder `npm run dev:all` nutzen (startet beides).
+   - Oder in zwei Terminals starten: `npm run server` und `npm run dev`.
+2. Pruefe, ob Port 3000 frei ist (oder ob ein anderes Programm ihn belegt).
+3. Falls das Backend auf einem anderen Port laufen soll, passe **beides** an:
+   - `server/server.js`: `PORT` setzen (z. B. per `PORT=4000`).
+   - `vite.config.js`: `server.proxy` Targets auf den gleichen Port aendern.
 
 ### 3. Zugriff auf die Website
 - Im **Entwicklungsmodus**: Öffne `http://localhost:5173`.

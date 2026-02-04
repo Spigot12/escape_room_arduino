@@ -49,7 +49,7 @@
 
       .green-open {
         background: #1a4d1a;
-        border: 4px solid #00ff00;
+        border: 4px solid transparent;
       }
 
       .locked {
@@ -58,8 +58,8 @@
       }
 
       .open {
-        background: #4a0000;
-        border: 4px solid #00ff00;
+        background: #8b0000;
+        border: 4px solid transparent;
       }
 
       .purple-locked {
@@ -68,8 +68,58 @@
       }
 
       .purple-open {
-        background: #2d0040;
-        border: 4px solid #00ff00;
+        background: #4a0066;
+        border: 4px solid transparent;
+      }
+
+      .orange-locked {
+        background: #663300;
+        border: 4px solid #ff8800;
+      }
+
+      .orange-open {
+        background: #663300;
+        border: 4px solid transparent;
+      }
+
+      .blue-locked {
+        background: #003366;
+        border: 4px solid #0066ff;
+      }
+
+      .blue-open {
+        background: #003366;
+        border: 4px solid transparent;
+      }
+
+      .yellow-locked {
+        background: #666600;
+        border: 4px solid #ffff00;
+      }
+
+      .yellow-open {
+        background: #666600;
+        border: 4px solid transparent;
+      }
+
+      .cyan-locked {
+        background: #006666;
+        border: 4px solid #00ffff;
+      }
+
+      .cyan-open {
+        background: #006666;
+        border: 4px solid transparent;
+      }
+
+      .magenta-locked {
+        background: #660066;
+        border: 4px solid #ff00ff;
+      }
+
+      .magenta-open {
+        background: #660066;
+        border: 4px solid transparent;
       }
 
       #player {
@@ -178,14 +228,39 @@
             style="left: 200px; top: 560px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Weitere Räume -->
+          <!-- Orangener Raum (rechts vom grünen/roten Raum) -->
           <div
-            class="room"
-            style="left: 900px; top: 200px; width: 350px; height: 250px"
+            id="room4"
+            class="room orange-locked"
+            style="left: 900px; top: 200px; width: 250px; height: 200px"
           ></div>
+
+          <!-- Blauer Raum (Level 5 - unten rechts) -->
           <div
-            class="room"
-            style="left: 1400px; top: 700px; width: 300px; height: 250px"
+            id="room5"
+            class="room blue-locked"
+            style="left: 900px; top: 560px; width: 250px; height: 200px"
+          ></div>
+
+          <!-- Gelber Raum (Level 6 - rechts oben) -->
+          <div
+            id="room6"
+            class="room yellow-locked"
+            style="left: 1300px; top: 80px; width: 250px; height: 200px"
+          ></div>
+
+          <!-- Cyan Raum (Level 7 - rechts mitte) -->
+          <div
+            id="room7"
+            class="room cyan-locked"
+            style="left: 1300px; top: 320px; width: 250px; height: 200px"
+          ></div>
+
+          <!-- Magenta Raum (Final Level - rechts unten) -->
+          <div
+            id="room8"
+            class="room magenta-locked"
+            style="left: 1300px; top: 560px; width: 250px; height: 200px"
           ></div>
 
           <!-- Coin (unten links in der Mitte) -->
@@ -200,9 +275,9 @@
         <div style="display: flex; gap: 10px">
           <div id="slot1" class="slot"></div>
           <div id="slot2" class="slot"></div>
-          <div class="slot"></div>
-          <div class="slot"></div>
-          <div class="slot"></div>
+          <div id="slot3" class="slot"></div>
+          <div id="slot4" class="slot"></div>
+          <div id="slot5" class="slot"></div>
         </div>
 
         <button id="restart-btn">Restart</button>
@@ -215,12 +290,20 @@
       const interaction = document.getElementById("interaction");
       const slot1 = document.getElementById("slot1");
       const slot2 = document.getElementById("slot2");
+      const slot3 = document.getElementById("slot3");
+      const slot4 = document.getElementById("slot4");
+      const slot5 = document.getElementById("slot5");
       const restartBtn = document.getElementById("restart-btn");
       const coin = document.getElementById("coin");
 
       const room1 = document.getElementById("room1");
       const room2 = document.getElementById("room2");
       const room3 = document.getElementById("room3");
+      const room4 = document.getElementById("room4");
+      const room5 = document.getElementById("room5");
+      const room6 = document.getElementById("room6");
+      const room7 = document.getElementById("room7");
+      const room8 = document.getElementById("room8");
 
       let playerX = 200;
       let playerY = 200;
@@ -235,22 +318,64 @@
       let canEnterRedRoom = false;
       let canOpenPurpleRoom = false;
       let canEnterPurpleRoom = false;
+      let canOpenOrangeRoom = false;
+      let canEnterOrangeRoom = false;
+      let canOpenBlueRoom = false;
+      let canEnterBlueRoom = false;
+      let canOpenYellowRoom = false;
+      let canEnterYellowRoom = false;
+      let canOpenCyanRoom = false;
+      let canEnterCyanRoom = false;
+      let canOpenMagentaRoom = false;
+      let canEnterMagentaRoom = false;
 
       // Absolute Koordinaten
       const room1Coords = { x: 500, y: 80, width: 250, height: 200 }; // Grüner Raum
       const room2Coords = { x: 500, y: 320, width: 250, height: 200 }; // Roter Raum
       const room3Coords = { x: 200, y: 560, width: 250, height: 200 }; // Lila Raum
+      const room4Coords = { x: 900, y: 200, width: 250, height: 200 }; // Orangener Raum
+      const room5Coords = { x: 900, y: 560, width: 250, height: 200 }; // Blauer Raum (Level 5)
+      const room6Coords = { x: 1300, y: 80, width: 250, height: 200 }; // Gelber Raum (Level 6)
+      const room7Coords = { x: 1300, y: 320, width: 250, height: 200 }; // Cyan Raum (Level 7)
+      const room8Coords = { x: 1300, y: 560, width: 250, height: 200 }; // Magenta Raum (Final)
       const coinCoords = { x: 150, y: 550, width: 25, height: 25 };
 
       function updateInventory() {
         const hasCoin = localStorage.getItem("has_coin") === "true";
         const hasKey = localStorage.getItem("level1_key") === "true";
         const hasDiamond = localStorage.getItem("has_diamond") === "true";
+        const hasRuby = localStorage.getItem("has_ruby") === "true";
+        const hasEmerald = localStorage.getItem("has_emerald") === "true";
+        const hasSapphire = localStorage.getItem("has_sapphire") === "true";
+        const hasTopaz = localStorage.getItem("has_topaz") === "true";
+        const hasAmethyst = localStorage.getItem("has_amethyst") === "true";
         const greenRoomOpen =
           localStorage.getItem("green_room_open") === "true";
 
-        slot1.innerText = hasCoin ? "💰" : "";
-        slot2.innerText = hasKey ? "🔑" : hasDiamond ? "💎" : "";
+        // Inventar-Slots in Reihenfolge füllen
+        const items = [];
+        if (hasCoin) items.push("💰");
+        if (hasKey) items.push("🔑");
+        if (hasDiamond) items.push("💎");
+        if (hasRuby) items.push("💎");
+        if (hasEmerald) items.push("💎");
+        if (hasSapphire) items.push("💎");
+        if (hasTopaz) items.push("💎");
+        if (hasAmethyst) items.push("💎");
+
+        // Alle Slots leeren
+        slot1.innerText = "";
+        slot2.innerText = "";
+        slot3.innerText = "";
+        slot4.innerText = "";
+        slot5.innerText = "";
+
+        // Items in Slots einfügen
+        if (items.length > 0) slot1.innerText = items[0];
+        if (items.length > 1) slot2.innerText = items[1];
+        if (items.length > 2) slot3.innerText = items[2];
+        if (items.length > 3) slot4.innerText = items[3];
+        if (items.length > 4) slot5.innerText = items[4];
 
         // Coin verstecken wenn aufgehoben ODER wenn grüner Raum bereits geöffnet ist
         if ((hasCoin || greenRoomOpen) && coin) {
@@ -263,9 +388,19 @@
         localStorage.removeItem("has_coin");
         localStorage.removeItem("level1_key");
         localStorage.removeItem("has_diamond");
+        localStorage.removeItem("has_ruby");
+        localStorage.removeItem("has_emerald");
+        localStorage.removeItem("has_sapphire");
+        localStorage.removeItem("has_topaz");
+        localStorage.removeItem("has_amethyst");
         localStorage.removeItem("green_room_open");
         localStorage.removeItem("red_room_open");
         localStorage.removeItem("purple_room_open");
+        localStorage.removeItem("orange_room_open");
+        localStorage.removeItem("blue_room_open");
+        localStorage.removeItem("yellow_room_open");
+        localStorage.removeItem("cyan_room_open");
+        localStorage.removeItem("magenta_room_open");
         window.location.reload();
       });
 
@@ -357,11 +492,24 @@
         const redRoomOpen = localStorage.getItem("red_room_open") === "true";
         const purpleRoomOpen =
           localStorage.getItem("purple_room_open") === "true";
+        const orangeRoomOpen =
+          localStorage.getItem("orange_room_open") === "true";
+        const blueRoomOpen = localStorage.getItem("blue_room_open") === "true";
+        const yellowRoomOpen =
+          localStorage.getItem("yellow_room_open") === "true";
+        const cyanRoomOpen = localStorage.getItem("cyan_room_open") === "true";
+        const magentaRoomOpen =
+          localStorage.getItem("magenta_room_open") === "true";
 
         // BLOCKIERUNG für geschlossene Räume
         checkRoomCollision(room1Coords, greenRoomOpen);
         checkRoomCollision(room2Coords, redRoomOpen);
         checkRoomCollision(room3Coords, purpleRoomOpen);
+        checkRoomCollision(room4Coords, orangeRoomOpen);
+        checkRoomCollision(room5Coords, blueRoomOpen);
+        checkRoomCollision(room6Coords, yellowRoomOpen);
+        checkRoomCollision(room7Coords, cyanRoomOpen);
+        checkRoomCollision(room8Coords, magentaRoomOpen);
 
         player.style.left = playerX + "px";
         player.style.top = playerY + "px";
@@ -371,6 +519,11 @@
         const hasCoin = localStorage.getItem("has_coin") === "true";
         const hasKey = localStorage.getItem("level1_key") === "true";
         const hasDiamond = localStorage.getItem("has_diamond") === "true";
+        const hasRuby = localStorage.getItem("has_ruby") === "true";
+        const hasEmerald = localStorage.getItem("has_emerald") === "true";
+        const hasSapphire = localStorage.getItem("has_sapphire") === "true";
+        const hasTopaz = localStorage.getItem("has_topaz") === "true";
+        const hasAmethyst = localStorage.getItem("has_amethyst") === "true";
 
         interaction.style.left = playerX - 25 + "px";
         interaction.style.top = playerY - 35 + "px";
@@ -382,6 +535,16 @@
         canEnterRedRoom = false;
         canOpenPurpleRoom = false;
         canEnterPurpleRoom = false;
+        canOpenOrangeRoom = false;
+        canEnterOrangeRoom = false;
+        canOpenBlueRoom = false;
+        canEnterBlueRoom = false;
+        canOpenYellowRoom = false;
+        canEnterYellowRoom = false;
+        canOpenCyanRoom = false;
+        canEnterCyanRoom = false;
+        canOpenMagentaRoom = false;
+        canEnterMagentaRoom = false;
 
         const playerRect = { x: playerX, y: playerY, width: 30, height: 30 };
 
@@ -481,6 +644,151 @@
           }
         }
 
+        // ORANGENER RAUM - Mit Rubin öffnen
+        if (!orangeRoomOpen && hasRuby) {
+          if (isTouchingRoom(room4Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um den orangenen Raum zu öffnen";
+            canOpenOrangeRoom = true;
+          }
+        }
+
+        // ORANGENER RAUM - Kein Rubin
+        if (!orangeRoomOpen && !hasRuby) {
+          if (isTouchingRoom(room4Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Rubin benötigt (Level 3 abschließen)";
+          }
+        }
+
+        // ORANGENER RAUM OFFEN - Betreten
+        if (orangeRoomOpen) {
+          room4.classList.remove("orange-locked");
+          room4.classList.add("orange-open");
+
+          if (rectsOverlap(playerRect, room4Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E - Level 4 starten";
+            canEnterOrangeRoom = true;
+          }
+        }
+
+        // BLAUER RAUM (Level 5) - Mit Smaragd öffnen
+        if (!blueRoomOpen && hasEmerald) {
+          if (isTouchingRoom(room5Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um den blauen Raum zu öffnen";
+            canOpenBlueRoom = true;
+          }
+        }
+
+        // BLAUER RAUM - Kein Smaragd
+        if (!blueRoomOpen && !hasEmerald) {
+          if (isTouchingRoom(room5Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Smaragd benötigt (Level 4 abschließen)";
+          }
+        }
+
+        // BLAUER RAUM OFFEN - Betreten
+        if (blueRoomOpen) {
+          room5.classList.remove("blue-locked");
+          room5.classList.add("blue-open");
+
+          if (rectsOverlap(playerRect, room5Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E - Level 5 starten";
+            canEnterBlueRoom = true;
+          }
+        }
+
+        // GELBER RAUM (Level 6) - Mit Saphir öffnen
+        if (!yellowRoomOpen && hasSapphire) {
+          if (isTouchingRoom(room6Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um den gelben Raum zu öffnen";
+            canOpenYellowRoom = true;
+          }
+        }
+
+        // GELBER RAUM - Kein Saphir
+        if (!yellowRoomOpen && !hasSapphire) {
+          if (isTouchingRoom(room6Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Saphir benötigt (Level 5 abschließen)";
+          }
+        }
+
+        // GELBER RAUM OFFEN - Betreten
+        if (yellowRoomOpen) {
+          room6.classList.remove("yellow-locked");
+          room6.classList.add("yellow-open");
+
+          if (rectsOverlap(playerRect, room6Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E - Level 6 starten";
+            canEnterYellowRoom = true;
+          }
+        }
+
+        // CYAN RAUM (Level 7) - Mit Topas öffnen
+        if (!cyanRoomOpen && hasTopaz) {
+          if (isTouchingRoom(room7Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um den cyan Raum zu öffnen";
+            canOpenCyanRoom = true;
+          }
+        }
+
+        // CYAN RAUM - Kein Topas
+        if (!cyanRoomOpen && !hasTopaz) {
+          if (isTouchingRoom(room7Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Topas benötigt (Level 6 abschließen)";
+          }
+        }
+
+        // CYAN RAUM OFFEN - Betreten
+        if (cyanRoomOpen) {
+          room7.classList.remove("cyan-locked");
+          room7.classList.add("cyan-open");
+
+          if (rectsOverlap(playerRect, room7Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E - Level 7 starten";
+            canEnterCyanRoom = true;
+          }
+        }
+
+        // MAGENTA RAUM (Final) - Mit Amethyst öffnen
+        if (!magentaRoomOpen && hasAmethyst) {
+          if (isTouchingRoom(room8Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um den magenta Raum zu öffnen";
+            canOpenMagentaRoom = true;
+          }
+        }
+
+        // MAGENTA RAUM - Kein Amethyst
+        if (!magentaRoomOpen && !hasAmethyst) {
+          if (isTouchingRoom(room8Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Amethyst benötigt (Level 7 abschließen)";
+          }
+        }
+
+        // MAGENTA RAUM OFFEN - Betreten
+        if (magentaRoomOpen) {
+          room8.classList.remove("magenta-locked");
+          room8.classList.add("magenta-open");
+
+          if (rectsOverlap(playerRect, room8Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E - Final Level starten";
+            canEnterMagentaRoom = true;
+          }
+        }
+
         requestAnimationFrame(update);
       }
 
@@ -561,6 +869,66 @@
         // Lila Raum betreten
         if (k === "e" && canEnterPurpleRoom) {
           window.location.href = "level3.html";
+        }
+
+        // Orangenen Raum öffnen
+        if (k === "e" && canOpenOrangeRoom) {
+          localStorage.removeItem("has_ruby");
+          updateInventory();
+          localStorage.setItem("orange_room_open", "true");
+        }
+
+        // Orangenen Raum betreten
+        if (k === "e" && canEnterOrangeRoom) {
+          window.location.href = "level4.html";
+        }
+
+        // Blauen Raum öffnen
+        if (k === "e" && canOpenBlueRoom) {
+          localStorage.removeItem("has_emerald");
+          updateInventory();
+          localStorage.setItem("blue_room_open", "true");
+        }
+
+        // Blauen Raum betreten
+        if (k === "e" && canEnterBlueRoom) {
+          window.location.href = "level5.html";
+        }
+
+        // Gelben Raum öffnen
+        if (k === "e" && canOpenYellowRoom) {
+          localStorage.removeItem("has_sapphire");
+          updateInventory();
+          localStorage.setItem("yellow_room_open", "true");
+        }
+
+        // Gelben Raum betreten
+        if (k === "e" && canEnterYellowRoom) {
+          window.location.href = "level6.html";
+        }
+
+        // Cyan Raum öffnen
+        if (k === "e" && canOpenCyanRoom) {
+          localStorage.removeItem("has_topaz");
+          updateInventory();
+          localStorage.setItem("cyan_room_open", "true");
+        }
+
+        // Cyan Raum betreten
+        if (k === "e" && canEnterCyanRoom) {
+          window.location.href = "level7.html";
+        }
+
+        // Magenta Raum öffnen
+        if (k === "e" && canOpenMagentaRoom) {
+          localStorage.removeItem("has_amethyst");
+          updateInventory();
+          localStorage.setItem("magenta_room_open", "true");
+        }
+
+        // Magenta Raum betreten
+        if (k === "e" && canEnterMagentaRoom) {
+          window.location.href = "level8.html";
         }
       });
 

@@ -206,12 +206,14 @@
               <h2 class="display-5 fw-bold mb-3 text-success">
                 <i class="bi bi-trophy-fill me-2"></i>Sequenz gelöst!
               </h2>
-              <p class="lead mb-4 text-muted">Weiter zum nächsten Level!</p>
+              <p class="lead mb-4 text-muted">
+                Du hast einen Saphir erhalten! 💎
+              </p>
               <button
                 id="next-level-btn"
                 class="btn btn-primary btn-lg px-5 shadow-sm"
               >
-                Nächstes Level <i class="bi bi-arrow-right ms-2"></i>
+                Zurück zur Map <i class="bi bi-arrow-right ms-2"></i>
               </button>
             </div>
           </div>
@@ -262,12 +264,21 @@
     <script type="module" src="/scripts/auth-check.js"></script>
     <script type="module" src="/scripts/entry-points/level.js"></script>
 
-    <!-- Back button navigation -->
+    <!-- Back button navigation & Sapphire reward -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const backBtn = document.getElementById("back-btn");
         if (backBtn) {
           backBtn.addEventListener("click", () => {
+            window.location.href = "map.html";
+          });
+        }
+
+        const nextLevelBtn = document.getElementById("next-level-btn");
+        if (nextLevelBtn) {
+          nextLevelBtn.addEventListener("click", () => {
+            // Saphir geben
+            localStorage.setItem("has_sapphire", "true");
             window.location.href = "map.html";
           });
         }

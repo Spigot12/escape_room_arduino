@@ -1,3 +1,4 @@
+<!-- level3.html -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -137,7 +138,7 @@
 
           <div class="level-content text-center">
             <div class="minimal-card p-5 mb-5 shadow-sm">
-              <h2 class="display-5 fw-bold mb-4">Labyrinth Escape</h2>
+              <h2 class="display-5 fw-bold mb-4">Labyrinth Challenge</h2>
               <p id="status-text" class="lead text-muted mb-0">
                 Navigiere durch das Labyrinth zum Ziel!
               </p>
@@ -152,7 +153,7 @@
                 style="
                   border: 3px solid #333;
                   border-radius: 12px;
-                  background: #1a1a2e;
+                  background: #f8f9fa;
                 "
               ></canvas>
             </div>
@@ -171,12 +172,12 @@
                   Punkt = Deine Position
                 </li>
                 <li class="list-group-item">
-                  <i class="bi bi-circle-fill text-warning me-2"></i>Gelber
-                  Punkt = Ziel
+                  <i class="bi bi-star-fill text-warning me-2"></i>Gelber Stern
+                  = Ziel
                 </li>
                 <li class="list-group-item">
-                  <i class="bi bi-square-fill text-secondary me-2"></i>Graue
-                  Wände = Labyrinth (Nicht berühren!)
+                  <i class="bi bi-square-fill text-dark me-2"></i>Graue Wände =
+                  Nicht berühren!
                 </li>
               </ul>
             </div>
@@ -189,12 +190,14 @@
               <h2 class="display-5 fw-bold mb-3 text-success">
                 <i class="bi bi-trophy-fill me-2"></i>Labyrinth geschafft!
               </h2>
-              <p class="lead mb-4 text-muted">Weiter zum nächsten Level!</p>
+              <p class="lead mb-4 text-muted">
+                Du hast einen Rubin erhalten! 💎
+              </p>
               <button
                 id="next-level-btn"
                 class="btn btn-primary btn-lg px-5 shadow-sm"
               >
-                Nächstes Level <i class="bi bi-arrow-right ms-2"></i>
+                Zurück zur Map <i class="bi bi-arrow-right ms-2"></i>
               </button>
             </div>
           </div>
@@ -205,12 +208,21 @@
     <script type="module" src="/scripts/auth-check.js"></script>
     <script type="module" src="/scripts/entry-points/level.js"></script>
 
-    <!-- Back button navigation -->
+    <!-- Back button navigation & Ruby reward -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const backBtn = document.getElementById("back-btn");
         if (backBtn) {
           backBtn.addEventListener("click", () => {
+            window.location.href = "map.html";
+          });
+        }
+
+        const nextLevelBtn = document.getElementById("next-level-btn");
+        if (nextLevelBtn) {
+          nextLevelBtn.addEventListener("click", () => {
+            // Rubin geben
+            localStorage.setItem("has_ruby", "true");
             window.location.href = "map.html";
           });
         }

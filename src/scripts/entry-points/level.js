@@ -1,29 +1,30 @@
-import '../../styles/style.css'
-import '../../styles/components.css'
-import '../../styles/animations.css'
-import * as ArduinoManager from '../arduino/arduino-manager.js'
+/* level.js */
+import "../../styles/style.css";
+import "../../styles/components.css";
+import "../../styles/animations.css";
+import * as ArduinoManager from "../arduino/arduino-manager.js";
 
 // ===== DOM ELEMENTE =====
-const backBtn = document.querySelector('#back-btn');
-const resultDisplay = document.querySelector('#result-display');
-const nextLevelBtn = document.querySelector('#next-level-btn');
-const restartBtn = document.querySelector('#restart-btn');
-const indicator = document.querySelector('#arduino-indicator');
-const statusText = document.querySelector('#status-text');
-const codeSection = document.querySelector('#code-section');
-const codeInput = document.querySelector('#code-input');
-const sendCodeBtn = document.querySelector('#send-code-btn');
-const taskListItems = document.querySelectorAll('#task-list li');
-const toggleLogBtn = document.querySelector('#toggle-log-btn');
-const logPanel = document.querySelector('#log-panel');
-const logContent = document.querySelector('#log-content');
-const clearLogBtn = document.querySelector('#clear-log-btn');
-const toggleWiringBtn = document.querySelector('#toggle-wiring-btn');
-const wiringPanel = document.querySelector('#wiring-panel');
-const prevLevelBtn = document.querySelector('#prev-level-btn');
-const nextLevelBtnNav = document.querySelector('#next-level-btn-nav');
-const gameOverOverlay = document.querySelector('#game-over-overlay');
-const restartSnakeBtn = document.querySelector('#restart-snake-btn');
+const backBtn = document.querySelector("#back-btn");
+const resultDisplay = document.querySelector("#result-display");
+const nextLevelBtn = document.querySelector("#next-level-btn");
+const restartBtn = document.querySelector("#restart-btn");
+const indicator = document.querySelector("#arduino-indicator");
+const statusText = document.querySelector("#status-text");
+const codeSection = document.querySelector("#code-section");
+const codeInput = document.querySelector("#code-input");
+const sendCodeBtn = document.querySelector("#send-code-btn");
+const taskListItems = document.querySelectorAll("#task-list li");
+const toggleLogBtn = document.querySelector("#toggle-log-btn");
+const logPanel = document.querySelector("#log-panel");
+const logContent = document.querySelector("#log-content");
+const clearLogBtn = document.querySelector("#clear-log-btn");
+const toggleWiringBtn = document.querySelector("#toggle-wiring-btn");
+const wiringPanel = document.querySelector("#wiring-panel");
+const prevLevelBtn = document.querySelector("#prev-level-btn");
+const nextLevelBtnNav = document.querySelector("#next-level-btn-nav");
+const gameOverOverlay = document.querySelector("#game-over-overlay");
+const restartSnakeBtn = document.querySelector("#restart-snake-btn");
 
 // ===== STATE =====
 let level1Step = 0; // 0: Bereit, 1: System gestartet, 2: Zugang gewährt
@@ -40,7 +41,8 @@ let obstacles = [];
 let collectedCount = 0;
 let totalCollectibles = 5;
 let totalObstacles = 4;
-let joystickX = 0, joystickY = 0;
+let joystickX = 0,
+  joystickY = 0;
 
 // ===== MAZE GAME STATE (Level 3) =====
 let walls = [];
@@ -72,7 +74,7 @@ let soundValue = 0;
 const SOUND_THRESHOLD = 600;
 
 // ===== LOG FUNKTIONEN =====
-function addLog(message, type = 'info') {
+function addLog(message, type = "info") {
   const timestamp = new Date().toLocaleTimeString();
   const logEntry = `[${timestamp}] ${message}`;
   debugLogs.push({ message: logEntry, type });
@@ -89,220 +91,233 @@ function updateLogDisplay() {
   if (!logContent) return;
 
   logContent.innerHTML = debugLogs
-    .map(log => `<div style="color: ${getLogColor(log.type)}">${log.message}</div>`)
-    .join('');
+    .map(
+      (log) =>
+        `<div style="color: ${getLogColor(log.type)}">${log.message}</div>`,
+    )
+    .join("");
 
   // Automatisch nach unten scrollen - sowohl im logContent als auch im Parent (card-body)
   requestAnimationFrame(() => {
     logContent.scrollTop = logContent.scrollHeight;
     if (logContent.parentElement) {
-      logContent.parentElement.scrollTop = logContent.parentElement.scrollHeight;
+      logContent.parentElement.scrollTop =
+        logContent.parentElement.scrollHeight;
     }
   });
 }
 
 function getLogColor(type) {
-  switch(type) {
-    case 'success': return '#28a745';
-    case 'error': return '#dc3545';
-    case 'warn': return '#ffc107';
-    default: return '#6c757d';
+  switch (type) {
+    case "success":
+      return "#28a745";
+    case "error":
+      return "#dc3545";
+    case "warn":
+      return "#ffc107";
+    default:
+      return "#6c757d";
   }
 }
 
 // ===== INITIALISIERUNG =====
 function init() {
-  console.log('--- LEVEL INIT START ---');
+  console.log("--- LEVEL INIT START ---");
   level1Step = 0; // Reset state
-  addLog('Level gestartet', 'info');
+  addLog("Level gestartet", "info");
   setupEventListeners();
   setupArduinoListeners();
 
   // Sicherstellen, dass alles auf "Anfang" steht beim Laden
   if (statusText) {
-    statusText.innerText = 'Warte auf Eingabe...';
-    statusText.style.color = '';
+    statusText.innerText = "Warte auf Eingabe...";
+    statusText.style.color = "";
   }
   if (resultDisplay) {
-    console.log('Verstecke result-display initial');
-    resultDisplay.classList.add('hidden');
+    console.log("Verstecke result-display initial");
+    resultDisplay.classList.add("hidden");
   }
 
   updateTaskUI(0);
 
   // Level 2: Joystick Game initialisieren
-  const isLevel2 = window.location.pathname.includes('level2');
+  const isLevel2 = window.location.pathname.includes("level2");
   if (isLevel2) {
     initJoystickGame();
   }
 
   // Level 3: Maze Game initialisieren
-  const isLevel3 = window.location.pathname.includes('level3');
+  const isLevel3 = window.location.pathname.includes("level3");
   if (isLevel3) {
     initMazeGame();
   }
 
   // Level 4: Snake Game initialisieren
-  const isLevel4 = window.location.pathname.includes('level4');
+  const isLevel4 = window.location.pathname.includes("level4");
   if (isLevel4) {
     initSnakeGame();
   }
 
   // Level 5: Button Sequenz initialisieren
-  const isLevel5 = window.location.pathname.includes('level5');
+  const isLevel5 = window.location.pathname.includes("level5");
   if (isLevel5) {
     initLevel5();
   }
 
   // Level 6: Temperatur initialisieren
-  const isLevel6 = window.location.pathname.includes('level6');
+  const isLevel6 = window.location.pathname.includes("level6");
   if (isLevel6) {
     initLevel6();
   }
 
   // Level 7: Mikrofon initialisieren
-  const isLevel7 = window.location.pathname.includes('level7');
+  const isLevel7 = window.location.pathname.includes("level7");
   if (isLevel7) {
     initLevel7();
   }
 
   if (ArduinoManager.isConnected()) {
-    console.log('Level Init: Arduino ist bereits verbunden');
+    console.log("Level Init: Arduino ist bereits verbunden");
     updateIndicator(true);
   } else {
-    console.log('Level Init: Arduino ist noch nicht verbunden');
+    console.log("Level Init: Arduino ist noch nicht verbunden");
   }
-  console.log('--- LEVEL INIT ENDE ---');
+  console.log("--- LEVEL INIT ENDE ---");
 }
 
 function updateIndicator(connected) {
   if (indicator) {
     if (connected) {
-      indicator.classList.remove('disconnected');
-      indicator.classList.add('connected');
+      indicator.classList.remove("disconnected");
+      indicator.classList.add("connected");
     } else {
-      indicator.classList.remove('connected');
-      indicator.classList.add('disconnected');
+      indicator.classList.remove("connected");
+      indicator.classList.add("disconnected");
     }
   }
 }
 
 // ===== ARDUINO EVENTS =====
 function setupArduinoListeners() {
-  console.log('Setup Arduino Listeners gestartet');
+  console.log("Setup Arduino Listeners gestartet");
 
-  ArduinoManager.addEventListener('arduinoConnected', () => {
-    console.log('Level: Arduino verbunden Event empfangen');
-    addLog('Arduino verbunden', 'success');
+  ArduinoManager.addEventListener("arduinoConnected", () => {
+    console.log("Level: Arduino verbunden Event empfangen");
+    addLog("Arduino verbunden", "success");
     updateIndicator(true);
   });
 
-  ArduinoManager.addEventListener('arduinoDisconnected', () => {
-    console.log('Level: Arduino getrennt Event empfangen');
-    addLog('Arduino getrennt', 'warn');
+  ArduinoManager.addEventListener("arduinoDisconnected", () => {
+    console.log("Level: Arduino getrennt Event empfangen");
+    addLog("Arduino getrennt", "warn");
     updateIndicator(false);
   });
 
-  ArduinoManager.addEventListener('arduinoMessage', (data) => {
+  ArduinoManager.addEventListener("arduinoMessage", (data) => {
     const msg = data.message.trim();
     if (!msg) return;
 
-    console.log('Arduino:', msg);
+    console.log("Arduino:", msg);
 
     // Log nur bestimmte Nachrichten (nicht JOYSTICK Spam)
-    if (!msg.startsWith('JOYSTICK:')) {
-      addLog(`Arduino: ${msg}`, 'info');
+    if (!msg.startsWith("JOYSTICK:")) {
+      addLog(`Arduino: ${msg}`, "info");
     }
 
     // LEVEL 1 LOGIK
-    if (msg === 'L1_SYSTEM_START') {
-      const isLevel1 = window.location.pathname.includes('level1');
+    if (msg === "L1_SYSTEM_START") {
+      const isLevel1 = window.location.pathname.includes("level1");
       if (!isLevel1) return;
 
-      console.log('Level 1: System gestartet (Nachricht empfangen)');
+      console.log("Level 1: System gestartet (Nachricht empfangen)");
       level1Step = 1; // Lokaler Status-Update
-      
+
       if (statusText) {
-        statusText.innerText = 'System aktiv. Drücke den Button erneut.';
-        statusText.style.color = 'var(--success)';
+        statusText.innerText = "System aktiv. Drücke den Button erneut.";
+        statusText.style.color = "var(--success)";
       }
       updateTaskUI(1);
-    }
-    else if (msg === 'L1_ZUGANG_OK') {
-      const isLevel1 = window.location.pathname.includes('level1');
+    } else if (msg === "L1_ZUGANG_OK") {
+      const isLevel1 = window.location.pathname.includes("level1");
       if (!isLevel1) return;
 
-      console.log('Level 1: Zugang OK (Nachricht empfangen), Aktueller Status:', level1Step);
-      
+      console.log(
+        "Level 1: Zugang OK (Nachricht empfangen), Aktueller Status:",
+        level1Step,
+      );
+
       // Strikte Prüfung über lokale Variable
       if (level1Step === 1) {
-        console.log('Level 1: BEDINGUNG ERFÜLLT. Zeige Erfolg an.');
+        console.log("Level 1: BEDINGUNG ERFÜLLT. Zeige Erfolg an.");
         level1Step = 2;
         if (statusText) {
-          statusText.innerText = 'Erfolg!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Erfolg!";
+          statusText.style.color = "var(--success)";
         }
         updateTaskUI(2);
         handleSolve();
       } else {
-        console.log('Level 1: Ignoriere L1_ZUGANG_OK, da level1Step nicht 1 ist (Step war:', level1Step, ')');
+        console.log(
+          "Level 1: Ignoriere L1_ZUGANG_OK, da level1Step nicht 1 ist (Step war:",
+          level1Step,
+          ")",
+        );
       }
     }
     // LEVEL 2, 3 & 4 LOGIK - Joystick Daten
-    else if (msg.startsWith('JOYSTICK:')) {
-      const isLevel2 = window.location.pathname.includes('level2');
-      const isLevel3 = window.location.pathname.includes('level3');
-      const isLevel4 = window.location.pathname.includes('level4');
+    else if (msg.startsWith("JOYSTICK:")) {
+      const isLevel2 = window.location.pathname.includes("level2");
+      const isLevel3 = window.location.pathname.includes("level3");
+      const isLevel4 = window.location.pathname.includes("level4");
       if (isLevel2 || isLevel3 || isLevel4) {
-        const parts = msg.replace('JOYSTICK:', '').split(',');
+        const parts = msg.replace("JOYSTICK:", "").split(",");
         joystickX = parseInt(parts[0]) || 0;
         joystickY = parseInt(parts[1]) || 0;
       }
-    }
-    else if (msg === 'L2_GELOEST') {
-      const isLevel2 = window.location.pathname.includes('level2');
+    } else if (msg === "L2_GELOEST") {
+      const isLevel2 = window.location.pathname.includes("level2");
       if (isLevel2) {
         if (statusText) {
-          statusText.innerText = 'Ziel erreicht!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Ziel erreicht!";
+          statusText.style.color = "var(--success)";
         }
         handleSolve();
         updateTaskUI(3);
       }
     }
     // LEVEL 3 LOGIK
-    else if (msg === 'L3_GELOEST') {
-      const isLevel3 = window.location.pathname.includes('level3');
+    else if (msg === "L3_GELOEST") {
+      const isLevel3 = window.location.pathname.includes("level3");
       if (isLevel3) {
         if (statusText) {
-          statusText.innerText = 'Labyrinth geschafft!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Labyrinth geschafft!";
+          statusText.style.color = "var(--success)";
         }
         handleSolve();
         updateTaskUI(3);
       }
     }
     // LEVEL 4 LOGIK
-    else if (msg === 'L4_GELOEST') {
-      const isLevel4 = window.location.pathname.includes('level4');
+    else if (msg === "L4_GELOEST") {
+      const isLevel4 = window.location.pathname.includes("level4");
       if (isLevel4) {
         if (statusText) {
-          statusText.innerText = 'Snake Champion!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Snake Champion!";
+          statusText.style.color = "var(--success)";
         }
         handleSolve();
         updateTaskUI(4);
       }
     }
     // LEVEL 5 LOGIK - LED Updates
-    else if (msg.startsWith('LED_ON:')) {
-      const isLevel5 = window.location.pathname.includes('level5');
+    else if (msg.startsWith("LED_ON:")) {
+      const isLevel5 = window.location.pathname.includes("level5");
       if (isLevel5) {
-        const ledNumber = parseInt(msg.split(':')[1]);
+        const ledNumber = parseInt(msg.split(":")[1]);
         turnOnLED(ledNumber);
         level5Progress = ledNumber;
 
-        const progressText = document.getElementById('progress-text');
+        const progressText = document.getElementById("progress-text");
         if (progressText) {
           progressText.textContent = `Fortschritt: ${ledNumber}/4`;
         }
@@ -311,152 +326,146 @@ function setupArduinoListeners() {
           statusText.innerText = `${ledNumber}/4 Buttons korrekt gedrückt`;
         }
 
-        addLog(`LED ${ledNumber} aktiviert`, 'success');
+        addLog(`LED ${ledNumber} aktiviert`, "success");
       }
-    }
-    else if (msg === 'RESET_SEQUENCE') {
-      const isLevel5 = window.location.pathname.includes('level5');
+    } else if (msg === "RESET_SEQUENCE") {
+      const isLevel5 = window.location.pathname.includes("level5");
       if (isLevel5) {
         resetLEDs();
         level5Progress = 0;
 
-        const progressText = document.getElementById('progress-text');
+        const progressText = document.getElementById("progress-text");
         if (progressText) {
-          progressText.textContent = 'Fortschritt: 0/4';
+          progressText.textContent = "Fortschritt: 0/4";
         }
 
         if (statusText) {
-          statusText.innerText = 'Falsche Reihenfolge! Versuch es nochmal.';
-          statusText.style.color = '#dc3545';
+          statusText.innerText = "Falsche Reihenfolge! Versuch es nochmal.";
+          statusText.style.color = "#dc3545";
         }
 
-        addLog('Sequenz zurückgesetzt - falsche Reihenfolge', 'error');
+        addLog("Sequenz zurückgesetzt - falsche Reihenfolge", "error");
 
         setTimeout(() => {
           if (statusText) {
-            statusText.innerText = 'Drücke die 4 Buttons in der richtigen Reihenfolge!';
-            statusText.style.color = '';
+            statusText.innerText =
+              "Drücke die 4 Buttons in der richtigen Reihenfolge!";
+            statusText.style.color = "";
           }
         }, 2000);
       }
-    }
-    else if (msg === 'L5_SOLVED') {
-      const isLevel5 = window.location.pathname.includes('level5');
+    } else if (msg === "L5_SOLVED") {
+      const isLevel5 = window.location.pathname.includes("level5");
       if (isLevel5) {
         if (statusText) {
-          statusText.innerText = 'Sequenz komplett!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Sequenz komplett!";
+          statusText.style.color = "var(--success)";
         }
         handleSolve();
         updateTaskUI(4);
       }
     }
     // LEVEL 6 LOGIK - Temperatur
-    else if (msg === 'TEMP_DISCONNECTED') {
-      const isLevel6 = window.location.pathname.includes('level6');
+    else if (msg === "TEMP_DISCONNECTED") {
+      const isLevel6 = window.location.pathname.includes("level6");
       if (isLevel6) {
         level6SensorConnected = false;
-        const tempDisplay = document.getElementById('temp-display');
+        const tempDisplay = document.getElementById("temp-display");
         if (tempDisplay) {
-          tempDisplay.textContent = '--';
-          tempDisplay.style.color = '#6c757d';
+          tempDisplay.textContent = "--";
+          tempDisplay.style.color = "#6c757d";
         }
         if (statusText) {
-          statusText.innerText = 'Temperatursensor nicht verbunden.';
-          statusText.style.color = '#dc3545';
+          statusText.innerText = "Temperatursensor nicht verbunden.";
+          statusText.style.color = "#dc3545";
         }
       }
-    }
-    else if (msg.startsWith('TEMP:')) {
-      const isLevel6 = window.location.pathname.includes('level6');
+    } else if (msg.startsWith("TEMP:")) {
+      const isLevel6 = window.location.pathname.includes("level6");
       if (isLevel6) {
-        const rawTemp = parseFloat(msg.split(':')[1]);
+        const rawTemp = parseFloat(msg.split(":")[1]);
         // Temperatur umkehren: 50 - rawTemp (damit höhere Sensorwerte = niedrigere Temp)
         const temp = 50 - rawTemp;
         currentTemp = temp;
         level6SensorConnected = true;
 
-        const tempDisplay = document.getElementById('temp-display');
+        const tempDisplay = document.getElementById("temp-display");
         if (tempDisplay) {
           tempDisplay.textContent = `${temp.toFixed(1)}°C`;
 
           // Farbe ändern je nach Temperatur
           if (temp >= 30) {
-            tempDisplay.style.color = '#dc3545'; // Rot (warm = schmelzen)
+            tempDisplay.style.color = "#dc3545"; // Rot (warm = schmelzen)
           } else if (temp >= 25) {
-            tempDisplay.style.color = '#ffc107'; // Gelb
+            tempDisplay.style.color = "#ffc107"; // Gelb
           } else {
-            tempDisplay.style.color = '#007aff'; // Blau (kalt)
+            tempDisplay.style.color = "#007aff"; // Blau (kalt)
           }
         }
 
         if (!iceMeltedFlag && statusText) {
-          statusText.innerText = 'Erwärme den Temperatursensor um den Eisblock zu schmelzen!';
-          statusText.style.color = '';
+          statusText.innerText =
+            "Erwärme den Temperatursensor um den Eisblock zu schmelzen!";
+          statusText.style.color = "";
         }
-
       }
-    }
-    else if (msg === 'ICE_MELTED') {
-      const isLevel6 = window.location.pathname.includes('level6');
+    } else if (msg === "ICE_MELTED") {
+      const isLevel6 = window.location.pathname.includes("level6");
       if (isLevel6) {
         if (!iceMeltedFlag) {
           meltIceBlock();
         }
       }
-    }
-    else if (msg === 'L6_SOLVED') {
-      const isLevel6 = window.location.pathname.includes('level6');
+    } else if (msg === "L6_SOLVED") {
+      const isLevel6 = window.location.pathname.includes("level6");
       if (isLevel6) {
         if (statusText) {
-          statusText.innerText = 'Code korrekt!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Code korrekt!";
+          statusText.style.color = "var(--success)";
         }
         handleLevel6Complete();
         updateTaskUI(4);
       }
     }
     // LEVEL 7 LOGIK - Mikrofon
-    else if (msg.startsWith('SOUND:')) {
-      const isLevel7 = window.location.pathname.includes('level7');
+    else if (msg.startsWith("SOUND:")) {
+      const isLevel7 = window.location.pathname.includes("level7");
       if (isLevel7) {
-        const value = parseInt(msg.split(':')[1]);
+        const value = parseInt(msg.split(":")[1]);
         soundValue = value;
 
-        const soundDisplay = document.getElementById('sound-display');
+        const soundDisplay = document.getElementById("sound-display");
         if (soundDisplay) {
           soundDisplay.textContent = `🔊 ${value}`;
         }
 
-        const soundBar = document.getElementById('sound-bar');
+        const soundBar = document.getElementById("sound-bar");
         if (soundBar) {
           let percent = Math.min((value / SOUND_THRESHOLD) * 100, 100);
-          soundBar.style.width = percent + '%';
+          soundBar.style.width = percent + "%";
         }
       }
-    }
-    else if (msg === 'SOUND_SOLVED') {
-      const isLevel7 = window.location.pathname.includes('level7');
+    } else if (msg === "SOUND_SOLVED") {
+      const isLevel7 = window.location.pathname.includes("level7");
       if (isLevel7) {
-        const soundSuccess = document.getElementById('sound-success');
+        const soundSuccess = document.getElementById("sound-success");
         if (soundSuccess) {
-          soundSuccess.classList.remove('d-none');
+          soundSuccess.classList.remove("d-none");
         }
-        addLog('Aufgabe (Schall) gelöst!', 'success');
+        addLog("Aufgabe (Schall) gelöst!", "success");
         if (statusText) {
-          statusText.innerText = 'Schall-Schlüssel gefunden!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Schall-Schlüssel gefunden!";
+          statusText.style.color = "var(--success)";
         }
         updateTaskUI(2);
         handleSolve();
       }
-    }
-    else if (msg === 'L7_SOLVED') {
-      const isLevel7 = window.location.pathname.includes('level7');
+    } else if (msg === "L7_SOLVED") {
+      const isLevel7 = window.location.pathname.includes("level7");
       if (isLevel7) {
         if (statusText) {
-          statusText.innerText = 'Schall-Schlüssel gefunden!';
-          statusText.style.color = 'var(--success)';
+          statusText.innerText = "Schall-Schlüssel gefunden!";
+          statusText.style.color = "var(--success)";
         }
         handleSolve();
         updateTaskUI(2);
@@ -464,10 +473,10 @@ function setupArduinoListeners() {
     }
   });
 
-  ArduinoManager.addEventListener('arduinoSolved', () => {
+  ArduinoManager.addEventListener("arduinoSolved", () => {
     // In Level 1 ignorieren wir das generische Solved-Signal,
     // da wir hier zwei spezifische Button-Drücke brauchen.
-    const isLevel1 = window.location.pathname.includes('level1');
+    const isLevel1 = window.location.pathname.includes("level1");
     if (!isLevel1) {
       handleSolve();
     }
@@ -478,13 +487,13 @@ function updateTaskUI(activeIndex) {
   if (!taskListItems.length) return;
 
   taskListItems.forEach((li, index) => {
-    li.classList.remove('active-task', 'completed', 'pending');
+    li.classList.remove("active-task", "completed", "pending");
     if (index < activeIndex) {
-      li.classList.add('completed');
+      li.classList.add("completed");
     } else if (index === activeIndex) {
-      li.classList.add('active-task');
+      li.classList.add("active-task");
     } else {
-      li.classList.add('pending');
+      li.classList.add("pending");
     }
   });
 }
@@ -492,77 +501,77 @@ function updateTaskUI(activeIndex) {
 // ===== EVENT LISTENER =====
 function setupEventListeners() {
   if (toggleLogBtn) {
-    toggleLogBtn.addEventListener('click', () => {
+    toggleLogBtn.addEventListener("click", () => {
       if (logPanel) {
-        if (logPanel.style.display === 'none') {
-          logPanel.style.display = 'block';
-          toggleLogBtn.classList.add('active');
+        if (logPanel.style.display === "none") {
+          logPanel.style.display = "block";
+          toggleLogBtn.classList.add("active");
         } else {
-          logPanel.style.display = 'none';
-          toggleLogBtn.classList.remove('active');
+          logPanel.style.display = "none";
+          toggleLogBtn.classList.remove("active");
         }
       }
     });
   }
 
   if (clearLogBtn) {
-    clearLogBtn.addEventListener('click', () => {
+    clearLogBtn.addEventListener("click", () => {
       debugLogs = [];
       updateLogDisplay();
-      addLog('Log geleert', 'info');
+      addLog("Log geleert", "info");
     });
   }
 
   if (toggleWiringBtn) {
-    toggleWiringBtn.addEventListener('click', () => {
+    toggleWiringBtn.addEventListener("click", () => {
       if (wiringPanel) {
-        if (wiringPanel.style.display === 'none') {
-          wiringPanel.style.display = 'block';
-          toggleWiringBtn.classList.add('active');
+        if (wiringPanel.style.display === "none") {
+          wiringPanel.style.display = "block";
+          toggleWiringBtn.classList.add("active");
         } else {
-          wiringPanel.style.display = 'none';
-          toggleWiringBtn.classList.remove('active');
+          wiringPanel.style.display = "none";
+          toggleWiringBtn.classList.remove("active");
         }
       }
     });
   }
 
   if (backBtn) {
-    backBtn.addEventListener('click', async (e) => {
+    backBtn.addEventListener("click", async (e) => {
       e.preventDefault();
 
       // Arduino zurücksetzen
-      await ArduinoManager.sendToArduino('RESET');
-      addLog('Arduino zurückgesetzt', 'info');
+      await ArduinoManager.sendToArduino("RESET");
+      addLog("Arduino zurückgesetzt", "info");
 
       // Zur Startseite
       setTimeout(() => {
-        window.location.href = '/pages/index.html';
+        window.location.href = "/pages/index.html";
       }, 300);
     });
   }
 
   if (sendCodeBtn) {
-    sendCodeBtn.addEventListener('click', async () => {
+    sendCodeBtn.addEventListener("click", async () => {
       const code = codeInput.value.trim();
       if (code) {
         const result = await ArduinoManager.sendToArduino(code);
         if (!result.success) {
-          alert('Fehler beim Senden: ' + result.message);
+          alert("Fehler beim Senden: " + result.message);
         }
-        codeInput.value = '';
+        codeInput.value = "";
       }
     });
   }
 
   if (codeInput) {
-    codeInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && sendCodeBtn) sendCodeBtn.click();
+    codeInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter" && sendCodeBtn) sendCodeBtn.click();
     });
   }
 
   if (nextLevelBtn) {
-    nextLevelBtn.addEventListener('click', (e) => {
+    nextLevelBtn.addEventListener("click", (e) => {
       e.preventDefault();
       const match = window.location.pathname.match(/level(\d+)/);
       if (match) {
@@ -570,21 +579,21 @@ function setupEventListeners() {
         const nextLevel = parseInt(currentLevel) + 1;
         window.location.href = `/pages/level${nextLevel}.html`;
       } else {
-        window.location.href = '/pages/index.html';
+        window.location.href = "/pages/index.html";
       }
     });
   }
 
   if (restartBtn) {
-    restartBtn.addEventListener('click', (e) => {
+    restartBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      window.location.href = '/pages/index.html';
+      window.location.href = "/pages/index.html";
     });
   }
 
   // Navigation zwischen Levels (Testing only)
   if (prevLevelBtn) {
-    prevLevelBtn.addEventListener('click', async (e) => {
+    prevLevelBtn.addEventListener("click", async (e) => {
       e.preventDefault();
       const match = window.location.pathname.match(/level(\d+)/);
       if (match) {
@@ -594,20 +603,20 @@ function setupEventListeners() {
         // Arduino auf vorheriges Level setzen
         if (prevLevel >= 1) {
           await ArduinoManager.sendToArduino(`SET_LEVEL_${prevLevel}`);
-          addLog(`Arduino auf Level ${prevLevel} gesetzt`, 'info');
-          await new Promise(resolve => setTimeout(resolve, 300));
+          addLog(`Arduino auf Level ${prevLevel} gesetzt`, "info");
+          await new Promise((resolve) => setTimeout(resolve, 300));
           window.location.href = `/pages/level${prevLevel}.html`;
         } else {
-          await ArduinoManager.sendToArduino('RESET');
-          addLog('Arduino zurückgesetzt', 'info');
-          window.location.href = '/pages/index.html';
+          await ArduinoManager.sendToArduino("RESET");
+          addLog("Arduino zurückgesetzt", "info");
+          window.location.href = "/pages/index.html";
         }
       }
     });
   }
 
   if (nextLevelBtnNav) {
-    nextLevelBtnNav.addEventListener('click', async (e) => {
+    nextLevelBtnNav.addEventListener("click", async (e) => {
       e.preventDefault();
       const match = window.location.pathname.match(/level(\d+)/);
       if (match) {
@@ -616,8 +625,8 @@ function setupEventListeners() {
 
         // Arduino auf nächstes Level setzen
         await ArduinoManager.sendToArduino(`SET_LEVEL_${nextLevel}`);
-        addLog(`Arduino auf Level ${nextLevel} gesetzt`, 'info');
-        await new Promise(resolve => setTimeout(resolve, 300));
+        addLog(`Arduino auf Level ${nextLevel} gesetzt`, "info");
+        await new Promise((resolve) => setTimeout(resolve, 300));
         window.location.href = `/pages/level${nextLevel}.html`;
       }
     });
@@ -625,9 +634,9 @@ function setupEventListeners() {
 
   // Restart Snake Button
   if (restartSnakeBtn) {
-    restartSnakeBtn.addEventListener('click', () => {
+    restartSnakeBtn.addEventListener("click", () => {
       if (gameOverOverlay) {
-        gameOverOverlay.style.display = 'none';
+        gameOverOverlay.style.display = "none";
       }
       snakeGameRunning = true;
       requestAnimationFrame(snakeGameLoop);
@@ -638,66 +647,66 @@ function setupEventListeners() {
 // ===== RÄTSEL GELÖST =====
 function handleSolve() {
   if (resultDisplay) {
-    console.log('🎉 handleSolve aufgerufen - Zeige DIV an');
-    resultDisplay.style.display = 'block';
-    resultDisplay.classList.remove('hidden');
+    console.log("🎉 handleSolve aufgerufen - Zeige DIV an");
+    resultDisplay.style.display = "block";
+    resultDisplay.classList.remove("hidden");
 
     // Konfetti Effekt
-    if (typeof confetti === 'function') {
+    if (typeof confetti === "function") {
       confetti({
         particleCount: 150,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#007aff', '#34c759', '#ffcc00']
+        colors: ["#007aff", "#34c759", "#ffcc00"],
       });
     }
 
     // Automatisch zum Erfolgs-Div scrollen
     setTimeout(() => {
-      resultDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      resultDisplay.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 100);
   }
-  console.log('🎉 Level gelöst!');
+  console.log("🎉 Level gelöst!");
 }
 
 // ===== LEVEL 6 COMPLETE (Final Level) =====
 async function handleLevel6Complete() {
-  console.log('🎉 Level 6 Complete - Alle Level geschafft!');
+  console.log("🎉 Level 6 Complete - Alle Level geschafft!");
 
   // Timer stoppen und Zeit speichern
   try {
-    const response = await fetch('/api/timer/stop', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+    const response = await fetch("/api/timer/stop", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
     });
 
     if (response.ok) {
       const data = await response.json();
-      console.log('Timer gestoppt:', data);
+      console.log("Timer gestoppt:", data);
 
       // Zeit anzeigen
-      const finalTimeEl = document.getElementById('final-time');
+      const finalTimeEl = document.getElementById("final-time");
       if (finalTimeEl && data.formattedTime) {
         finalTimeEl.textContent = data.formattedTime;
       }
 
       // Status updaten
-      const leaderboardStatus = document.getElementById('leaderboard-status');
+      const leaderboardStatus = document.getElementById("leaderboard-status");
       if (leaderboardStatus) {
         if (data.saved) {
           if (data.anonymous) {
-            leaderboardStatus.className = 'alert alert-info small';
+            leaderboardStatus.className = "alert alert-info small";
             leaderboardStatus.innerHTML = `
-              <i class="bi bi-check-circle-fill me-2"></i>Zeit gespeichert als Anonym! Platz ${data.rank || '?'} im Leaderboard
+              <i class="bi bi-check-circle-fill me-2"></i>Zeit gespeichert als Anonym! Platz ${data.rank || "?"} im Leaderboard
             `;
           } else {
-            leaderboardStatus.className = 'alert alert-success small';
+            leaderboardStatus.className = "alert alert-success small";
             leaderboardStatus.innerHTML = `
-              <i class="bi bi-check-circle-fill me-2"></i>Zeit gespeichert! Platz ${data.rank || '?'} im Leaderboard
+              <i class="bi bi-check-circle-fill me-2"></i>Zeit gespeichert! Platz ${data.rank || "?"} im Leaderboard
             `;
           }
         } else {
-          leaderboardStatus.className = 'alert alert-warning small';
+          leaderboardStatus.className = "alert alert-warning small";
           leaderboardStatus.innerHTML = `
             <i class="bi bi-exclamation-triangle-fill me-2"></i>Keine Verbesserung - deine beste Zeit bleibt
           `;
@@ -705,7 +714,7 @@ async function handleLevel6Complete() {
       }
     }
   } catch (error) {
-    console.error('Fehler beim Timer stoppen:', error);
+    console.error("Fehler beim Timer stoppen:", error);
   }
 
   // Erfolgs-Screen anzeigen
@@ -714,66 +723,66 @@ async function handleLevel6Complete() {
 
 // ===== LEVEL 5 FUNCTIONS =====
 function initLevel5() {
-  console.log('Level 5: Button Sequenz initialisiert');
+  console.log("Level 5: Button Sequenz initialisiert");
   level5Progress = 0;
-  addLog('Level 5 gestartet', 'info');
+  addLog("Level 5 gestartet", "info");
 }
 
 function turnOnLED(number) {
   if (number >= 1 && number <= 4) {
-    const led = document.getElementById('led' + number);
+    const led = document.getElementById("led" + number);
     if (led) {
-      led.classList.add('on');
+      led.classList.add("on");
     }
   }
 }
 
 function resetLEDs() {
   for (let i = 1; i <= 4; i++) {
-    const led = document.getElementById('led' + i);
+    const led = document.getElementById("led" + i);
     if (led) {
-      led.classList.remove('on');
+      led.classList.remove("on");
     }
   }
 }
 
 // ===== LEVEL 6 FUNCTIONS =====
 function initLevel6() {
-  console.log('Level 6: Temperatur initialisiert');
+  console.log("Level 6: Temperatur initialisiert");
   level6SensorConnected = false;
   generatedCode = generateRandomCode();
 
   // Code sofort anzeigen (wird aber vom Eisblock überdeckt)
-  const codeValue = document.getElementById('code-value');
+  const codeValue = document.getElementById("code-value");
   if (codeValue) {
     codeValue.textContent = generatedCode;
   }
 
-  const tempDisplay = document.getElementById('temp-display');
+  const tempDisplay = document.getElementById("temp-display");
   if (tempDisplay) {
-    tempDisplay.textContent = '--';
-    tempDisplay.style.color = '#6c757d';
+    tempDisplay.textContent = "--";
+    tempDisplay.style.color = "#6c757d";
   }
 
   if (statusText) {
-    statusText.innerText = 'Temperatursensor nicht verbunden.';
-    statusText.style.color = '#dc3545';
+    statusText.innerText = "Temperatursensor nicht verbunden.";
+    statusText.style.color = "#dc3545";
   }
 
-  addLog('Level 6 gestartet', 'info');
-  addLog(`Generierter Code: ${generatedCode}`, 'info');
+  addLog("Level 6 gestartet", "info");
+  addLog(`Generierter Code: ${generatedCode}`, "info");
 
   // Submit Button Event
-  const submitCodeBtn = document.getElementById('submit-code-btn');
+  const submitCodeBtn = document.getElementById("submit-code-btn");
   if (submitCodeBtn) {
-    submitCodeBtn.addEventListener('click', checkLevel6Code);
+    submitCodeBtn.addEventListener("click", checkLevel6Code);
   }
 
   // Enter Key Support
-  const codeInput = document.getElementById('code-input');
+  const codeInput = document.getElementById("code-input");
   if (codeInput) {
-    codeInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+    codeInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
         checkLevel6Code();
       }
     });
@@ -781,7 +790,7 @@ function initLevel6() {
 }
 
 function generateRandomCode() {
-  let code = '';
+  let code = "";
   for (let i = 0; i < 4; i++) {
     code += Math.floor(Math.random() * 10);
   }
@@ -789,65 +798,67 @@ function generateRandomCode() {
 }
 
 function meltIceBlock() {
-  const iceBlock = document.getElementById('ice-block');
-  const hiddenCode = document.getElementById('hidden-code');
-  const codeInputSection = document.getElementById('code-input-section');
+  const iceBlock = document.getElementById("ice-block");
+  const hiddenCode = document.getElementById("hidden-code");
+  const codeInputSection = document.getElementById("code-input-section");
 
   // Eisblock schmelzen
   if (iceBlock) {
-    iceBlock.classList.add('melted');
+    iceBlock.classList.add("melted");
   }
 
   // Code sichtbar machen
   if (hiddenCode) {
-    hiddenCode.classList.add('show');
+    hiddenCode.classList.add("show");
   }
 
   if (codeInputSection) {
-    codeInputSection.style.display = 'block';
+    codeInputSection.style.display = "block";
   }
 
   if (statusText) {
-    statusText.innerText = 'Eisblock geschmolzen! Gib den Code ein.';
-    statusText.style.color = 'var(--success)';
+    statusText.innerText = "Eisblock geschmolzen! Gib den Code ein.";
+    statusText.style.color = "var(--success)";
   }
 
-  addLog('Eisblock geschmolzen!', 'success');
+  addLog("Eisblock geschmolzen!", "success");
   iceMeltedFlag = true;
 }
 
 async function checkLevel6Code() {
-  const codeInput = document.getElementById('code-input');
-  const codeMessage = document.getElementById('code-message');
+  const codeInput = document.getElementById("code-input");
+  const codeMessage = document.getElementById("code-message");
 
   if (!codeInput || !codeMessage) return;
 
   const userCode = codeInput.value.trim();
 
   if (userCode === generatedCode) {
-    codeMessage.innerHTML = '<span class="text-success fw-bold">✓ Code korrekt!</span>';
-    addLog('Code korrekt eingegeben', 'success');
+    codeMessage.innerHTML =
+      '<span class="text-success fw-bold">✓ Code korrekt!</span>';
+    addLog("Code korrekt eingegeben", "success");
 
     // Sende Signal an Arduino
-    await ArduinoManager.sendToArduino('CODE_CORRECT');
+    await ArduinoManager.sendToArduino("CODE_CORRECT");
   } else {
-    codeMessage.innerHTML = '<span class="text-danger fw-bold">✗ Falscher Code. Versuch es nochmal.</span>';
-    addLog(`Falscher Code eingegeben: ${userCode}`, 'error');
+    codeMessage.innerHTML =
+      '<span class="text-danger fw-bold">✗ Falscher Code. Versuch es nochmal.</span>';
+    addLog(`Falscher Code eingegeben: ${userCode}`, "error");
   }
 }
 
 // ===== LEVEL 7 FUNCTIONS =====
 function initLevel7() {
-  console.log('Level 7: Mikrofon initialisiert');
-  addLog('Level 7 gestartet', 'info');
+  console.log("Level 7: Mikrofon initialisiert");
+  addLog("Level 7 gestartet", "info");
 }
 
 // ===== JOYSTICK GAME (Level 2) =====
 function initJoystickGame() {
-  canvas = document.getElementById('game-canvas');
+  canvas = document.getElementById("game-canvas");
   if (!canvas) return;
 
-  ctx = canvas.getContext('2d');
+  ctx = canvas.getContext("2d");
 
   collectedCount = 0;
   collectibles = [];
@@ -874,11 +885,14 @@ function spawnLevel2Obstacles() {
       const candidate = {
         x: Math.random() * (canvas.width - 150) + 100,
         y: Math.random() * (canvas.height - 100) + 50,
-        radius: 15
+        radius: 15,
       };
 
       const tooCloseToOther = obstacles.some((obstacle) => {
-        const distance = Math.hypot(candidate.x - obstacle.x, candidate.y - obstacle.y);
+        const distance = Math.hypot(
+          candidate.x - obstacle.x,
+          candidate.y - obstacle.y,
+        );
         return distance < candidate.radius + obstacle.radius + minObstacleGap;
       });
 
@@ -894,7 +908,7 @@ function spawnLevel2Obstacles() {
       obstacles.push({
         x: Math.random() * (canvas.width - 150) + 100,
         y: Math.random() * (canvas.height - 100) + 50,
-        radius: 15
+        radius: 15,
       });
     }
   }
@@ -912,11 +926,14 @@ function spawnLevel2Collectibles() {
         x: Math.random() * (canvas.width - 100) + 50,
         y: Math.random() * (canvas.height - 100) + 50,
         radius: 12,
-        collected: false
+        collected: false,
       };
 
       const tooCloseToObstacle = obstacles.some((obstacle) => {
-        const distance = Math.hypot(candidate.x - obstacle.x, candidate.y - obstacle.y);
+        const distance = Math.hypot(
+          candidate.x - obstacle.x,
+          candidate.y - obstacle.y,
+        );
         return distance < candidate.radius + obstacle.radius + safePadding;
       });
 
@@ -933,23 +950,23 @@ function spawnLevel2Collectibles() {
         x: Math.random() * (canvas.width - 100) + 50,
         y: Math.random() * (canvas.height - 100) + 50,
         radius: 12,
-        collected: false
+        collected: false,
       });
     }
   }
 }
 
 function resetLevel2() {
-  addLog('Hindernis getroffen! Level wird zurückgesetzt.', 'error');
+  addLog("Hindernis getroffen! Level wird zurückgesetzt.", "error");
   if (statusText) {
-    statusText.innerText = 'Autsch! Hindernis getroffen. Neustart...';
-    statusText.style.color = '#dc3545';
+    statusText.innerText = "Autsch! Hindernis getroffen. Neustart...";
+    statusText.style.color = "#dc3545";
   }
-  
+
   collectedCount = 0;
   player.x = 50;
   player.y = 200;
-  
+
   // Hindernisse und Collectibles neu platzieren
   spawnLevel2Obstacles();
   spawnLevel2Collectibles();
@@ -957,8 +974,8 @@ function resetLevel2() {
   // Status Text nach kurzer Zeit wiederherstellen
   setTimeout(() => {
     if (statusText && collectedCount === 0) {
-      statusText.innerText = 'Steuere den blauen Punkt zum grünen Ziel!';
-      statusText.style.color = '';
+      statusText.innerText = "Steuere den blauen Punkt zum grünen Ziel!";
+      statusText.style.color = "";
     }
   }, 2000);
 }
@@ -974,15 +991,21 @@ function gameLoop() {
   player.y += (joystickY / 100) * player.speed;
 
   // Grenzen prüfen
-  player.x = Math.max(player.radius, Math.min(canvas.width - player.radius, player.x));
-  player.y = Math.max(player.radius, Math.min(canvas.height - player.radius, player.y));
+  player.x = Math.max(
+    player.radius,
+    Math.min(canvas.width - player.radius, player.x),
+  );
+  player.y = Math.max(
+    player.radius,
+    Math.min(canvas.height - player.radius, player.y),
+  );
 
   // Sammelbare Punkte zeichnen und Kollision prüfen
   collectibles.forEach((item, index) => {
     if (item.collected) return;
 
     const distance = Math.sqrt(
-      Math.pow(player.x - item.x, 2) + Math.pow(player.y - item.y, 2)
+      Math.pow(player.x - item.x, 2) + Math.pow(player.y - item.y, 2),
     );
 
     if (distance < player.radius + item.radius) {
@@ -996,7 +1019,7 @@ function gameLoop() {
 
       // Alle Punkte gesammelt?
       if (collectedCount >= totalCollectibles) {
-        ArduinoManager.sendToArduino('L2_SOLVED');
+        ArduinoManager.sendToArduino("L2_SOLVED");
         return;
       }
     }
@@ -1004,9 +1027,9 @@ function gameLoop() {
     // Nicht eingesammelte Punkte zeichnen (grün)
     ctx.beginPath();
     ctx.arc(item.x, item.y, item.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#34c759';
+    ctx.fillStyle = "#34c759";
     ctx.fill();
-    ctx.strokeStyle = '#28a745';
+    ctx.strokeStyle = "#28a745";
     ctx.lineWidth = 2;
     ctx.stroke();
   });
@@ -1014,7 +1037,7 @@ function gameLoop() {
   // Hindernisse zeichnen und Kollision prüfen
   obstacles.forEach((obstacle) => {
     const distance = Math.sqrt(
-      Math.pow(player.x - obstacle.x, 2) + Math.pow(player.y - obstacle.y, 2)
+      Math.pow(player.x - obstacle.x, 2) + Math.pow(player.y - obstacle.y, 2),
     );
 
     if (distance < player.radius + obstacle.radius) {
@@ -1025,9 +1048,9 @@ function gameLoop() {
     // Hindernis zeichnen (rot)
     ctx.beginPath();
     ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
-    ctx.fillStyle = '#dc3545';
+    ctx.fillStyle = "#dc3545";
     ctx.fill();
-    ctx.strokeStyle = '#a71d2a';
+    ctx.strokeStyle = "#a71d2a";
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -1037,7 +1060,7 @@ function gameLoop() {
     ctx.lineTo(obstacle.x + 7, obstacle.y + 7);
     ctx.moveTo(obstacle.x + 7, obstacle.y - 7);
     ctx.lineTo(obstacle.x - 7, obstacle.y + 7);
-    ctx.strokeStyle = 'white';
+    ctx.strokeStyle = "white";
     ctx.lineWidth = 3;
     ctx.stroke();
   });
@@ -1045,15 +1068,15 @@ function gameLoop() {
   // Spieler zeichnen (blau)
   ctx.beginPath();
   ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#007aff';
+  ctx.fillStyle = "#007aff";
   ctx.fill();
-  ctx.strokeStyle = '#0056b3';
+  ctx.strokeStyle = "#0056b3";
   ctx.lineWidth = 3;
   ctx.stroke();
 
   // Info anzeigen
-  ctx.fillStyle = '#333';
-  ctx.font = '14px monospace';
+  ctx.fillStyle = "#333";
+  ctx.font = "14px monospace";
   ctx.fillText(`Punkte: ${collectedCount}/${totalCollectibles}`, 10, 20);
   ctx.fillText(`Joystick: X=${joystickX} Y=${joystickY}`, 10, 40);
 
@@ -1062,10 +1085,10 @@ function gameLoop() {
 
 // ===== MAZE GAME (Level 3) =====
 function initMazeGame() {
-  canvas = document.getElementById('game-canvas');
+  canvas = document.getElementById("game-canvas");
   if (!canvas) return;
 
-  ctx = canvas.getContext('2d');
+  ctx = canvas.getContext("2d");
 
   // Startposition des Spielers
   player.x = 30;
@@ -1079,10 +1102,10 @@ function initMazeGame() {
   // Labyrinth-Wände definieren (x, y, width, height)
   walls = [
     // Äußere Wände
-    { x: 0, y: 0, w: 600, h: 10 },      // Oben
-    { x: 0, y: 390, w: 600, h: 10 },    // Unten
-    { x: 0, y: 0, w: 10, h: 400 },      // Links
-    { x: 590, y: 0, w: 10, h: 400 },    // Rechts
+    { x: 0, y: 0, w: 600, h: 10 }, // Oben
+    { x: 0, y: 390, w: 600, h: 10 }, // Unten
+    { x: 0, y: 0, w: 10, h: 400 }, // Links
+    { x: 590, y: 0, w: 10, h: 400 }, // Rechts
 
     // Innere Labyrinth-Wände
     { x: 100, y: 0, w: 10, h: 150 },
@@ -1101,10 +1124,10 @@ function initMazeGame() {
 }
 
 function resetMaze() {
-  addLog('Wand berührt! Zurück zum Start.', 'error');
+  addLog("Wand berührt! Zurück zum Start.", "error");
   if (statusText) {
-    statusText.innerText = 'Wand berührt! Zurück zum Start...';
-    statusText.style.color = '#dc3545';
+    statusText.innerText = "Wand berührt! Zurück zum Start...";
+    statusText.style.color = "#dc3545";
   }
 
   player.x = 30;
@@ -1113,8 +1136,8 @@ function resetMaze() {
   // Status Text nach kurzer Zeit wiederherstellen
   setTimeout(() => {
     if (statusText) {
-      statusText.innerText = 'Navigiere durch das Labyrinth zum Ziel!';
-      statusText.style.color = '';
+      statusText.innerText = "Navigiere durch das Labyrinth zum Ziel!";
+      statusText.style.color = "";
     }
   }, 2000);
 }
@@ -1122,10 +1145,12 @@ function resetMaze() {
 function checkWallCollision(newX, newY) {
   for (let wall of walls) {
     // Prüfe Kollision mit rechteckiger Wand
-    if (newX + player.radius > wall.x &&
-        newX - player.radius < wall.x + wall.w &&
-        newY + player.radius > wall.y &&
-        newY - player.radius < wall.y + wall.h) {
+    if (
+      newX + player.radius > wall.x &&
+      newX - player.radius < wall.x + wall.w &&
+      newY + player.radius > wall.y &&
+      newY - player.radius < wall.y + wall.h
+    ) {
       return true;
     }
   }
@@ -1151,50 +1176,50 @@ function mazeGameLoop() {
   }
 
   // Wände zeichnen
-  ctx.fillStyle = '#4a4a4a';
-  walls.forEach(wall => {
+  ctx.fillStyle = "#4a4a4a";
+  walls.forEach((wall) => {
     ctx.fillRect(wall.x, wall.y, wall.w, wall.h);
   });
 
   // Ziel zeichnen (gelb)
   ctx.beginPath();
   ctx.arc(goal.x, goal.y, goal.radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffc107';
+  ctx.fillStyle = "#ffc107";
   ctx.fill();
-  ctx.strokeStyle = '#ff9800';
+  ctx.strokeStyle = "#ff9800";
   ctx.lineWidth = 3;
   ctx.stroke();
 
   // Stern-Symbol im Ziel
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 20px Arial';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('★', goal.x, goal.y);
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 20px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("★", goal.x, goal.y);
 
   // Spieler zeichnen (blau)
   ctx.beginPath();
   ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
-  ctx.fillStyle = '#007aff';
+  ctx.fillStyle = "#007aff";
   ctx.fill();
-  ctx.strokeStyle = '#0056b3';
+  ctx.strokeStyle = "#0056b3";
   ctx.lineWidth = 3;
   ctx.stroke();
 
   // Prüfe ob Ziel erreicht
   const distanceToGoal = Math.sqrt(
-    Math.pow(player.x - goal.x, 2) + Math.pow(player.y - goal.y, 2)
+    Math.pow(player.x - goal.x, 2) + Math.pow(player.y - goal.y, 2),
   );
 
   if (distanceToGoal < player.radius + goal.radius) {
-    ArduinoManager.sendToArduino('L3_SOLVED');
+    ArduinoManager.sendToArduino("L3_SOLVED");
     return; // Stoppe Game Loop
   }
 
   // Info anzeigen
-  ctx.fillStyle = '#fff';
-  ctx.font = '14px monospace';
-  ctx.textAlign = 'left';
+  ctx.fillStyle = "#fff";
+  ctx.font = "14px monospace";
+  ctx.textAlign = "left";
   ctx.fillText(`Joystick: X=${joystickX} Y=${joystickY}`, 10, 20);
 
   requestAnimationFrame(mazeGameLoop);
@@ -1202,10 +1227,10 @@ function mazeGameLoop() {
 
 // ===== SNAKE GAME (Level 4) =====
 function initSnakeGame() {
-  canvas = document.getElementById('game-canvas');
+  canvas = document.getElementById("game-canvas");
   if (!canvas) return;
 
-  ctx = canvas.getContext('2d');
+  ctx = canvas.getContext("2d");
 
   // Snake initialisieren (Mitte des Canvas)
   const startX = Math.floor(canvas.width / gridSize / 2);
@@ -1214,7 +1239,7 @@ function initSnakeGame() {
   snake = [
     { x: startX, y: startY },
     { x: startX - 1, y: startY },
-    { x: startX - 2, y: startY }
+    { x: startX - 2, y: startY },
   ];
 
   snakeDirection = { x: 1, y: 0 };
@@ -1237,7 +1262,9 @@ function spawnApple() {
     apple.y = Math.floor(Math.random() * rows);
 
     // Prüfe ob Apple nicht auf Snake ist
-    validPosition = !snake.some(segment => segment.x === apple.x && segment.y === apple.y);
+    validPosition = !snake.some(
+      (segment) => segment.x === apple.x && segment.y === apple.y,
+    );
   }
 }
 
@@ -1263,20 +1290,27 @@ function moveSnake() {
   const head = snake[0];
   const newHead = {
     x: head.x + snakeDirection.x,
-    y: head.y + snakeDirection.y
+    y: head.y + snakeDirection.y,
   };
 
   // Prüfe Kollision mit Wänden
   const cols = Math.floor(canvas.width / gridSize);
   const rows = Math.floor(canvas.height / gridSize);
 
-  if (newHead.x < 0 || newHead.x >= cols || newHead.y < 0 || newHead.y >= rows) {
+  if (
+    newHead.x < 0 ||
+    newHead.x >= cols ||
+    newHead.y < 0 ||
+    newHead.y >= rows
+  ) {
     resetSnake();
     return false;
   }
 
   // Prüfe Kollision mit sich selbst
-  if (snake.some(segment => segment.x === newHead.x && segment.y === newHead.y)) {
+  if (
+    snake.some((segment) => segment.x === newHead.x && segment.y === newHead.y)
+  ) {
     resetSnake();
     return false;
   }
@@ -1287,7 +1321,7 @@ function moveSnake() {
   // Prüfe ob Apfel gegessen
   if (newHead.x === apple.x && newHead.y === apple.y) {
     applesCollected++;
-    addLog(`Apfel gesammelt! ${applesCollected}/${targetApples}`, 'success');
+    addLog(`Apfel gesammelt! ${applesCollected}/${targetApples}`, "success");
 
     if (statusText) {
       statusText.innerText = `${applesCollected}/${targetApples} Äpfel gesammelt`;
@@ -1297,7 +1331,7 @@ function moveSnake() {
       // Level abgeschlossen!
       snakeGameCompleted = true;
       snakeGameRunning = false;
-      ArduinoManager.sendToArduino('L4_SOLVED');
+      ArduinoManager.sendToArduino("L4_SOLVED");
       return false;
     }
 
@@ -1311,17 +1345,17 @@ function moveSnake() {
 }
 
 function resetSnake() {
-  addLog('Game Over! Snake kollidiert.', 'error');
+  addLog("Game Over! Snake kollidiert.", "error");
   snakeGameRunning = false;
 
   if (statusText) {
-    statusText.innerText = 'Game Over!';
-    statusText.style.color = '#dc3545';
+    statusText.innerText = "Game Over!";
+    statusText.style.color = "#dc3545";
   }
 
   // Game Over Overlay anzeigen
   if (gameOverOverlay) {
-    gameOverOverlay.style.display = 'block';
+    gameOverOverlay.style.display = "block";
   }
 
   // Snake zurücksetzen für Neustart
@@ -1331,7 +1365,7 @@ function resetSnake() {
   snake = [
     { x: startX, y: startY },
     { x: startX - 1, y: startY },
-    { x: startX - 2, y: startY }
+    { x: startX - 2, y: startY },
   ];
 
   snakeDirection = { x: 1, y: 0 };
@@ -1342,7 +1376,7 @@ function resetSnake() {
   setTimeout(() => {
     if (statusText) {
       statusText.innerText = `Sammle 5 Äpfel ohne gegen Wände oder dich selbst zu fahren!`;
-      statusText.style.color = '';
+      statusText.style.color = "";
     }
   }, 500);
 }
@@ -1370,7 +1404,7 @@ function snakeGameLoop() {
   }
 
   // Grid zeichnen (optional, für bessere Visualisierung)
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
   ctx.lineWidth = 1;
   for (let x = 0; x < canvas.width; x += gridSize) {
     ctx.beginPath();
@@ -1392,36 +1426,36 @@ function snakeGameLoop() {
     apple.y * gridSize + gridSize / 2,
     gridSize / 2 - 2,
     0,
-    Math.PI * 2
+    Math.PI * 2,
   );
-  ctx.fillStyle = '#dc3545';
+  ctx.fillStyle = "#dc3545";
   ctx.fill();
 
   // Snake zeichnen (grün, Kopf heller)
   snake.forEach((segment, index) => {
-    ctx.fillStyle = index === 0 ? '#5cb85c' : '#4a9d4a';
+    ctx.fillStyle = index === 0 ? "#5cb85c" : "#4a9d4a";
     ctx.fillRect(
       segment.x * gridSize + 1,
       segment.y * gridSize + 1,
       gridSize - 2,
-      gridSize - 2
+      gridSize - 2,
     );
 
     // Rand
-    ctx.strokeStyle = '#3d8b3d';
+    ctx.strokeStyle = "#3d8b3d";
     ctx.lineWidth = 2;
     ctx.strokeRect(
       segment.x * gridSize + 1,
       segment.y * gridSize + 1,
       gridSize - 2,
-      gridSize - 2
+      gridSize - 2,
     );
   });
 
   // Info anzeigen
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 16px monospace';
-  ctx.textAlign = 'left';
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 16px monospace";
+  ctx.textAlign = "left";
   ctx.fillText(`Äpfel: ${applesCollected}/${targetApples}`, 10, 25);
   ctx.fillText(`Länge: ${snake.length}`, 10, 50);
 
@@ -1429,9 +1463,9 @@ function snakeGameLoop() {
 }
 
 // Sicherstellen, dass die DIV beim Laden wirklich weg ist
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
   if (resultDisplay) {
-    resultDisplay.style.display = 'none';
+    resultDisplay.style.display = "none";
   }
 });
 

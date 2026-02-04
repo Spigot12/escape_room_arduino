@@ -1,3 +1,4 @@
+<!-- map.html -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -207,64 +208,64 @@
     <div id="game-container">
       <div id="game-area">
         <div id="map">
-          <!-- Grüner Raum (mit Border) -->
+          <!-- Grüner Raum (Level 1 - links oben) -->
           <div
             id="room1"
             class="room task"
-            style="left: 500px; top: 80px; width: 250px; height: 200px"
+            style="left: 300px; top: 150px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Roter Raum -->
+          <!-- Roter Raum (Level 2 - mitte oben) -->
           <div
             id="room2"
             class="room locked"
-            style="left: 500px; top: 320px; width: 250px; height: 200px"
+            style="left: 750px; top: 100px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Lila Raum (unten links vom roten Raum) -->
+          <!-- Lila Raum (Level 3 - links mitte) -->
           <div
             id="room3"
             class="room purple-locked"
-            style="left: 200px; top: 560px; width: 250px; height: 200px"
+            style="left: 150px; top: 500px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Orangener Raum (rechts vom grünen/roten Raum) -->
+          <!-- Orangener Raum (Level 4 - rechts mitte) -->
           <div
             id="room4"
             class="room orange-locked"
-            style="left: 900px; top: 200px; width: 250px; height: 200px"
+            style="left: 1200px; top: 450px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Blauer Raum (Level 5 - unten rechts) -->
+          <!-- Blauer Raum (Level 5 - mitte unten) -->
           <div
             id="room5"
             class="room blue-locked"
-            style="left: 900px; top: 560px; width: 250px; height: 200px"
+            style="left: 600px; top: 800px; width: 250px; height: 200px"
           ></div>
 
           <!-- Gelber Raum (Level 6 - rechts oben) -->
           <div
             id="room6"
             class="room yellow-locked"
-            style="left: 1300px; top: 80px; width: 250px; height: 200px"
+            style="left: 1500px; top: 150px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Cyan Raum (Level 7 - rechts mitte) -->
+          <!-- Cyan Raum (Level 7 - links unten) -->
           <div
             id="room7"
             class="room cyan-locked"
-            style="left: 1300px; top: 320px; width: 250px; height: 200px"
+            style="left: 250px; top: 850px; width: 250px; height: 200px"
           ></div>
 
           <!-- Magenta Raum (Final Level - rechts unten) -->
           <div
             id="room8"
             class="room magenta-locked"
-            style="left: 1300px; top: 560px; width: 250px; height: 200px"
+            style="left: 1400px; top: 800px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Coin (unten links in der Mitte) -->
-          <div id="coin" style="left: 150px; top: 550px">💰</div>
+          <!-- Coin (mitte der Map) -->
+          <div id="coin" style="left: 900px; top: 500px">💰</div>
 
           <div id="player"></div>
           <div id="interaction">E</div>
@@ -328,17 +329,63 @@
       let canEnterCyanRoom = false;
       let canOpenMagentaRoom = false;
       let canEnterMagentaRoom = false;
+      let canEnterSecretRoom = false;
 
-      // Absolute Koordinaten
-      const room1Coords = { x: 500, y: 80, width: 250, height: 200 }; // Grüner Raum
-      const room2Coords = { x: 500, y: 320, width: 250, height: 200 }; // Roter Raum
-      const room3Coords = { x: 200, y: 560, width: 250, height: 200 }; // Lila Raum
-      const room4Coords = { x: 900, y: 200, width: 250, height: 200 }; // Orangener Raum
-      const room5Coords = { x: 900, y: 560, width: 250, height: 200 }; // Blauer Raum (Level 5)
-      const room6Coords = { x: 1300, y: 80, width: 250, height: 200 }; // Gelber Raum (Level 6)
-      const room7Coords = { x: 1300, y: 320, width: 250, height: 200 }; // Cyan Raum (Level 7)
-      const room8Coords = { x: 1300, y: 560, width: 250, height: 200 }; // Magenta Raum (Final)
-      const coinCoords = { x: 150, y: 550, width: 25, height: 25 };
+      // Räume Koordinaten (updated)
+      const room1Coords = { x: 300, y: 150, width: 250, height: 200 };
+      const room2Coords = { x: 750, y: 100, width: 250, height: 200 };
+      const room3Coords = { x: 150, y: 500, width: 250, height: 200 };
+      const room4Coords = { x: 1200, y: 450, width: 250, height: 200 };
+      const room5Coords = { x: 600, y: 800, width: 250, height: 200 };
+      const room6Coords = { x: 1500, y: 150, width: 250, height: 200 };
+      const room7Coords = { x: 250, y: 850, width: 250, height: 200 };
+      const room8Coords = { x: 1400, y: 800, width: 250, height: 200 };
+      const coinCoords = { x: 900, y: 500, width: 25, height: 25 };
+
+      // Secret Easter Egg Position (unsichtbar, nur ein Trigger-Punkt an der Border)
+      let secretEasterEggCoords = { x: 0, y: 0, width: 50, height: 50 };
+
+      function generateSecretEasterEggPosition() {
+        const mapWidth = 2000;
+        const mapHeight = 1200;
+        const triggerSize = 50; // Kleiner unsichtbarer Trigger-Bereich
+
+        // Zufällig eine der 4 Seiten wählen: 0=oben, 1=rechts, 2=unten, 3=links
+        const side = Math.floor(Math.random() * 4);
+
+        let x, y;
+
+        switch (side) {
+          case 0: // Oben
+            x = Math.random() * (mapWidth - 200) + 100;
+            y = 0; // Direkt am oberen Rand
+            break;
+          case 1: // Rechts
+            x = mapWidth - triggerSize; // Direkt am rechten Rand
+            y = Math.random() * (mapHeight - 200) + 100;
+            break;
+          case 2: // Unten
+            x = Math.random() * (mapWidth - 200) + 100;
+            y = mapHeight - triggerSize; // Direkt am unteren Rand
+            break;
+          case 3: // Links
+            x = 0; // Direkt am linken Rand
+            y = Math.random() * (mapHeight - 200) + 100;
+            break;
+        }
+
+        secretEasterEggCoords = {
+          x: x,
+          y: y,
+          width: triggerSize,
+          height: triggerSize,
+        };
+
+        console.log(`🥚 Secret Easter Egg at side ${side}: (${x}, ${y})`);
+      }
+
+      // Secret Easter Egg Position beim Laden generieren
+      generateSecretEasterEggPosition();
 
       function updateInventory() {
         const hasCoin = localStorage.getItem("has_coin") === "true";
@@ -352,7 +399,6 @@
         const greenRoomOpen =
           localStorage.getItem("green_room_open") === "true";
 
-        // Inventar-Slots in Reihenfolge füllen
         const items = [];
         if (hasCoin) items.push("💰");
         if (hasKey) items.push("🔑");
@@ -363,21 +409,18 @@
         if (hasTopaz) items.push("💎");
         if (hasAmethyst) items.push("💎");
 
-        // Alle Slots leeren
         slot1.innerText = "";
         slot2.innerText = "";
         slot3.innerText = "";
         slot4.innerText = "";
         slot5.innerText = "";
 
-        // Items in Slots einfügen
         if (items.length > 0) slot1.innerText = items[0];
         if (items.length > 1) slot2.innerText = items[1];
         if (items.length > 2) slot3.innerText = items[2];
         if (items.length > 3) slot4.innerText = items[3];
         if (items.length > 4) slot5.innerText = items[4];
 
-        // Coin verstecken wenn aufgehoben ODER wenn grüner Raum bereits geöffnet ist
         if ((hasCoin || greenRoomOpen) && coin) {
           coin.style.display = "none";
         }
@@ -419,7 +462,7 @@
       }
 
       function checkRoomCollision(roomCoords, isOpen) {
-        if (isOpen) return; // Keine Kollision wenn Raum offen
+        if (isOpen) return;
 
         const nextLeft = playerX;
         const nextRight = playerX + 30;
@@ -431,7 +474,6 @@
         const roomTop = roomCoords.y;
         const roomBottom = roomCoords.y + roomCoords.height;
 
-        // Von links
         if (
           nextRight > roomLeft &&
           nextLeft < roomLeft &&
@@ -441,7 +483,6 @@
           playerX = roomLeft - 30;
         }
 
-        // Von rechts
         if (
           nextLeft < roomRight &&
           nextRight > roomRight &&
@@ -451,7 +492,6 @@
           playerX = roomRight;
         }
 
-        // Von oben
         if (
           nextBottom > roomTop &&
           nextTop < roomTop &&
@@ -461,7 +501,6 @@
           playerY = roomTop - 30;
         }
 
-        // Von unten
         if (
           nextTop < roomBottom &&
           nextBottom > roomBottom &&
@@ -481,7 +520,6 @@
         if (keys.a) playerX -= speed;
         if (keys.d) playerX += speed;
 
-        // MAP Grenzen
         if (playerX < 0) playerX = 0;
         if (playerY < 0) playerY = 0;
         if (playerX > 2000 - 30) playerX = 2000 - 30;
@@ -501,7 +539,6 @@
         const magentaRoomOpen =
           localStorage.getItem("magenta_room_open") === "true";
 
-        // BLOCKIERUNG für geschlossene Räume
         checkRoomCollision(room1Coords, greenRoomOpen);
         checkRoomCollision(room2Coords, redRoomOpen);
         checkRoomCollision(room3Coords, purpleRoomOpen);
@@ -510,6 +547,7 @@
         checkRoomCollision(room6Coords, yellowRoomOpen);
         checkRoomCollision(room7Coords, cyanRoomOpen);
         checkRoomCollision(room8Coords, magentaRoomOpen);
+        // Secret Easter Egg ist nur ein Trigger, keine Kollision
 
         player.style.left = playerX + "px";
         player.style.top = playerY + "px";
@@ -545,8 +583,16 @@
         canEnterCyanRoom = false;
         canOpenMagentaRoom = false;
         canEnterMagentaRoom = false;
+        canEnterSecretRoom = false;
 
         const playerRect = { x: playerX, y: playerY, width: 30, height: 30 };
+
+        // SECRET EASTER EGG Check (unsichtbar, nur Trigger wenn man dran läuft)
+        if (rectsOverlap(playerRect, secretEasterEggCoords)) {
+          interaction.style.display = "block";
+          interaction.innerText = "E - ??? 🥚";
+          canEnterSecretRoom = true;
+        }
 
         // COIN AUFHEBEN
         if (!hasCoin && coin.style.display !== "none") {
@@ -557,7 +603,7 @@
           }
         }
 
-        // GRÜNER RAUM - Mit Coin öffnen
+        // GRÜNER RAUM
         if (!greenRoomOpen && hasCoin) {
           if (isTouchingRoom(room1Coords)) {
             interaction.style.display = "block";
@@ -566,7 +612,6 @@
           }
         }
 
-        // GRÜNER RAUM - Kein Coin
         if (!greenRoomOpen && !hasCoin) {
           if (isTouchingRoom(room1Coords)) {
             interaction.style.display = "block";
@@ -574,7 +619,6 @@
           }
         }
 
-        // GRÜNER RAUM OFFEN - Betreten
         if (greenRoomOpen) {
           room1.classList.remove("task");
           room1.classList.add("green-open");
@@ -586,7 +630,7 @@
           }
         }
 
-        // ROTER RAUM - Mit Schlüssel öffnen
+        // ROTER RAUM
         if (!redRoomOpen && hasKey) {
           if (isTouchingRoom(room2Coords)) {
             interaction.style.display = "block";
@@ -595,7 +639,6 @@
           }
         }
 
-        // ROTER RAUM - Kein Schlüssel
         if (!redRoomOpen && !hasKey) {
           if (isTouchingRoom(room2Coords)) {
             interaction.style.display = "block";
@@ -603,7 +646,6 @@
           }
         }
 
-        // ROTER RAUM OFFEN - Betreten
         if (redRoomOpen) {
           room2.classList.remove("locked");
           room2.classList.add("open");
@@ -615,7 +657,7 @@
           }
         }
 
-        // LILA RAUM - Mit Diamant öffnen
+        // LILA RAUM
         if (!purpleRoomOpen && hasDiamond) {
           if (isTouchingRoom(room3Coords)) {
             interaction.style.display = "block";
@@ -624,7 +666,6 @@
           }
         }
 
-        // LILA RAUM - Kein Diamant
         if (!purpleRoomOpen && !hasDiamond) {
           if (isTouchingRoom(room3Coords)) {
             interaction.style.display = "block";
@@ -632,7 +673,6 @@
           }
         }
 
-        // LILA RAUM OFFEN - Betreten
         if (purpleRoomOpen) {
           room3.classList.remove("purple-locked");
           room3.classList.add("purple-open");
@@ -644,7 +684,7 @@
           }
         }
 
-        // ORANGENER RAUM - Mit Rubin öffnen
+        // ORANGENER RAUM
         if (!orangeRoomOpen && hasRuby) {
           if (isTouchingRoom(room4Coords)) {
             interaction.style.display = "block";
@@ -653,7 +693,6 @@
           }
         }
 
-        // ORANGENER RAUM - Kein Rubin
         if (!orangeRoomOpen && !hasRuby) {
           if (isTouchingRoom(room4Coords)) {
             interaction.style.display = "block";
@@ -661,7 +700,6 @@
           }
         }
 
-        // ORANGENER RAUM OFFEN - Betreten
         if (orangeRoomOpen) {
           room4.classList.remove("orange-locked");
           room4.classList.add("orange-open");
@@ -673,7 +711,7 @@
           }
         }
 
-        // BLAUER RAUM (Level 5) - Mit Smaragd öffnen
+        // BLAUER RAUM
         if (!blueRoomOpen && hasEmerald) {
           if (isTouchingRoom(room5Coords)) {
             interaction.style.display = "block";
@@ -682,7 +720,6 @@
           }
         }
 
-        // BLAUER RAUM - Kein Smaragd
         if (!blueRoomOpen && !hasEmerald) {
           if (isTouchingRoom(room5Coords)) {
             interaction.style.display = "block";
@@ -690,7 +727,6 @@
           }
         }
 
-        // BLAUER RAUM OFFEN - Betreten
         if (blueRoomOpen) {
           room5.classList.remove("blue-locked");
           room5.classList.add("blue-open");
@@ -702,7 +738,7 @@
           }
         }
 
-        // GELBER RAUM (Level 6) - Mit Saphir öffnen
+        // GELBER RAUM
         if (!yellowRoomOpen && hasSapphire) {
           if (isTouchingRoom(room6Coords)) {
             interaction.style.display = "block";
@@ -711,7 +747,6 @@
           }
         }
 
-        // GELBER RAUM - Kein Saphir
         if (!yellowRoomOpen && !hasSapphire) {
           if (isTouchingRoom(room6Coords)) {
             interaction.style.display = "block";
@@ -719,7 +754,6 @@
           }
         }
 
-        // GELBER RAUM OFFEN - Betreten
         if (yellowRoomOpen) {
           room6.classList.remove("yellow-locked");
           room6.classList.add("yellow-open");
@@ -731,7 +765,7 @@
           }
         }
 
-        // CYAN RAUM (Level 7) - Mit Topas öffnen
+        // CYAN RAUM
         if (!cyanRoomOpen && hasTopaz) {
           if (isTouchingRoom(room7Coords)) {
             interaction.style.display = "block";
@@ -740,7 +774,6 @@
           }
         }
 
-        // CYAN RAUM - Kein Topas
         if (!cyanRoomOpen && !hasTopaz) {
           if (isTouchingRoom(room7Coords)) {
             interaction.style.display = "block";
@@ -748,7 +781,6 @@
           }
         }
 
-        // CYAN RAUM OFFEN - Betreten
         if (cyanRoomOpen) {
           room7.classList.remove("cyan-locked");
           room7.classList.add("cyan-open");
@@ -760,7 +792,7 @@
           }
         }
 
-        // MAGENTA RAUM (Final) - Mit Amethyst öffnen
+        // MAGENTA RAUM
         if (!magentaRoomOpen && hasAmethyst) {
           if (isTouchingRoom(room8Coords)) {
             interaction.style.display = "block";
@@ -769,7 +801,6 @@
           }
         }
 
-        // MAGENTA RAUM - Kein Amethyst
         if (!magentaRoomOpen && !hasAmethyst) {
           if (isTouchingRoom(room8Coords)) {
             interaction.style.display = "block";
@@ -777,7 +808,6 @@
           }
         }
 
-        // MAGENTA RAUM OFFEN - Betreten
         if (magentaRoomOpen) {
           room8.classList.remove("magenta-locked");
           room8.classList.add("magenta-open");
@@ -828,6 +858,11 @@
       window.addEventListener("keydown", (e) => {
         const k = e.key.toLowerCase();
         if (keys[k] !== undefined) keys[k] = true;
+
+        // Secret Room betreten
+        if (k === "e" && canEnterSecretRoom) {
+          window.location.href = "easteregg.html";
+        }
 
         // Coin aufheben
         if (k === "e" && canPickupCoin) {

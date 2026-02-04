@@ -43,8 +43,13 @@
       }
 
       .task {
-        background: #6b8e23;
-        border: 3px solid #000;
+        background: #1a4d1a;
+        border: 4px solid #00ff00;
+      }
+
+      .green-open {
+        background: #1a4d1a;
+        border: 4px solid #00ff00;
       }
 
       .locked {
@@ -57,6 +62,16 @@
         border: 4px solid #00ff00;
       }
 
+      .purple-locked {
+        background: #4a0066;
+        border: 4px solid #9933ff;
+      }
+
+      .purple-open {
+        background: #2d0040;
+        border: 4px solid #00ff00;
+      }
+
       #player {
         position: absolute;
         width: 30px;
@@ -64,6 +79,30 @@
         background: #ffcc00;
         border-radius: 4px;
         border: 2px solid #000;
+      }
+
+      #coin {
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        background: #ffd700;
+        border-radius: 50%;
+        border: 2px solid #ff8800;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+        animation: coin-float 2s ease-in-out infinite;
+      }
+
+      @keyframes coin-float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
       }
 
       #interaction {
@@ -118,7 +157,7 @@
     <div id="game-container">
       <div id="game-area">
         <div id="map">
-          <!-- Grüner Raum -->
+          <!-- Grüner Raum (mit Border) -->
           <div
             id="room1"
             class="room task"
@@ -132,11 +171,14 @@
             style="left: 500px; top: 320px; width: 250px; height: 200px"
           ></div>
 
-          <!-- Weitere Räume -->
+          <!-- Lila Raum (unten links vom roten Raum) -->
           <div
-            class="room"
-            style="left: 100px; top: 600px; width: 300px; height: 200px"
+            id="room3"
+            class="room purple-locked"
+            style="left: 200px; top: 560px; width: 250px; height: 200px"
           ></div>
+
+          <!-- Weitere Räume -->
           <div
             class="room"
             style="left: 900px; top: 200px; width: 350px; height: 250px"
@@ -146,6 +188,9 @@
             style="left: 1400px; top: 700px; width: 300px; height: 250px"
           ></div>
 
+          <!-- Coin (unten links in der Mitte) -->
+          <div id="coin" style="left: 150px; top: 550px">💰</div>
+
           <div id="player"></div>
           <div id="interaction">E</div>
         </div>
@@ -154,7 +199,7 @@
       <div id="ui">
         <div style="display: flex; gap: 10px">
           <div id="slot1" class="slot"></div>
-          <div class="slot"></div>
+          <div id="slot2" class="slot"></div>
           <div class="slot"></div>
           <div class="slot"></div>
           <div class="slot"></div>
@@ -169,10 +214,13 @@
       const map = document.getElementById("map");
       const interaction = document.getElementById("interaction");
       const slot1 = document.getElementById("slot1");
+      const slot2 = document.getElementById("slot2");
       const restartBtn = document.getElementById("restart-btn");
+      const coin = document.getElementById("coin");
 
       const room1 = document.getElementById("room1");
       const room2 = document.getElementById("room2");
+      const room3 = document.getElementById("room3");
 
       let playerX = 200;
       let playerY = 200;
@@ -180,51 +228,47 @@
 
       const keys = { w: false, a: false, s: false, d: false };
 
-      let canEnterLevel1 = false;
+      let canEnterGreenRoom = false;
+      let canOpenGreenRoom = false;
+      let canPickupCoin = false;
       let canOpenRedRoom = false;
       let canEnterRedRoom = false;
+      let canOpenPurpleRoom = false;
+      let canEnterPurpleRoom = false;
 
-      // RAUM KOORDINATEN (absolute Positionen auf der Map)
-      const room2Coords = {
-        x: 500,
-        y: 320,
-        width: 250,
-        height: 200,
-      };
+      // Absolute Koordinaten
+      const room1Coords = { x: 500, y: 80, width: 250, height: 200 }; // Grüner Raum
+      const room2Coords = { x: 500, y: 320, width: 250, height: 200 }; // Roter Raum
+      const room3Coords = { x: 200, y: 560, width: 250, height: 200 }; // Lila Raum
+      const coinCoords = { x: 150, y: 550, width: 25, height: 25 };
 
-      const room1Coords = {
-        x: 500,
-        y: 80,
-        width: 250,
-        height: 200,
-      };
-
-      // INVENTAR UPDATE
       function updateInventory() {
+        const hasCoin = localStorage.getItem("has_coin") === "true";
         const hasKey = localStorage.getItem("level1_key") === "true";
-        slot1.innerText = hasKey ? "🔑" : "";
-      }
+        const hasDiamond = localStorage.getItem("has_diamond") === "true";
+        const greenRoomOpen =
+          localStorage.getItem("green_room_open") === "true";
 
+        slot1.innerText = hasCoin ? "💰" : "";
+        slot2.innerText = hasKey ? "🔑" : hasDiamond ? "💎" : "";
+
+        // Coin verstecken wenn aufgehoben ODER wenn grüner Raum bereits geöffnet ist
+        if ((hasCoin || greenRoomOpen) && coin) {
+          coin.style.display = "none";
+        }
+      }
       updateInventory();
 
-      // RESTART BUTTON
       restartBtn.addEventListener("click", () => {
+        localStorage.removeItem("has_coin");
         localStorage.removeItem("level1_key");
+        localStorage.removeItem("has_diamond");
+        localStorage.removeItem("green_room_open");
         localStorage.removeItem("red_room_open");
+        localStorage.removeItem("purple_room_open");
         window.location.reload();
       });
 
-      // KOLLISION (für absolute Map-Koordinaten)
-      function rectsOverlap(r1, r2) {
-        return !(
-          r1.x > r2.x + r2.width ||
-          r1.x + r1.width < r2.x ||
-          r1.y > r2.y + r2.height ||
-          r1.y + r1.height < r2.y
-        );
-      }
-
-      // KAMERA
       function updateCamera() {
         const viewWidth = 800;
         const viewHeight = 450;
@@ -239,7 +283,60 @@
         map.style.top = -camY + "px";
       }
 
-      // UPDATE LOOP
+      function checkRoomCollision(roomCoords, isOpen) {
+        if (isOpen) return; // Keine Kollision wenn Raum offen
+
+        const nextLeft = playerX;
+        const nextRight = playerX + 30;
+        const nextTop = playerY;
+        const nextBottom = playerY + 30;
+
+        const roomLeft = roomCoords.x;
+        const roomRight = roomCoords.x + roomCoords.width;
+        const roomTop = roomCoords.y;
+        const roomBottom = roomCoords.y + roomCoords.height;
+
+        // Von links
+        if (
+          nextRight > roomLeft &&
+          nextLeft < roomLeft &&
+          nextBottom > roomTop &&
+          nextTop < roomBottom
+        ) {
+          playerX = roomLeft - 30;
+        }
+
+        // Von rechts
+        if (
+          nextLeft < roomRight &&
+          nextRight > roomRight &&
+          nextBottom > roomTop &&
+          nextTop < roomBottom
+        ) {
+          playerX = roomRight;
+        }
+
+        // Von oben
+        if (
+          nextBottom > roomTop &&
+          nextTop < roomTop &&
+          nextRight > roomLeft &&
+          nextLeft < roomRight
+        ) {
+          playerY = roomTop - 30;
+        }
+
+        // Von unten
+        if (
+          nextTop < roomBottom &&
+          nextBottom > roomBottom &&
+          nextRight > roomLeft &&
+          nextLeft < roomRight
+        ) {
+          playerY = roomBottom;
+        }
+      }
+
       function update() {
         let oldX = playerX;
         let oldY = playerY;
@@ -249,129 +346,221 @@
         if (keys.a) playerX -= speed;
         if (keys.d) playerX += speed;
 
-        // MAP BEGRENZUNG
+        // MAP Grenzen
         if (playerX < 0) playerX = 0;
         if (playerY < 0) playerY = 0;
         if (playerX > 2000 - 30) playerX = 2000 - 30;
         if (playerY > 1200 - 30) playerY = 1200 - 30;
 
+        const greenRoomOpen =
+          localStorage.getItem("green_room_open") === "true";
         const redRoomOpen = localStorage.getItem("red_room_open") === "true";
+        const purpleRoomOpen =
+          localStorage.getItem("purple_room_open") === "true";
 
-        // BLOCKIERUNG: Spieler darf NICHT in den roten Raum, wenn er geschlossen ist
-        if (!redRoomOpen) {
-          const playerRect = {
-            x: playerX,
-            y: playerY,
-            width: 30,
-            height: 30,
-          };
-
-          // Wenn der Spieler in den roten Raum kollidiert → Bewegung rückgängig machen
-          if (rectsOverlap(playerRect, room2Coords)) {
-            playerX = oldX;
-            playerY = oldY;
-          }
-        }
+        // BLOCKIERUNG für geschlossene Räume
+        checkRoomCollision(room1Coords, greenRoomOpen);
+        checkRoomCollision(room2Coords, redRoomOpen);
+        checkRoomCollision(room3Coords, purpleRoomOpen);
 
         player.style.left = playerX + "px";
         player.style.top = playerY + "px";
 
         updateCamera();
 
+        const hasCoin = localStorage.getItem("has_coin") === "true";
         const hasKey = localStorage.getItem("level1_key") === "true";
+        const hasDiamond = localStorage.getItem("has_diamond") === "true";
 
         interaction.style.left = playerX - 25 + "px";
-        interaction.style.top = playerY + 5 + "px";
+        interaction.style.top = playerY - 35 + "px";
 
         interaction.style.display = "none";
-        canEnterLevel1 = false;
+        canEnterGreenRoom = false;
+        canPickupCoin = false;
         canOpenRedRoom = false;
         canEnterRedRoom = false;
+        canOpenPurpleRoom = false;
+        canEnterPurpleRoom = false;
 
-        const playerRect = {
-          x: playerX,
-          y: playerY,
-          width: 30,
-          height: 30,
-        };
+        const playerRect = { x: playerX, y: playerY, width: 30, height: 30 };
 
-        // GRÜNER RAUM
-        if (rectsOverlap(playerRect, room1Coords)) {
-          interaction.style.display = "block";
-          interaction.innerText = "E";
-          canEnterLevel1 = true;
+        // COIN AUFHEBEN
+        if (!hasCoin && coin.style.display !== "none") {
+          if (rectsOverlap(playerRect, coinCoords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um Coin aufzuheben";
+            canPickupCoin = true;
+          }
         }
 
-        // ROTER RAUM GESCHLOSSEN - Schlüssel verwenden
-        if (!redRoomOpen && hasKey) {
-          // Prüfen ob Spieler am Rand des roten Raums steht
-          const touchingLeft =
-            Math.abs(playerX + 30 - room2Coords.x) < 10 &&
-            playerY + 30 > room2Coords.y &&
-            playerY < room2Coords.y + room2Coords.height;
-
-          const touchingRight =
-            Math.abs(playerX - (room2Coords.x + room2Coords.width)) < 10 &&
-            playerY + 30 > room2Coords.y &&
-            playerY < room2Coords.y + room2Coords.height;
-
-          const touchingTop =
-            Math.abs(playerY + 30 - room2Coords.y) < 10 &&
-            playerX + 30 > room2Coords.x &&
-            playerX < room2Coords.x + room2Coords.width;
-
-          const touchingBottom =
-            Math.abs(playerY - (room2Coords.y + room2Coords.height)) < 10 &&
-            playerX + 30 > room2Coords.x &&
-            playerX < room2Coords.x + room2Coords.width;
-
-          if (touchingLeft || touchingRight || touchingTop || touchingBottom) {
+        // GRÜNER RAUM - Mit Coin öffnen
+        if (!greenRoomOpen && hasCoin) {
+          if (isTouchingRoom(room1Coords)) {
             interaction.style.display = "block";
-            interaction.innerText = "E";
+            interaction.innerText = "Drücke E um den grünen Raum zu öffnen";
+            canOpenGreenRoom = true;
+          }
+        }
+
+        // GRÜNER RAUM - Kein Coin
+        if (!greenRoomOpen && !hasCoin) {
+          if (isTouchingRoom(room1Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Coin benötigt";
+          }
+        }
+
+        // GRÜNER RAUM OFFEN - Betreten
+        if (greenRoomOpen) {
+          room1.classList.remove("task");
+          room1.classList.add("green-open");
+
+          if (rectsOverlap(playerRect, room1Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E - Level 1 starten";
+            canEnterGreenRoom = true;
+          }
+        }
+
+        // ROTER RAUM - Mit Schlüssel öffnen
+        if (!redRoomOpen && hasKey) {
+          if (isTouchingRoom(room2Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um den roten Raum zu öffnen";
             canOpenRedRoom = true;
           }
         }
 
-        // ROTER RAUM OFFEN
+        // ROTER RAUM - Kein Schlüssel
+        if (!redRoomOpen && !hasKey) {
+          if (isTouchingRoom(room2Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Schlüssel benötigt (Level 1 abschließen)";
+          }
+        }
+
+        // ROTER RAUM OFFEN - Betreten
         if (redRoomOpen) {
           room2.classList.remove("locked");
           room2.classList.add("open");
 
           if (rectsOverlap(playerRect, room2Coords)) {
             interaction.style.display = "block";
-            interaction.innerText = "E";
+            interaction.innerText = "E - Level 2 starten";
             canEnterRedRoom = true;
+          }
+        }
+
+        // LILA RAUM - Mit Diamant öffnen
+        if (!purpleRoomOpen && hasDiamond) {
+          if (isTouchingRoom(room3Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Drücke E um den lila Raum zu öffnen";
+            canOpenPurpleRoom = true;
+          }
+        }
+
+        // LILA RAUM - Kein Diamant
+        if (!purpleRoomOpen && !hasDiamond) {
+          if (isTouchingRoom(room3Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "Diamant benötigt (Level 2 abschließen)";
+          }
+        }
+
+        // LILA RAUM OFFEN - Betreten
+        if (purpleRoomOpen) {
+          room3.classList.remove("purple-locked");
+          room3.classList.add("purple-open");
+
+          if (rectsOverlap(playerRect, room3Coords)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E - Level 3 starten";
+            canEnterPurpleRoom = true;
           }
         }
 
         requestAnimationFrame(update);
       }
 
-      // STEUERUNG
+      function isTouchingRoom(roomCoords) {
+        const touchingLeft =
+          Math.abs(playerX + 30 - roomCoords.x) < 10 &&
+          playerY + 30 > roomCoords.y &&
+          playerY < roomCoords.y + roomCoords.height;
+
+        const touchingRight =
+          Math.abs(playerX - (roomCoords.x + roomCoords.width)) < 10 &&
+          playerY + 30 > roomCoords.y &&
+          playerY < roomCoords.y + roomCoords.height;
+
+        const touchingTop =
+          Math.abs(playerY + 30 - roomCoords.y) < 10 &&
+          playerX + 30 > roomCoords.x &&
+          playerX < roomCoords.x + roomCoords.width;
+
+        const touchingBottom =
+          Math.abs(playerY - (roomCoords.y + roomCoords.height)) < 10 &&
+          playerX + 30 > roomCoords.x &&
+          playerX < roomCoords.x + roomCoords.width;
+
+        return touchingLeft || touchingRight || touchingTop || touchingBottom;
+      }
+
+      function rectsOverlap(r1, r2) {
+        return !(
+          r1.x > r2.x + r2.width ||
+          r1.x + r1.width < r2.x ||
+          r1.y > r2.y + r2.height ||
+          r1.y + r1.height < r2.y
+        );
+      }
+
       window.addEventListener("keydown", (e) => {
         const k = e.key.toLowerCase();
         if (keys[k] !== undefined) keys[k] = true;
 
-        // LEVEL 1
-        if (k === "e" && canEnterLevel1) {
+        // Coin aufheben
+        if (k === "e" && canPickupCoin) {
+          localStorage.setItem("has_coin", "true");
+          updateInventory();
+        }
+
+        // Grünen Raum öffnen
+        if (k === "e" && canOpenGreenRoom) {
+          localStorage.removeItem("has_coin");
+          updateInventory();
+          localStorage.setItem("green_room_open", "true");
+        }
+
+        // Grünen Raum betreten
+        if (k === "e" && canEnterGreenRoom) {
           window.location.href = "level1.html";
         }
 
-        // ROTEN RAUM ÖFFNEN
+        // Roten Raum öffnen
         if (k === "e" && canOpenRedRoom) {
           localStorage.removeItem("level1_key");
           updateInventory();
-
           localStorage.setItem("red_room_open", "true");
-          room2.classList.remove("locked");
-          room2.classList.add("open");
-
-          alert("Der Schlüssel wurde benutzt. Der Raum ist jetzt offen.");
         }
 
-        // LEVEL 2 BETRETEN
+        // Roten Raum betreten
         if (k === "e" && canEnterRedRoom) {
           window.location.href = "level2.html";
+        }
+
+        // Lila Raum öffnen
+        if (k === "e" && canOpenPurpleRoom) {
+          localStorage.removeItem("has_diamond");
+          updateInventory();
+          localStorage.setItem("purple_room_open", "true");
+        }
+
+        // Lila Raum betreten
+        if (k === "e" && canEnterPurpleRoom) {
+          window.location.href = "level3.html";
         }
       });
 

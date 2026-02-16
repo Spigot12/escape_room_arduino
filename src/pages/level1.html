@@ -1,3 +1,4 @@
+<!-- level1.html -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -215,6 +216,14 @@
     <!-- KEY + RETURN TO MAP -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
+        // Back button navigation
+        const backBtn = document.getElementById("back-btn");
+        if (backBtn) {
+          backBtn.addEventListener("click", () => {
+            window.location.href = "map.html";
+          });
+        }
+
         const nextLevelBtn = document.getElementById("next-level-btn");
 
         if (nextLevelBtn) {

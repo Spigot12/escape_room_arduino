@@ -1,4 +1,4 @@
-// Game timer to track completion time
+f// Game timer to track completion time
 let startTime = null;
 let timerInterval = null;
 let elapsedSeconds = 0;

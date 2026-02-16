@@ -6,5 +6,9 @@
   {
     "username": "patrick",
     "password": "$2b$10$AWuHmcQ5EB8k7v.acUS3SOXMHXwuDVl8XskHOSYcz0C1FHW168Ofq"
+  },
+  {
+    "username": "spigot",
+    "password": "$2b$10$wh68M82fA.BnODNbr7gXmu65W7RCNSMx8CHCI1pYmrbm0CD7BoWre"
   }
 ]

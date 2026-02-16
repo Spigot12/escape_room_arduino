@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Map</title>
+    <style>
+      body {
+        background: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: #fff;
+      }
+
+      #game-container {
+        display: flex;
+        flex-direction: column;
+        border: 2px solid #555;
+        background: #111;
+      }
+
+      #game-area {
+        position: relative;
+        width: 800px;
+        height: 450px;
+        background: #333;
+        overflow: hidden;
+      }
+
+      #map {
+        position: absolute;
+        width: 2000px;
+        height: 1200px;
+        background: #2b2b2b;
+      }
+
+      .room {
+        position: absolute;
+        background: #555;
+      }
+
+      .task {
+        background: #6b8e23;
+        border: 3px solid #000;
+      }
+
+      .locked {
+        background: #8b0000;
+        border: 4px solid #ff0000;
+      }
+
+      .open {
+        background: #4a0000;
+        border: 4px solid #00ff00;
+      }
+
+      #player {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: #ffcc00;
+        border-radius: 4px;
+        border: 2px solid #000;
+      }
+
+      #interaction {
+        position: absolute;
+        padding: 5px 10px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 1px solid #fff;
+        display: none;
+        font-size: 14px;
+        pointer-events: none;
+      }
+
+      #ui {
+        width: 800px;
+        height: 100px;
+        background: #1a1a1a;
+        border-top: 2px solid #555;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        gap: 10px;
+        justify-content: space-between;
+      }
+
+      .slot {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #777;
+        background: #222;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 30px;
+      }
+
+      #restart-btn {
+        padding: 10px 20px;
+        background: #aa0000;
+        border: 2px solid #ff4444;
+        color: white;
+        cursor: pointer;
+        border-radius: 6px;
+        font-weight: bold;
+      }
+
+      #restart-btn:hover {
+        background: #cc0000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="game-area">
+        <div id="map">
+          <!-- Grüner Raum -->
+          <div
+            id="room1"
+            class="room task"
+            style="left: 500px; top: 80px; width: 250px; height: 200px"
+          ></div>
+
+          <!-- Roter Raum -->
+          <div
+            id="room2"
+            class="room locked"
+            style="left: 500px; top: 320px; width: 250px; height: 200px"
+          ></div>
+
+          <!-- Weitere Räume -->
+          <div
+            class="room"
+            style="left: 100px; top: 600px; width: 300px; height: 200px"
+          ></div>
+          <div
+            class="room"
+            style="left: 900px; top: 200px; width: 350px; height: 250px"
+          ></div>
+          <div
+            class="room"
+            style="left: 1400px; top: 700px; width: 300px; height: 250px"
+          ></div>
+
+          <div id="player"></div>
+          <div id="interaction">E</div>
+        </div>
+      </div>
+
+      <div id="ui">
+        <div style="display: flex; gap: 10px">
+          <div id="slot1" class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+          <div class="slot"></div>
+        </div>
+
+        <button id="restart-btn">Restart</button>
+      </div>
+    </div>
+
+    <script>
+      const player = document.getElementById("player");
+      const map = document.getElementById("map");
+      const interaction = document.getElementById("interaction");
+      const slot1 = document.getElementById("slot1");
+      const restartBtn = document.getElementById("restart-btn");
+
+      const room1 = document.getElementById("room1");
+      const room2 = document.getElementById("room2");
+
+      let playerX = 200;
+      let playerY = 200;
+      const speed = 3;
+
+      const keys = { w: false, a: false, s: false, d: false };
+
+      let canEnterLevel1 = false;
+      let canOpenRedRoom = false;
+      let canEnterRedRoom = false;
+
+      // INVENTAR UPDATE
+      function updateInventory() {
+        const hasKey = localStorage.getItem("level1_key") === "true";
+        slot1.innerText = hasKey ? "🔑" : "";
+      }
+
+      updateInventory();
+
+      // RESTART BUTTON
+      restartBtn.addEventListener("click", () => {
+        localStorage.removeItem("level1_key");
+        localStorage.removeItem("red_room_open");
+        window.location.reload();
+      });
+
+      // KOLLISION
+      function rectsOverlap(r1, r2) {
+        return !(
+          r1.x > r2.x + r2.width ||
+          r1.x + r1.width < r2.x ||
+          r1.y > r2.y + r2.height ||
+          r1.y + r1.height < r2.y
+        );
+      }
+
+      // KAMERA
+      function updateCamera() {
+        const viewWidth = 800;
+        const viewHeight = 450;
+
+        let camX = playerX - viewWidth / 2;
+        let camY = playerY - viewHeight / 2;
+
+        camX = Math.max(0, Math.min(camX, 2000 - viewWidth));
+        camY = Math.max(0, Math.min(camY, 1200 - viewHeight));
+
+        map.style.left = -camX + "px";
+        map.style.top = -camY + "px";
+      }
+
+      // UPDATE LOOP
+      function update() {
+        let oldX = playerX;
+        let oldY = playerY;
+
+        if (keys.w) playerY -= speed;
+        if (keys.s) playerY += speed;
+        if (keys.a) playerX -= speed;
+        if (keys.d) playerX += speed;
+
+        // MAP BEGRENZUNG
+        if (playerX < 0) playerX = 0;
+        if (playerY < 0) playerY = 0;
+        if (playerX > 2000 - 30) playerX = 2000 - 30;
+        if (playerY > 1200 - 30) playerY = 1200 - 30;
+
+        const p = player.getBoundingClientRect();
+        const r2 = room2.getBoundingClientRect();
+
+        const redRoomOpen = localStorage.getItem("red_room_open") === "true";
+
+        // BLOCKIERUNG: Spieler darf NICHT in den roten Raum, wenn er geschlossen ist
+        if (!redRoomOpen) {
+          const nextRect = {
+            x: playerX,
+            y: playerY,
+            width: 30,
+            height: 30,
+          };
+
+          const roomRect = {
+            x: r2.left,
+            y: r2.top,
+            width: r2.width,
+            height: r2.height,
+          };
+
+          // Wenn der nächste Schritt in den Raum führen würde → Bewegung abbrechen
+          if (rectsOverlap(nextRect, roomRect)) {
+            playerX = oldX;
+            playerY = oldY;
+          }
+        }
+
+        player.style.left = playerX + "px";
+        player.style.top = playerY + "px";
+
+        updateCamera();
+
+        const r1 = room1.getBoundingClientRect();
+        const hasKey = localStorage.getItem("level1_key") === "true";
+
+        interaction.style.left = playerX - 25 + "px";
+        interaction.style.top = playerY + 5 + "px";
+
+        interaction.style.display = "none";
+        canEnterLevel1 = false;
+        canOpenRedRoom = false;
+        canEnterRedRoom = false;
+
+        // GRÜNER RAUM
+        if (rectsOverlap(player.getBoundingClientRect(), r1)) {
+          interaction.style.display = "block";
+          interaction.innerText = "E";
+          canEnterLevel1 = true;
+        }
+
+        // ROTER RAUM GESCHLOSSEN
+        if (!redRoomOpen) {
+          const touchingBorder =
+            p.bottom >= r2.top &&
+            p.top <= r2.bottom &&
+            (Math.abs(p.right - r2.left) < 10 ||
+              Math.abs(p.left - r2.right) < 10);
+
+          if (touchingBorder && hasKey) {
+            interaction.style.display = "block";
+            interaction.innerText = "E";
+            canOpenRedRoom = true;
+          }
+        }
+
+        // ROTER RAUM OFFEN
+        if (redRoomOpen) {
+          room2.classList.remove("locked");
+          room2.classList.add("open");
+
+          if (rectsOverlap(player.getBoundingClientRect(), r2)) {
+            interaction.style.display = "block";
+            interaction.innerText = "E";
+            canEnterRedRoom = true;
+          }
+        }
+
+        requestAnimationFrame(update);
+      }
+
+      // STEUERUNG
+      window.addEventListener("keydown", (e) => {
+        const k = e.key.toLowerCase();
+        if (keys[k] !== undefined) keys[k] = true;
+
+        // LEVEL 1
+        if (k === "e" && canEnterLevel1) {
+          window.location.href = "level1.html";
+        }
+
+        // ROTEN RAUM ÖFFNEN
+        if (k === "e" && canOpenRedRoom) {
+          localStorage.removeItem("level1_key");
+          updateInventory();
+
+          localStorage.setItem("red_room_open", "true");
+          room2.classList.remove("locked");
+          room2.classList.add("open");
+
+          alert("Der Schlüssel wurde benutzt. Der Raum ist jetzt offen.");
+        }
+
+        // LEVEL 2 BETRETEN
+        if (k === "e" && canEnterRedRoom) {
+          window.location.href = "level2.html";
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        const k = e.key.toLowerCase();
+        if (keys[k] !== undefined) keys[k] = false;
+      });
+
+      update();
+    </script>
+  </body>
+</html>

@@ -283,13 +283,13 @@
             <span class="room-label">7</span>
           </div>
 
-          <!-- Magenta Raum (Final Level - rechts unten) -->
+          <!-- Magenta Raum (Level 8 - rechts unten) -->
           <div
             id="room8"
             class="room magenta-locked"
             style="left: 1400px; top: 800px; width: 250px; height: 200px"
           >
-            <span class="room-label">⭐</span>
+            <span class="room-label">8</span>
           </div>
 
           <!-- Coin (mitte der Map) -->
@@ -424,6 +424,7 @@
         const hasSapphire = localStorage.getItem("has_sapphire") === "true";
         const hasTopaz = localStorage.getItem("has_topaz") === "true";
         const hasAmethyst = localStorage.getItem("has_amethyst") === "true";
+        const hasLevel8Diamond = localStorage.getItem("has_level8_diamond") === "true";
         const greenRoomOpen =
           localStorage.getItem("green_room_open") === "true";
 
@@ -436,6 +437,7 @@
         if (hasSapphire) items.push("💎");
         if (hasTopaz) items.push("💎");
         if (hasAmethyst) items.push("💎");
+        if (hasLevel8Diamond) items.push("💎");
 
         slot1.innerText = "";
         slot2.innerText = "";
@@ -464,6 +466,7 @@
         localStorage.removeItem("has_sapphire");
         localStorage.removeItem("has_topaz");
         localStorage.removeItem("has_amethyst");
+        localStorage.removeItem("has_level8_diamond");
         localStorage.removeItem("green_room_open");
         localStorage.removeItem("red_room_open");
         localStorage.removeItem("purple_room_open");
@@ -842,7 +845,7 @@
 
           if (rectsOverlap(playerRect, room8Coords)) {
             interaction.style.display = "block";
-            interaction.innerText = "E - Final Level starten";
+            interaction.innerText = "E - Level 8 starten";
             canEnterMagentaRoom = true;
           }
         }

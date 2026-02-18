@@ -1,0 +1,360 @@
+<!-- level8.html -->
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/assets/images/vite.svg"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Level 8 - Escape Room</title>
+    <!-- Bootstrap CSS -->
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body class="bg-white text-dark">
+<div
+        id="arduino-indicator"
+        class="arduino-status-indicator disconnected"
+></div>
+
+<div class="container py-5">
+    <div id="app" class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div
+                    class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom"
+            >
+                <button id="back-btn" class="btn btn-dark btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Zurück
+                </button>
+                <h1 class="h4 mb-0 fw-bold">Level 08 - Final Challenge</h1>
+                <div class="d-flex gap-2">
+                    <button
+                            id="prev-level-btn"
+                            class="btn btn-outline-warning btn-sm"
+                            title="Vorheriges Level"
+                    >
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button
+                            id="toggle-log-btn"
+                            class="btn btn-outline-secondary btn-sm"
+                            title="System Log anzeigen"
+                    >
+                        <i class="bi bi-terminal"></i>
+                    </button>
+                    <button
+                            id="toggle-wiring-btn"
+                            class="btn btn-outline-info btn-sm"
+                            title="Verkabelung anzeigen"
+                    >
+                        <i class="bi bi-diagram-3"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- WIRING PANEL (versteckt by default) -->
+            <div id="wiring-panel" class="mb-4" style="display: none">
+                <div class="card shadow-sm border-info">
+                    <div
+                            class="card-header bg-info text-white d-flex justify-content-between align-items-center"
+                    >
+                <span class="small fw-bold">
+                  <i class="bi bi-diagram-3 me-2"></i>Verkabelung Level 8
+                </span>
+                    </div>
+                    <div
+                            class="card-body p-3"
+                            style="font-family: monospace; font-size: 0.9rem"
+                    >
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-info mb-2">Komponenten:</h6>
+                                <ul class="list-unstyled mb-3">
+                                    <li>
+                                        <i
+                                                class="bi bi-circle-fill text-danger me-2"
+                                                style="font-size: 0.5rem"
+                                        ></i
+                                        >Rote LED
+                                    </li>
+                                    <li>
+                                        <i
+                                                class="bi bi-circle-fill text-warning me-2"
+                                                style="font-size: 0.5rem"
+                                        ></i
+                                        >Gelbe LED
+                                    </li>
+                                    <li>
+                                        <i
+                                                class="bi bi-circle-fill text-primary me-2"
+                                                style="font-size: 0.5rem"
+                                        ></i
+                                        >Blaue LED
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-info mb-2">Pin-Belegung:</h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li><code>LED_ROT → Pin 10</code></li>
+                                    <li><code>LED_GELB → Pin 11</code></li>
+                                    <li><code>LED_BLAU → Pin 12</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOG PANEL (versteckt by default) -->
+            <div id="log-panel" class="mb-4" style="display: none">
+                <div class="card shadow-sm">
+                    <div
+                            class="card-header d-flex justify-content-between align-items-center"
+                    >
+                        <span class="small fw-bold">System Log</span>
+                        <button
+                                id="clear-log-btn"
+                                class="btn btn-link btn-sm text-muted text-decoration-none p-0"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                    <div
+                            class="card-body p-3"
+                            style="
+                  max-height: 200px;
+                  overflow-y: auto;
+                  font-family: monospace;
+                  font-size: 0.85rem;
+                  background: #f8f9fa;
+                "
+                    >
+                        <div id="log-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="level-content text-center">
+                <div class="minimal-card p-5 mb-5 shadow-sm">
+                    <h2 class="display-5 fw-bold mb-4">💡 LED Memory Challenge</h2>
+                    <p id="status-text" class="lead text-muted mb-0">
+                        Merke dir die LED-Sequenz und wiederhole sie!
+                    </p>
+                </div>
+
+                <!-- Level Progress Indicator -->
+                <div class="level-indicator mb-5">
+                    <div class="d-flex justify-content-center gap-3">
+                        <div class="level-dot" id="dot1">
+                            <div class="level-number">1</div>
+                            <small>3 LEDs</small>
+                        </div>
+                        <div class="level-dot" id="dot2">
+                            <div class="level-number">2</div>
+                            <small>5 LEDs</small>
+                        </div>
+                        <div class="level-dot" id="dot3">
+                            <div class="level-number">3</div>
+                            <small>7 LEDs</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Display -->
+                <div class="mb-4">
+                    <h3 id="level-text" class="h5 fw-bold text-primary">Level: –</h3>
+                    <h4 id="progress" class="h6 text-muted">Fortschritt: 0/0</h4>
+                </div>
+
+                <!-- Color Buttons -->
+                <div id="colors" class="mb-5">
+                    <button class="color-btn" data-color="RED" style="background: #dc3545;" disabled>
+                        <i class="bi bi-circle-fill" style="font-size: 2rem;"></i>
+                    </button>
+                    <button class="color-btn" data-color="YELLOW" style="background: #ffc107;" disabled>
+                        <i class="bi bi-circle-fill" style="font-size: 2rem;"></i>
+                    </button>
+                    <button class="color-btn" data-color="BLUE" style="background: #007aff;" disabled>
+                        <i class="bi bi-circle-fill" style="font-size: 2rem;"></i>
+                    </button>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mb-5">
+                    <button id="start-level8" class="btn btn-success btn-lg me-2">
+                        <i class="bi bi-play-fill me-2"></i>Start
+                    </button>
+                    <button id="reset-level8" class="btn btn-warning btn-lg me-2" style="display: none;">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Level neu starten
+                    </button>
+                </div>
+
+                <!-- Result -->
+                <div id="result" class="mb-5" style="min-height: 60px;">
+                    <!-- Result messages will appear here -->
+                </div>
+
+                <div class="text-start mb-5">
+                    <h3 class="small fw-bold text-muted text-uppercase mb-3 px-2">
+                        Anleitung:
+                    </h3>
+                    <ul id="task-list" class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="bi bi-1-circle text-primary me-2"></i>Drücke "Start" um Level 1 zu beginnen
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-lightbulb text-warning me-2"></i>Merke dir die LED-Sequenz die das Arduino zeigt
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-hand-index text-success me-2"></i>Klicke die Farben in der richtigen Reihenfolge
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-trophy text-warning me-2"></i>Schaffe alle 3 Level um zu gewinnen
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                        id="result-display"
+                        class="result-display hidden p-5 bg-light border-0 rounded-4 mb-4"
+                        style="display: none"
+                >
+                    <h2 class="display-5 fw-bold mb-3 text-success">
+                        <i class="bi bi-trophy-fill me-2"></i>Level 8 geschafft!
+                    </h2>
+                    <p class="lead mb-4 text-muted">
+                        Gut gemacht! 🎉
+                    </p>
+                    <button
+                            id="next-level-btn"
+                            class="btn btn-primary btn-lg px-5 shadow-sm"
+                    >
+                        Zurück zur Map <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #colors {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .color-btn {
+        width: 100px;
+        height: 100px;
+        border-radius: 15px;
+        cursor: pointer;
+        border: 4px solid white;
+        transition: all 0.2s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .color-btn:hover:not(:disabled) {
+        transform: scale(1.08);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+
+    .color-btn:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+
+    .color-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .level-indicator {
+        margin: 20px 0;
+    }
+
+    .level-dot {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 4px solid #dee2e6;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+    }
+
+    .level-dot .level-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #6c757d;
+    }
+
+    .level-dot small {
+        font-size: 0.7rem;
+        color: #6c757d;
+    }
+
+    .level-dot.active {
+        border-color: #007aff;
+        background: #007aff;
+        box-shadow: 0 0 20px rgba(0, 122, 255, 0.5);
+    }
+
+    .level-dot.active .level-number,
+    .level-dot.active small {
+        color: white;
+    }
+
+    .level-dot.done {
+        border-color: #28a745;
+        background: #28a745;
+    }
+
+    .level-dot.done .level-number,
+    .level-dot.done small {
+        color: white;
+    }
+
+    #result {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+</style>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module" src="/scripts/auth-check.js"></script>
+<script type="module" src="/scripts/entry-points/level.js"></script>
+
+<!-- Back button navigation & Final completion -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const backBtn = document.getElementById("back-btn");
+        if (backBtn) {
+            backBtn.addEventListener("click", () => {
+                window.location.href = "map.html";
+            });
+        }
+
+        const nextLevelBtn = document.getElementById("next-level-btn");
+        if (nextLevelBtn) {
+            nextLevelBtn.addEventListener("click", () => {
+                // Kein Diamant - einfach zurück zur Map
+                window.location.href = "map.html";
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -73,6 +73,19 @@ let level6SensorConnected = false;
 let soundValue = 0;
 const SOUND_THRESHOLD = 600;
 
+// ===== LEVEL 8 STATE (LED Memory) =====
+let level8Sequence = [];
+let level8UserInput = [];
+let level8GameActive = false;
+let level8ExpectedLength = 3;
+let level8CurrentLevel = 1;
+const startLevel8Btn = document.querySelector("#start-level8");
+const resetLevel8Btn = document.querySelector("#reset-level8");
+const level8Result = document.querySelector("#result");
+const level8LevelText = document.querySelector("#level-text");
+const level8Progress = document.querySelector("#progress");
+const level8ColorBtns = document.querySelectorAll("#colors .color-btn");
+
 // ===== LOG FUNKTIONEN =====
 function addLog(message, type = "info") {
     const timestamp = new Date().toLocaleTimeString();
@@ -174,6 +187,12 @@ function init() {
     const isLevel7 = window.location.pathname.includes("level7");
     if (isLevel7) {
         initLevel7();
+    }
+
+    // Level 8: LED Memory initialisieren
+    const isLevel8 = window.location.pathname.includes("level8");
+    if (isLevel8) {
+        initLevel8();
     }
 
     if (ArduinoManager.isConnected()) {
@@ -469,6 +488,97 @@ function setupArduinoListeners() {
                 }
                 handleSolve();
                 updateTaskUI(2);
+            }
+        }
+        // LEVEL 8 LOGIK - LED Memory
+        else if (msg.startsWith("LEVEL:")) {
+            const isLevel8 = window.location.pathname.includes("level8");
+            if (isLevel8) {
+                level8ExpectedLength = parseInt(msg.split(":")[1]);
+                level8CurrentLevel = level8ExpectedLength === 3 ? 1 :
+                    level8ExpectedLength === 5 ? 2 : 3;
+                if (level8LevelText) {
+                    level8LevelText.textContent = `Level: ${level8CurrentLevel} (${level8ExpectedLength} Farben)`;
+                }
+                updateLevel8Progress();
+                updateLevel8Dots();
+
+                // Status Text aktualisieren
+                if (statusText) {
+                    statusText.innerText = `Level ${level8CurrentLevel} startet gleich... Merke dir die Sequenz!`;
+                    statusText.style.color = "#007aff";
+                }
+
+                // Start Button deaktivieren während Level läuft
+                if (startLevel8Btn) {
+                    startLevel8Btn.disabled = true;
+                }
+
+                addLog(`Level ${level8CurrentLevel} wird geladen...`, "info");
+            }
+        } else if (msg === "RED" || msg === "YELLOW" || msg === "BLUE") {
+            const isLevel8 = window.location.pathname.includes("level8");
+            if (isLevel8 && level8GameActive) {
+                level8Sequence.push(msg);
+
+                // Zeige Fortschritt beim Abspielen der Sequenz
+                if (statusText && level8Sequence.length === level8ExpectedLength) {
+                    statusText.innerText = "Sequenz komplett! Jetzt bist du dran!";
+                    statusText.style.color = "#28a745";
+                } else if (statusText) {
+                    statusText.innerText = `Sequenz läuft... (${level8Sequence.length}/${level8ExpectedLength})`;
+                    statusText.style.color = "#ffc107";
+                }
+            }
+        } else if (msg === "OK") {
+            const isLevel8 = window.location.pathname.includes("level8");
+            if (isLevel8) {
+                if (level8Result) {
+                    level8Result.innerHTML = '<span class="text-success">✔ RICHTIG!</span>';
+                }
+                level8GameActive = false;
+                setLevel8ButtonsDisabled(true);
+
+                // Markiere aktuelles Level als geschafft
+                markLevel8Done(level8CurrentLevel);
+
+                if (level8CurrentLevel < 3) {
+                    // Zeige Start Button als "Weiter" Button für nächstes Level
+                    if (startLevel8Btn) {
+                        startLevel8Btn.innerHTML = '<i class="bi bi-arrow-right me-2"></i>Weiter zum nächsten Level';
+                        startLevel8Btn.classList.remove('btn-success');
+                        startLevel8Btn.classList.add('btn-primary');
+                        startLevel8Btn.disabled = false;
+                    }
+                    addLog(`Level ${level8CurrentLevel} geschafft! Weiter zu Level ${level8CurrentLevel + 1}`, "success");
+                } else {
+                    // Level 3 geschafft - Zeige Erfolgsscreen
+                    if (level8Result) {
+                        level8Result.innerHTML = '<span class="text-success">🏆 Alle Level geschafft! Glückwunsch!</span>';
+                    }
+                    if (startLevel8Btn) {
+                        startLevel8Btn.style.display = "none";
+                    }
+                    handleLevel8Complete();
+                    addLog("Alle Level geschafft! 🎉", "success");
+                }
+            }
+        } else if (msg === "FAIL") {
+            const isLevel8 = window.location.pathname.includes("level8");
+            if (isLevel8) {
+                if (level8Result) {
+                    level8Result.innerHTML = '<span class="text-danger">❌ FALSCH! Versuche es nochmal.</span>';
+                }
+                level8GameActive = false;
+                setLevel8ButtonsDisabled(true);
+
+                // Start Button verstecken, Reset Button anzeigen
+                if (startLevel8Btn) {
+                    startLevel8Btn.style.display = "none";
+                }
+                if (resetLevel8Btn) {
+                    resetLevel8Btn.style.display = "inline-block";
+                }
             }
         }
     });
@@ -853,6 +963,143 @@ function initLevel7() {
     addLog("Level 7 gestartet", "info");
 }
 
+// ===== LEVEL 8 FUNCTIONS =====
+function initLevel8() {
+    console.log("Level 8: LED Memory initialisiert");
+    addLog("Level 8 gestartet", "info");
+
+    resetLevel8GameState();
+
+    // Event Listeners für Level 8 Buttons
+    if (startLevel8Btn) {
+        startLevel8Btn.addEventListener("click", async () => {
+            // Prüfe ZUERST ob Button als "Weiter" fungiert (vor dem Reset!)
+            const isNextButton = startLevel8Btn.textContent.includes("Weiter");
+
+            // Dann erst State zurücksetzen
+            resetLevel8GameState();
+            level8GameActive = true;
+
+            if (isNextButton) {
+                // Nächstes Level
+                await ArduinoManager.sendToArduino("NEXT");
+                addLog("Nächstes Level gestartet", "success");
+            } else {
+                // Start vom aktuellen Level (nicht immer Level 1!)
+                // Wenn level8CurrentLevel noch 1 ist (initial), dann START
+                // Sonst RELOADLEVEL um aktuelles Level neu zu starten
+                if (level8CurrentLevel === 1) {
+                    await ArduinoManager.sendToArduino("START");
+                    addLog("Level 8 gestartet", "success");
+                } else {
+                    await ArduinoManager.sendToArduino("RELOADLEVEL");
+                    addLog(`Level ${level8CurrentLevel} neu gestartet`, "info");
+                }
+            }
+
+            setLevel8ButtonsDisabled(false);
+        });
+    }
+
+    if (resetLevel8Btn) {
+        resetLevel8Btn.addEventListener("click", async () => {
+            resetLevel8GameState();
+            level8GameActive = true;
+            await ArduinoManager.sendToArduino("RELOADLEVEL");
+            setLevel8ButtonsDisabled(false);
+            addLog("Level neu gestartet", "info");
+        });
+    }
+
+    // Color Button Clicks
+    if (level8ColorBtns) {
+        level8ColorBtns.forEach(btn => {
+            btn.addEventListener("click", async () => {
+                if (!level8GameActive) return;
+                if (level8UserInput.length >= level8ExpectedLength) return;
+
+                const color = btn.dataset.color;
+                level8UserInput.push(color);
+                updateLevel8Progress();
+
+                await ArduinoManager.sendToArduino("BTN:" + color);
+                addLog(`Farbe gewählt: ${color}`, "info");
+            });
+        });
+    }
+}
+
+function resetLevel8GameState() {
+    level8Sequence = [];
+    level8UserInput = [];
+    level8GameActive = false;
+
+    if (level8Progress) {
+        level8Progress.textContent = "Fortschritt: 0/0";
+    }
+    if (level8Result) {
+        level8Result.innerHTML = "";
+    }
+    if (resetLevel8Btn) {
+        resetLevel8Btn.style.display = "none";
+    }
+    if (startLevel8Btn) {
+        startLevel8Btn.innerHTML = '<i class="bi bi-play-fill me-2"></i>Start';
+        startLevel8Btn.classList.remove('btn-primary');
+        startLevel8Btn.classList.add('btn-success');
+        startLevel8Btn.style.display = "inline-block";
+        startLevel8Btn.disabled = false; // Start Button muss klickbar sein
+    }
+    setLevel8ButtonsDisabled(true);
+}
+
+function updateLevel8Progress() {
+    if (level8Progress) {
+        level8Progress.textContent = `Fortschritt: ${level8UserInput.length}/${level8ExpectedLength}`;
+    }
+}
+
+function setLevel8ButtonsDisabled(disabled) {
+    if (level8ColorBtns) {
+        level8ColorBtns.forEach(btn => {
+            btn.disabled = disabled;
+        });
+    }
+}
+
+function updateLevel8Dots() {
+    for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById("dot" + i);
+        if (dot) {
+            dot.classList.remove("active", "done");
+            // Markiere bereits abgeschlossene Levels als "done"
+            if (i < level8CurrentLevel) {
+                dot.classList.add("done");
+            }
+            // Markiere aktuelles Level als "active"
+            else if (i === level8CurrentLevel) {
+                dot.classList.add("active");
+            }
+        }
+    }
+}
+
+function markLevel8Done(lvl) {
+    const dot = document.getElementById("dot" + lvl);
+    if (dot) {
+        dot.classList.remove("active");
+        dot.classList.add("done");
+    }
+}
+
+async function handleLevel8Complete() {
+    console.log("🎉 Level 8 Complete!");
+    addLog("Level 8 geschafft! 🎉", "success");
+
+    // Erfolgs-Screen anzeigen
+    handleSolve();
+}
+
 // ===== JOYSTICK GAME (Level 2) =====
 function initJoystickGame() {
     canvas = document.getElementById("game-canvas");
@@ -917,6 +1164,9 @@ function spawnLevel2Obstacles() {
 function spawnLevel2Collectibles() {
     collectibles = [];
     const safePadding = 20;
+    const minCollectibleGap = 10;
+    const safeFromPlayerStart = 40;
+
     for (let i = 0; i < totalCollectibles; i++) {
         let placed = false;
         let tries = 0;
@@ -937,7 +1187,17 @@ function spawnLevel2Collectibles() {
                 return distance < candidate.radius + obstacle.radius + safePadding;
             });
 
-            if (!tooCloseToObstacle) {
+            const tooCloseToOtherCollectible = collectibles.some((c) => {
+                const distance = Math.hypot(candidate.x - c.x, candidate.y - c.y);
+                return distance < candidate.radius + c.radius + minCollectibleGap;
+            });
+
+            const tooCloseToPlayerStart = Math.hypot(
+                candidate.x - player.x,
+                candidate.y - player.y,
+            ) < candidate.radius + player.radius + safeFromPlayerStart;
+
+            if (!tooCloseToObstacle && !tooCloseToOtherCollectible && !tooCloseToPlayerStart) {
                 collectibles.push(candidate);
                 placed = true;
             }

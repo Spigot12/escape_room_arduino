@@ -42,82 +42,66 @@
         position: absolute;
         background: #555;
       }
-
       .task {
         background: #1a4d1a;
         border: 4px solid #00ff00;
       }
-
       .green-open {
         background: #1a4d1a;
         border: 4px solid transparent;
       }
-
       .locked {
         background: #8b0000;
         border: 4px solid #ff0000;
       }
-
       .open {
         background: #8b0000;
         border: 4px solid transparent;
       }
-
       .purple-locked {
         background: #4a0066;
         border: 4px solid #9933ff;
       }
-
       .purple-open {
         background: #4a0066;
         border: 4px solid transparent;
       }
-
       .orange-locked {
         background: #663300;
         border: 4px solid #ff8800;
       }
-
       .orange-open {
         background: #663300;
         border: 4px solid transparent;
       }
-
       .blue-locked {
         background: #003366;
         border: 4px solid #0066ff;
       }
-
       .blue-open {
         background: #003366;
         border: 4px solid transparent;
       }
-
       .yellow-locked {
         background: #666600;
         border: 4px solid #ffff00;
       }
-
       .yellow-open {
         background: #666600;
         border: 4px solid transparent;
       }
-
       .cyan-locked {
         background: #006666;
         border: 4px solid #00ffff;
       }
-
       .cyan-open {
         background: #006666;
         border: 4px solid transparent;
       }
-
       .magenta-locked {
         background: #660066;
         border: 4px solid #ff00ff;
       }
-
       .magenta-open {
         background: #660066;
         border: 4px solid transparent;
@@ -142,6 +126,7 @@
         background: #ffcc00;
         border-radius: 4px;
         border: 2px solid #000;
+        z-index: 10;
       }
 
       #coin {
@@ -176,6 +161,8 @@
         display: none;
         font-size: 14px;
         pointer-events: none;
+        z-index: 20;
+        white-space: nowrap;
       }
 
       #ui {
@@ -210,9 +197,359 @@
         border-radius: 6px;
         font-weight: bold;
       }
-
       #restart-btn:hover {
         background: #cc0000;
+      }
+
+      /* SECRET DOOR */
+      #secret-door {
+        position: absolute;
+        width: 22px;
+        height: 90px;
+        right: 0;
+        top: 555px;
+        background: linear-gradient(
+          180deg,
+          #c8a214 0%,
+          #f5d248 30%,
+          #c8a214 60%,
+          #f5d248 80%,
+          #c8a214 100%
+        );
+        border: 3px solid #ffd700;
+        border-right: none;
+        box-shadow: -3px 0 18px rgba(255, 215, 0, 0.7);
+        animation: door-glow 1.8s ease-in-out infinite;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #secret-door::before {
+        content: "🔒";
+        font-size: 12px;
+      }
+      @keyframes door-glow {
+        0%,
+        100% {
+          box-shadow: -3px 0 18px rgba(255, 215, 0, 0.7);
+        }
+        50% {
+          box-shadow:
+            -3px 0 35px rgba(255, 215, 0, 1),
+            -8px 0 20px rgba(255, 200, 0, 0.5);
+        }
+      }
+
+      /* =============================================
+         LOCK OVERLAY – Fahrradschloss-Style
+         ============================================= */
+      #lock-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.88);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+      }
+      #lock-overlay.active {
+        display: flex;
+      }
+
+      #lock-box {
+        background: linear-gradient(160deg, #1c1c1c 0%, #2a2a2a 100%);
+        border: 2px solid #444;
+        border-radius: 20px;
+        padding: 36px 40px 40px;
+        text-align: center;
+        min-width: 420px;
+        box-shadow:
+          0 0 60px rgba(0, 0, 0, 0.8),
+          0 0 20px rgba(255, 215, 0, 0.15);
+        position: relative;
+      }
+
+      #lock-close {
+        position: absolute;
+        top: 14px;
+        right: 18px;
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 1.4rem;
+        cursor: pointer;
+        line-height: 1;
+      }
+      #lock-close:hover {
+        color: #ccc;
+      }
+
+      .lock-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #999;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .lock-subtitle {
+        font-size: 0.8rem;
+        color: #555;
+        margin-bottom: 28px;
+      }
+
+      /* Bike lock body */
+      #bike-lock-body {
+        background: linear-gradient(
+          180deg,
+          #1a1a1a 0%,
+          #2d2d2d 40%,
+          #1a1a1a 100%
+        );
+        border: 3px solid #3a3a3a;
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin: 0 auto 24px;
+        display: inline-block;
+        box-shadow:
+          inset 0 2px 6px rgba(0, 0, 0, 0.6),
+          0 4px 20px rgba(0, 0, 0, 0.5);
+        position: relative;
+      }
+      #bike-lock-body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.08),
+          transparent
+        );
+        border-radius: 14px 14px 0 0;
+      }
+
+      .wheels-window {
+        position: relative;
+        display: flex;
+        gap: 6px;
+        background: #111;
+        border: 2px solid #222;
+        border-radius: 8px;
+        padding: 4px;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+      }
+      .wheels-window::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 4px;
+        right: 4px;
+        height: 52px;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.035);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        pointer-events: none;
+        z-index: 1;
+      }
+
+      .wheel-drum {
+        width: 56px;
+        height: 160px;
+        position: relative;
+        overflow: hidden;
+        border-radius: 6px;
+        background: #0d0d0d;
+        box-shadow:
+          inset 2px 0 5px rgba(0, 0, 0, 0.5),
+          inset -2px 0 5px rgba(0, 0, 0, 0.5);
+        cursor: ns-resize;
+        user-select: none;
+      }
+      .wheel-drum::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.95) 0%,
+          rgba(0, 0, 0, 0.4) 28%,
+          rgba(0, 0, 0, 0) 42%,
+          rgba(0, 0, 0, 0) 58%,
+          rgba(0, 0, 0, 0.4) 72%,
+          rgba(0, 0, 0, 0.95) 100%
+        );
+        z-index: 3;
+        pointer-events: none;
+        border-radius: 6px;
+      }
+
+      .wheel-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        will-change: transform;
+      }
+
+      .wheel-digit {
+        width: 56px;
+        height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 900;
+        font-family: "Courier New", monospace;
+        color: #bbb;
+        letter-spacing: -2px;
+        flex-shrink: 0;
+        border-bottom: 1px solid #1a1a1a;
+      }
+      .wheel-digit.selected {
+        color: #fff;
+        text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+      }
+
+      .wheel-label {
+        font-size: 0.65rem;
+        color: #444;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-top: 8px;
+        text-align: center;
+        width: 56px;
+      }
+
+      #lock-submit {
+        background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
+        border: 2px solid #555;
+        color: #bbb;
+        font-weight: bold;
+        font-size: 0.9rem;
+        padding: 10px 28px;
+        border-radius: 8px;
+        cursor: pointer;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        transition: all 0.2s;
+        width: 100%;
+        margin-top: 4px;
+      }
+      #lock-submit:hover {
+        background: linear-gradient(135deg, #333, #444);
+        border-color: #777;
+        color: #fff;
+      }
+
+      #lock-message {
+        margin-top: 14px;
+        font-size: 0.9rem;
+        min-height: 22px;
+        color: #666;
+      }
+
+      /* Unlocked / Entkommen screen */
+      #lock-unlocked {
+        display: none;
+        padding: 10px 0;
+      }
+      #lock-unlocked .unlock-icon {
+        font-size: 4rem;
+        margin-bottom: 16px;
+        animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      @keyframes pop-in {
+        0% {
+          transform: scale(0);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+      #lock-unlocked h2 {
+        color: #00cc66;
+        font-size: 2rem;
+        font-weight: 900;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+      }
+      #lock-unlocked p {
+        color: #777;
+        font-size: 0.9rem;
+        margin-bottom: 24px;
+      }
+
+      #leaderboard-btn {
+        background: linear-gradient(135deg, #1a4d1a, #2d7a2d);
+        border: 2px solid #00cc66;
+        color: #fff;
+        font-weight: bold;
+        font-size: 1rem;
+        padding: 14px 32px;
+        border-radius: 10px;
+        cursor: pointer;
+        width: 100%;
+        letter-spacing: 1px;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      #leaderboard-btn:hover {
+        background: linear-gradient(135deg, #2d7a2d, #3a9a3a);
+        box-shadow: 0 0 20px rgba(0, 204, 102, 0.4);
+      }
+
+      /* Hint dots */
+      .hint-dots {
+        display: flex;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 20px;
+      }
+      .hint-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        border: 2px solid #333;
+        background: #1a1a1a;
+        transition: all 0.3s;
+      }
+      .hint-dot.found {
+        background: #c8a214;
+        border-color: #ffd700;
+        box-shadow: 0 0 6px rgba(255, 215, 0, 0.5);
+      }
+
+      /* Shake animation */
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-10px);
+        }
+        40% {
+          transform: translateX(10px);
+        }
+        60% {
+          transform: translateX(-8px);
+        }
+        80% {
+          transform: translateX(8px);
+        }
+      }
+      .shake {
+        animation: shake 0.45s ease;
       }
     </style>
   </head>
@@ -220,7 +557,6 @@
     <div id="game-container">
       <div id="game-area">
         <div id="map">
-          <!-- Grüner Raum (Level 1 - links oben) -->
           <div
             id="room1"
             class="room task"
@@ -228,8 +564,6 @@
           >
             <span class="room-label">1</span>
           </div>
-
-          <!-- Roter Raum (Level 2 - mitte oben) -->
           <div
             id="room2"
             class="room locked"
@@ -237,8 +571,6 @@
           >
             <span class="room-label">2</span>
           </div>
-
-          <!-- Lila Raum (Level 3 - links mitte) -->
           <div
             id="room3"
             class="room purple-locked"
@@ -246,8 +578,6 @@
           >
             <span class="room-label">3</span>
           </div>
-
-          <!-- Orangener Raum (Level 4 - rechts mitte) -->
           <div
             id="room4"
             class="room orange-locked"
@@ -255,8 +585,6 @@
           >
             <span class="room-label">4</span>
           </div>
-
-          <!-- Blauer Raum (Level 5 - mitte unten) -->
           <div
             id="room5"
             class="room blue-locked"
@@ -264,8 +592,6 @@
           >
             <span class="room-label">5</span>
           </div>
-
-          <!-- Gelber Raum (Level 6 - rechts oben) -->
           <div
             id="room6"
             class="room yellow-locked"
@@ -273,8 +599,6 @@
           >
             <span class="room-label">6</span>
           </div>
-
-          <!-- Cyan Raum (Level 7 - links unten) -->
           <div
             id="room7"
             class="room cyan-locked"
@@ -282,8 +606,6 @@
           >
             <span class="room-label">7</span>
           </div>
-
-          <!-- Magenta Raum (Final Level - rechts unten) -->
           <div
             id="room8"
             class="room magenta-locked"
@@ -292,11 +614,10 @@
             <span class="room-label">⭐</span>
           </div>
 
-          <!-- Coin (mitte der Map) -->
+          <div id="secret-door"></div>
           <div id="coin" style="left: 900px; top: 500px">💰</div>
-
           <div id="player"></div>
-          <div id="interaction">E</div>
+          <div id="interaction"></div>
         </div>
       </div>
 
@@ -308,278 +629,475 @@
           <div id="slot4" class="slot"></div>
           <div id="slot5" class="slot"></div>
         </div>
-
         <button id="restart-btn">Restart</button>
+      </div>
+    </div>
+
+    <!-- LOCK OVERLAY -->
+    <div id="lock-overlay">
+      <div id="lock-box">
+        <button id="lock-close">✕</button>
+
+        <div class="lock-title">Geheimtür</div>
+        <div class="lock-subtitle">Finde die Ziffern in den Levels</div>
+
+        <div class="hint-dots">
+          <div class="hint-dot" id="hint-d1" title="Level 2"></div>
+          <div class="hint-dot" id="hint-d2" title="Level 3"></div>
+          <div class="hint-dot" id="hint-d3" title="Level 5"></div>
+          <div class="hint-dot" id="hint-d4" title="Level 7"></div>
+        </div>
+
+        <div id="lock-input-section">
+          <div id="bike-lock-body">
+            <div class="wheels-window">
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                "
+              >
+                <div class="wheel-drum" id="wheel0" data-index="0">
+                  <div class="wheel-inner" id="inner0"></div>
+                </div>
+                <div class="wheel-label">L2</div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                "
+              >
+                <div class="wheel-drum" id="wheel1" data-index="1">
+                  <div class="wheel-inner" id="inner1"></div>
+                </div>
+                <div class="wheel-label">L3</div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                "
+              >
+                <div class="wheel-drum" id="wheel2" data-index="2">
+                  <div class="wheel-inner" id="inner2"></div>
+                </div>
+                <div class="wheel-label">L5</div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                "
+              >
+                <div class="wheel-drum" id="wheel3" data-index="3">
+                  <div class="wheel-inner" id="inner3"></div>
+                </div>
+                <div class="wheel-label">L7</div>
+              </div>
+            </div>
+          </div>
+
+          <button id="lock-submit">ÖFFNEN</button>
+          <div id="lock-message"></div>
+        </div>
+
+        <!-- SUCCESS SCREEN -->
+        <div id="lock-unlocked">
+          <div class="unlock-icon">🏆</div>
+          <h2>Du bist entkommen!</h2>
+          <p>
+            Du hast alle Ziffern gefunden und das Schloss geknackt.<br />Dein
+            Name gehört auf die Bestenliste!
+          </p>
+          <button id="leaderboard-btn">🏅 Leaderboard anzeigen</button>
+        </div>
       </div>
     </div>
 
     <script>
       const player = document.getElementById("player");
-      const map = document.getElementById("map");
+      const mapEl = document.getElementById("map");
       const interaction = document.getElementById("interaction");
-      const slot1 = document.getElementById("slot1");
-      const slot2 = document.getElementById("slot2");
-      const slot3 = document.getElementById("slot3");
-      const slot4 = document.getElementById("slot4");
-      const slot5 = document.getElementById("slot5");
-      const restartBtn = document.getElementById("restart-btn");
       const coin = document.getElementById("coin");
+      const lockOverlay = document.getElementById("lock-overlay");
+      const lockClose = document.getElementById("lock-close");
+      const lockSubmit = document.getElementById("lock-submit");
+      const lockMessage = document.getElementById("lock-message");
+      const lockInputSection = document.getElementById("lock-input-section");
+      const lockUnlocked = document.getElementById("lock-unlocked");
+      const leaderboardBtn = document.getElementById("leaderboard-btn");
+      const slots = [1, 2, 3, 4, 5].map((i) =>
+        document.getElementById(`slot${i}`),
+      );
 
-      const room1 = document.getElementById("room1");
-      const room2 = document.getElementById("room2");
-      const room3 = document.getElementById("room3");
-      const room4 = document.getElementById("room4");
-      const room5 = document.getElementById("room5");
-      const room6 = document.getElementById("room6");
-      const room7 = document.getElementById("room7");
-      const room8 = document.getElementById("room8");
-
-      let playerX = 200;
-      let playerY = 200;
-      const speed = 3;
-
-      const keys = { w: false, a: false, s: false, d: false };
-
-      let canEnterGreenRoom = false;
-      let canOpenGreenRoom = false;
-      let canPickupCoin = false;
-      let canOpenRedRoom = false;
-      let canEnterRedRoom = false;
-      let canOpenPurpleRoom = false;
-      let canEnterPurpleRoom = false;
-      let canOpenOrangeRoom = false;
-      let canEnterOrangeRoom = false;
-      let canOpenBlueRoom = false;
-      let canEnterBlueRoom = false;
-      let canOpenYellowRoom = false;
-      let canEnterYellowRoom = false;
-      let canOpenCyanRoom = false;
-      let canEnterCyanRoom = false;
-      let canOpenMagentaRoom = false;
-      let canEnterMagentaRoom = false;
-      let canEnterSecretRoom = false;
-
-      // Räume Koordinaten (updated)
-      const room1Coords = { x: 300, y: 150, width: 250, height: 200 };
-      const room2Coords = { x: 750, y: 100, width: 250, height: 200 };
-      const room3Coords = { x: 150, y: 500, width: 250, height: 200 };
-      const room4Coords = { x: 1200, y: 450, width: 250, height: 200 };
-      const room5Coords = { x: 600, y: 800, width: 250, height: 200 };
-      const room6Coords = { x: 1500, y: 150, width: 250, height: 200 };
-      const room7Coords = { x: 250, y: 850, width: 250, height: 200 };
-      const room8Coords = { x: 1400, y: 800, width: 250, height: 200 };
-      const coinCoords = { x: 900, y: 500, width: 25, height: 25 };
-
-      // Secret Easter Egg Position (unsichtbar, nur ein Trigger-Punkt an der Border)
-      let secretEasterEggCoords = { x: 0, y: 0, width: 50, height: 50 };
-
-      function generateSecretEasterEggPosition() {
-        const mapWidth = 2000;
-        const mapHeight = 1200;
-        const triggerSize = 50; // Kleiner unsichtbarer Trigger-Bereich
-
-        // Zufällig eine der 4 Seiten wählen: 0=oben, 1=rechts, 2=unten, 3=links
-        const side = Math.floor(Math.random() * 4);
-
-        let x, y;
-
-        switch (side) {
-          case 0: // Oben
-            x = Math.random() * (mapWidth - 200) + 100;
-            y = 0; // Direkt am oberen Rand
-            break;
-          case 1: // Rechts
-            x = mapWidth - triggerSize; // Direkt am rechten Rand
-            y = Math.random() * (mapHeight - 200) + 100;
-            break;
-          case 2: // Unten
-            x = Math.random() * (mapWidth - 200) + 100;
-            y = mapHeight - triggerSize; // Direkt am unteren Rand
-            break;
-          case 3: // Links
-            x = 0; // Direkt am linken Rand
-            y = Math.random() * (mapHeight - 200) + 100;
-            break;
+      // =============================================
+      // CODES
+      // =============================================
+      function initSecretCodes() {
+        if (!localStorage.getItem("secret_code_l1")) {
+          localStorage.setItem(
+            "secret_code_l1",
+            String(Math.floor(Math.random() * 10)),
+          );
+          localStorage.setItem(
+            "secret_code_l3",
+            String(Math.floor(Math.random() * 10)),
+          );
+          localStorage.setItem(
+            "secret_code_l5",
+            String(Math.floor(Math.random() * 10)),
+          );
+          localStorage.setItem(
+            "secret_code_l7",
+            String(Math.floor(Math.random() * 10)),
+          );
         }
+      }
+      initSecretCodes();
 
-        secretEasterEggCoords = {
-          x: x,
-          y: y,
-          width: triggerSize,
-          height: triggerSize,
-        };
+      // =============================================
+      // BIKE LOCK WHEELS
+      // =============================================
+      const NUM_WHEELS = 4;
+      const wheelValues = [0, 0, 0, 0];
+      const ITEM_H = 52;
 
-        console.log(`🥚 Secret Easter Egg at side ${side}: (${x}, ${y})`);
+      function buildWheel(i) {
+        const inner = document.getElementById(`inner${i}`);
+        inner.innerHTML = "";
+        for (let rep = 0; rep < 3; rep++) {
+          for (let d = 0; d < 10; d++) {
+            const div = document.createElement("div");
+            div.className = "wheel-digit";
+            div.textContent = d;
+            inner.appendChild(div);
+          }
+        }
+        setWheelPosition(i, 0, false);
       }
 
-      // Secret Easter Egg Position beim Laden generieren
-      generateSecretEasterEggPosition();
+      function setWheelPosition(i, digit, animate) {
+        wheelValues[i] = ((digit % 10) + 10) % 10;
+        const inner = document.getElementById(`inner${i}`);
+        const centerOffset = (160 - ITEM_H) / 2;
+        const targetY = -((10 + wheelValues[i]) * ITEM_H) + centerOffset;
+        inner.style.transition = animate
+          ? "transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94)"
+          : "none";
+        inner.style.transform = `translateY(${targetY}px)`;
+        inner.querySelectorAll(".wheel-digit").forEach((el, idx) => {
+          el.classList.toggle("selected", idx % 10 === wheelValues[i]);
+        });
+      }
+
+      function scrollWheel(i, direction) {
+        setWheelPosition(i, (wheelValues[i] + direction + 10) % 10, true);
+      }
+
+      for (let i = 0; i < NUM_WHEELS; i++) buildWheel(i);
+
+      const dragState = {};
+      for (let i = 0; i < NUM_WHEELS; i++) {
+        const drum = document.getElementById(`wheel${i}`);
+        const idx = i;
+
+        drum.addEventListener(
+          "wheel",
+          (e) => {
+            e.preventDefault();
+            scrollWheel(idx, e.deltaY > 0 ? 1 : -1);
+          },
+          { passive: false },
+        );
+
+        let touchStartY = 0,
+          touchStartVal = 0;
+        drum.addEventListener("touchstart", (e) => {
+          touchStartY = e.touches[0].clientY;
+          touchStartVal = wheelValues[idx];
+        });
+        drum.addEventListener(
+          "touchmove",
+          (e) => {
+            e.preventDefault();
+            const steps = Math.round((touchStartY - e.touches[0].clientY) / 30);
+            setWheelPosition(idx, (touchStartVal + steps + 100) % 10, true);
+          },
+          { passive: false },
+        );
+
+        drum.addEventListener("mousedown", (e) => {
+          dragState[idx] = {
+            startY: e.clientY,
+            startVal: wheelValues[idx],
+            active: true,
+          };
+        });
+      }
+
+      document.addEventListener("mousemove", (e) => {
+        for (let i = 0; i < NUM_WHEELS; i++) {
+          if (dragState[i] && dragState[i].active) {
+            const steps = Math.round((dragState[i].startY - e.clientY) / 20);
+            setWheelPosition(
+              i,
+              (dragState[i].startVal + steps + 100) % 10,
+              false,
+            );
+          }
+        }
+      });
+      document.addEventListener("mouseup", () => {
+        for (let i = 0; i < NUM_WHEELS; i++) {
+          if (dragState[i]) dragState[i].active = false;
+        }
+      });
+
+      // =============================================
+      // LOCK OPEN / CHECK
+      // =============================================
+      function openLock() {
+        lockOverlay.classList.add("active");
+        updateHintDots();
+        lockMessage.textContent = "";
+        const unlocked =
+          localStorage.getItem("secret_door_unlocked") === "true";
+        lockInputSection.style.display = unlocked ? "none" : "block";
+        lockUnlocked.style.display = unlocked ? "block" : "none";
+      }
+
+      function updateHintDots() {
+        ["l1", "l3", "l5", "l7"].forEach((k, i) => {
+          document
+            .getElementById(`hint-d${i + 1}`)
+            .classList.toggle(
+              "found",
+              localStorage.getItem(`secret_code_${k}_found`) === "true",
+            );
+        });
+      }
+
+      lockClose.addEventListener("click", () =>
+        lockOverlay.classList.remove("active"),
+      );
+      lockOverlay.addEventListener("click", (e) => {
+        if (e.target === lockOverlay) lockOverlay.classList.remove("active");
+      });
+      lockSubmit.addEventListener("click", checkLockCode);
+      leaderboardBtn.addEventListener("click", () => {
+        window.location.href = "leaderboard.html";
+      });
+
+      function checkLockCode() {
+        const entered = wheelValues.join("");
+        const correct = ["l1", "l3", "l5", "l7"]
+          .map((k) => localStorage.getItem(`secret_code_${k}`))
+          .join("");
+        if (entered === correct) {
+          localStorage.setItem("secret_door_unlocked", "true");
+          lockMessage.textContent = "";
+          lockInputSection.style.display = "none";
+          lockUnlocked.style.display = "block";
+        } else {
+          lockMessage.innerHTML =
+            "<span style='color:#cc4444'>✗ Falscher Code!</span>";
+          const body = document.getElementById("bike-lock-body");
+          body.classList.remove("shake");
+          void body.offsetWidth;
+          body.classList.add("shake");
+          setTimeout(() => body.classList.remove("shake"), 500);
+        }
+      }
+
+      // =============================================
+      // PLAYER & GAME LOOP
+      // =============================================
+      let playerX = 200,
+        playerY = 200;
+      const SPEED = 3;
+      const keysDown = { w: false, a: false, s: false, d: false };
+
+      let canPickupCoin = false;
+      let canOpenGreenRoom = false,
+        canEnterGreenRoom = false;
+      let canOpenRedRoom = false,
+        canEnterRedRoom = false;
+      let canOpenPurpleRoom = false,
+        canEnterPurpleRoom = false;
+      let canOpenOrangeRoom = false,
+        canEnterOrangeRoom = false;
+      let canOpenBlueRoom = false,
+        canEnterBlueRoom = false;
+      let canOpenYellowRoom = false,
+        canEnterYellowRoom = false;
+      let canOpenCyanRoom = false,
+        canEnterCyanRoom = false;
+      let canOpenMagentaRoom = false,
+        canEnterMagentaRoom = false;
+      let canOpenSecretDoor = false;
+      let canEnterEasterEgg = false;
+
+      const R1 = { x: 300, y: 150, w: 250, h: 200 },
+        R2 = { x: 750, y: 100, w: 250, h: 200 };
+      const R3 = { x: 150, y: 500, w: 250, h: 200 },
+        R4 = { x: 1200, y: 450, w: 250, h: 200 };
+      const R5 = { x: 600, y: 800, w: 250, h: 200 },
+        R6 = { x: 1500, y: 150, w: 250, h: 200 };
+      const R7 = { x: 250, y: 850, w: 250, h: 200 },
+        R8 = { x: 1400, y: 800, w: 250, h: 200 };
+      const COIN = { x: 900, y: 500, w: 25, h: 25 };
+      const DOOR = { x: 1975, y: 555, w: 25, h: 90 };
+      const EGG = { x: Math.random() * 1800 + 100, y: 1150, w: 50, h: 50 };
 
       function updateInventory() {
-        const hasCoin = localStorage.getItem("has_coin") === "true";
-        const hasKey = localStorage.getItem("level1_key") === "true";
-        const hasDiamond = localStorage.getItem("has_diamond") === "true";
-        const hasRuby = localStorage.getItem("has_ruby") === "true";
-        const hasEmerald = localStorage.getItem("has_emerald") === "true";
-        const hasSapphire = localStorage.getItem("has_sapphire") === "true";
-        const hasTopaz = localStorage.getItem("has_topaz") === "true";
-        const hasAmethyst = localStorage.getItem("has_amethyst") === "true";
-        const greenRoomOpen =
-          localStorage.getItem("green_room_open") === "true";
-
         const items = [];
-        if (hasCoin) items.push("💰");
-        if (hasKey) items.push("🔑");
-        if (hasDiamond) items.push("💎");
-        if (hasRuby) items.push("💎");
-        if (hasEmerald) items.push("💎");
-        if (hasSapphire) items.push("💎");
-        if (hasTopaz) items.push("💎");
-        if (hasAmethyst) items.push("💎");
-
-        slot1.innerText = "";
-        slot2.innerText = "";
-        slot3.innerText = "";
-        slot4.innerText = "";
-        slot5.innerText = "";
-
-        if (items.length > 0) slot1.innerText = items[0];
-        if (items.length > 1) slot2.innerText = items[1];
-        if (items.length > 2) slot3.innerText = items[2];
-        if (items.length > 3) slot4.innerText = items[3];
-        if (items.length > 4) slot5.innerText = items[4];
-
-        if ((hasCoin || greenRoomOpen) && coin) {
+        if (localStorage.getItem("has_coin") === "true") items.push("💰");
+        if (localStorage.getItem("level1_key") === "true") items.push("🔑");
+        if (localStorage.getItem("has_diamond") === "true") items.push("💎");
+        if (localStorage.getItem("has_ruby") === "true") items.push("💎");
+        if (localStorage.getItem("has_emerald") === "true") items.push("💎");
+        if (localStorage.getItem("has_sapphire") === "true") items.push("💎");
+        if (localStorage.getItem("has_topaz") === "true") items.push("💎");
+        if (localStorage.getItem("has_amethyst") === "true") items.push("💎");
+        slots.forEach((s, i) => (s.innerText = items[i] || ""));
+        if (
+          (localStorage.getItem("has_coin") === "true" ||
+            localStorage.getItem("green_room_open") === "true") &&
+          coin
+        )
           coin.style.display = "none";
-        }
       }
       updateInventory();
 
-      restartBtn.addEventListener("click", () => {
-        localStorage.removeItem("has_coin");
-        localStorage.removeItem("level1_key");
-        localStorage.removeItem("has_diamond");
-        localStorage.removeItem("has_ruby");
-        localStorage.removeItem("has_emerald");
-        localStorage.removeItem("has_sapphire");
-        localStorage.removeItem("has_topaz");
-        localStorage.removeItem("has_amethyst");
-        localStorage.removeItem("green_room_open");
-        localStorage.removeItem("red_room_open");
-        localStorage.removeItem("purple_room_open");
-        localStorage.removeItem("orange_room_open");
-        localStorage.removeItem("blue_room_open");
-        localStorage.removeItem("yellow_room_open");
-        localStorage.removeItem("cyan_room_open");
-        localStorage.removeItem("magenta_room_open");
+      document.getElementById("restart-btn").addEventListener("click", () => {
+        [
+          "has_coin",
+          "level1_key",
+          "has_diamond",
+          "has_ruby",
+          "has_emerald",
+          "has_sapphire",
+          "has_topaz",
+          "has_amethyst",
+          "green_room_open",
+          "red_room_open",
+          "purple_room_open",
+          "orange_room_open",
+          "blue_room_open",
+          "yellow_room_open",
+          "cyan_room_open",
+          "magenta_room_open",
+          "secret_code_l1",
+          "secret_code_l3",
+          "secret_code_l5",
+          "secret_code_l7",
+          "secret_code_l1_found",
+          "secret_code_l3_found",
+          "secret_code_l5_found",
+          "secret_code_l7_found",
+          "secret_door_unlocked",
+          "secret_code_l5_led",
+        ].forEach((k) => localStorage.removeItem(k));
         window.location.reload();
       });
 
       function updateCamera() {
-        const viewWidth = 800;
-        const viewHeight = 450;
-
-        let camX = playerX - viewWidth / 2;
-        let camY = playerY - viewHeight / 2;
-
-        camX = Math.max(0, Math.min(camX, 2000 - viewWidth));
-        camY = Math.max(0, Math.min(camY, 1200 - viewHeight));
-
-        map.style.left = -camX + "px";
-        map.style.top = -camY + "px";
+        let cx = Math.max(0, Math.min(playerX - 400, 1200));
+        let cy = Math.max(0, Math.min(playerY - 225, 750));
+        mapEl.style.left = -cx + "px";
+        mapEl.style.top = -cy + "px";
       }
 
-      function checkRoomCollision(roomCoords, isOpen) {
+      function overlap(ax, ay, aw, ah, bx, by, bw, bh) {
+        return !(ax > bx + bw || ax + aw < bx || ay > by + bh || ay + ah < by);
+      }
+
+      function touching(r) {
+        const m = 10;
+        return (
+          (Math.abs(playerX + 30 - r.x) < m &&
+            playerY + 30 > r.y &&
+            playerY < r.y + r.h) ||
+          (Math.abs(playerX - (r.x + r.w)) < m &&
+            playerY + 30 > r.y &&
+            playerY < r.y + r.h) ||
+          (Math.abs(playerY + 30 - r.y) < m &&
+            playerX + 30 > r.x &&
+            playerX < r.x + r.w) ||
+          (Math.abs(playerY - (r.y + r.h)) < m &&
+            playerX + 30 > r.x &&
+            playerX < r.x + r.w)
+        );
+      }
+
+      function collide(r, isOpen) {
         if (isOpen) return;
-
-        const nextLeft = playerX;
-        const nextRight = playerX + 30;
-        const nextTop = playerY;
-        const nextBottom = playerY + 30;
-
-        const roomLeft = roomCoords.x;
-        const roomRight = roomCoords.x + roomCoords.width;
-        const roomTop = roomCoords.y;
-        const roomBottom = roomCoords.y + roomCoords.height;
-
         if (
-          nextRight > roomLeft &&
-          nextLeft < roomLeft &&
-          nextBottom > roomTop &&
-          nextTop < roomBottom
-        ) {
-          playerX = roomLeft - 30;
-        }
-
+          playerX + 30 > r.x &&
+          playerX < r.x &&
+          playerY + 30 > r.y &&
+          playerY < r.y + r.h
+        )
+          playerX = r.x - 30;
         if (
-          nextLeft < roomRight &&
-          nextRight > roomRight &&
-          nextBottom > roomTop &&
-          nextTop < roomBottom
-        ) {
-          playerX = roomRight;
-        }
-
+          playerX < r.x + r.w &&
+          playerX + 30 > r.x + r.w &&
+          playerY + 30 > r.y &&
+          playerY < r.y + r.h
+        )
+          playerX = r.x + r.w;
         if (
-          nextBottom > roomTop &&
-          nextTop < roomTop &&
-          nextRight > roomLeft &&
-          nextLeft < roomRight
-        ) {
-          playerY = roomTop - 30;
-        }
-
+          playerY + 30 > r.y &&
+          playerY < r.y &&
+          playerX + 30 > r.x &&
+          playerX < r.x + r.w
+        )
+          playerY = r.y - 30;
         if (
-          nextTop < roomBottom &&
-          nextBottom > roomBottom &&
-          nextRight > roomLeft &&
-          nextLeft < roomRight
-        ) {
-          playerY = roomBottom;
-        }
+          playerY < r.y + r.h &&
+          playerY + 30 > r.y + r.h &&
+          playerX + 30 > r.x &&
+          playerX < r.x + r.w
+        )
+          playerY = r.y + r.h;
       }
 
-      function update() {
-        let oldX = playerX;
-        let oldY = playerY;
+      function gameLoop() {
+        if (!lockOverlay.classList.contains("active")) {
+          if (keysDown.w) playerY -= SPEED;
+          if (keysDown.s) playerY += SPEED;
+          if (keysDown.a) playerX -= SPEED;
+          if (keysDown.d) playerX += SPEED;
+        }
 
-        if (keys.w) playerY -= speed;
-        if (keys.s) playerY += speed;
-        if (keys.a) playerX -= speed;
-        if (keys.d) playerX += speed;
+        playerX = Math.max(0, Math.min(playerX, 1970));
+        playerY = Math.max(0, Math.min(playerY, 1170));
 
-        if (playerX < 0) playerX = 0;
-        if (playerY < 0) playerY = 0;
-        if (playerX > 2000 - 30) playerX = 2000 - 30;
-        if (playerY > 1200 - 30) playerY = 1200 - 30;
+        const g = localStorage.getItem("green_room_open") === "true";
+        const r = localStorage.getItem("red_room_open") === "true";
+        const p = localStorage.getItem("purple_room_open") === "true";
+        const o = localStorage.getItem("orange_room_open") === "true";
+        const b = localStorage.getItem("blue_room_open") === "true";
+        const y = localStorage.getItem("yellow_room_open") === "true";
+        const c = localStorage.getItem("cyan_room_open") === "true";
+        const m = localStorage.getItem("magenta_room_open") === "true";
 
-        const greenRoomOpen =
-          localStorage.getItem("green_room_open") === "true";
-        const redRoomOpen = localStorage.getItem("red_room_open") === "true";
-        const purpleRoomOpen =
-          localStorage.getItem("purple_room_open") === "true";
-        const orangeRoomOpen =
-          localStorage.getItem("orange_room_open") === "true";
-        const blueRoomOpen = localStorage.getItem("blue_room_open") === "true";
-        const yellowRoomOpen =
-          localStorage.getItem("yellow_room_open") === "true";
-        const cyanRoomOpen = localStorage.getItem("cyan_room_open") === "true";
-        const magentaRoomOpen =
-          localStorage.getItem("magenta_room_open") === "true";
-
-        checkRoomCollision(room1Coords, greenRoomOpen);
-        checkRoomCollision(room2Coords, redRoomOpen);
-        checkRoomCollision(room3Coords, purpleRoomOpen);
-        checkRoomCollision(room4Coords, orangeRoomOpen);
-        checkRoomCollision(room5Coords, blueRoomOpen);
-        checkRoomCollision(room6Coords, yellowRoomOpen);
-        checkRoomCollision(room7Coords, cyanRoomOpen);
-        checkRoomCollision(room8Coords, magentaRoomOpen);
-        // Secret Easter Egg ist nur ein Trigger, keine Kollision
+        collide(R1, g);
+        collide(R2, r);
+        collide(R3, p);
+        collide(R4, o);
+        collide(R5, b);
+        collide(R6, y);
+        collide(R7, c);
+        collide(R8, m);
 
         player.style.left = playerX + "px";
         player.style.top = playerY + "px";
-
         updateCamera();
 
         const hasCoin = localStorage.getItem("has_coin") === "true";
@@ -592,415 +1110,317 @@
         const hasAmethyst = localStorage.getItem("has_amethyst") === "true";
 
         interaction.style.left = playerX - 25 + "px";
-        interaction.style.top = playerY - 35 + "px";
-
+        interaction.style.top = playerY - 38 + "px";
         interaction.style.display = "none";
-        canEnterGreenRoom = false;
-        canPickupCoin = false;
-        canOpenRedRoom = false;
-        canEnterRedRoom = false;
-        canOpenPurpleRoom = false;
-        canEnterPurpleRoom = false;
-        canOpenOrangeRoom = false;
-        canEnterOrangeRoom = false;
-        canOpenBlueRoom = false;
-        canEnterBlueRoom = false;
-        canOpenYellowRoom = false;
-        canEnterYellowRoom = false;
-        canOpenCyanRoom = false;
-        canEnterCyanRoom = false;
-        canOpenMagentaRoom = false;
-        canEnterMagentaRoom = false;
-        canEnterSecretRoom = false;
 
-        const playerRect = { x: playerX, y: playerY, width: 30, height: 30 };
+        canPickupCoin = canOpenGreenRoom = canEnterGreenRoom = false;
+        canOpenRedRoom = canEnterRedRoom = false;
+        canOpenPurpleRoom = canEnterPurpleRoom = false;
+        canOpenOrangeRoom = canEnterOrangeRoom = false;
+        canOpenBlueRoom = canEnterBlueRoom = false;
+        canOpenYellowRoom = canEnterYellowRoom = false;
+        canOpenCyanRoom = canEnterCyanRoom = false;
+        canOpenMagentaRoom = canEnterMagentaRoom = false;
+        canOpenSecretDoor = false;
+        canEnterEasterEgg = false;
 
-        // SECRET EASTER EGG Check (unsichtbar, nur Trigger wenn man dran läuft)
-        if (rectsOverlap(playerRect, secretEasterEggCoords)) {
+        const px = { x: playerX, y: playerY, w: 30, h: 30 };
+
+        // Easter egg – nur unten
+        if (overlap(px.x, px.y, px.w, px.h, EGG.x, EGG.y, EGG.w, EGG.h)) {
           interaction.style.display = "block";
           interaction.innerText = "E - ??? 🥚";
-          canEnterSecretRoom = true;
+          canEnterEasterEgg = true;
         }
 
-        // COIN AUFHEBEN
-        if (!hasCoin && coin.style.display !== "none") {
-          if (rectsOverlap(playerRect, coinCoords)) {
-            interaction.style.display = "block";
-            interaction.innerText = "Drücke E um Coin aufzuheben";
-            canPickupCoin = true;
-          }
+        // Secret door
+        if (
+          touching(DOOR) ||
+          overlap(px.x, px.y, px.w, px.h, DOOR.x, DOOR.y, DOOR.w, DOOR.h)
+        ) {
+          interaction.style.display = "block";
+          interaction.innerText = "E - 🔐 Geheimtür";
+          canOpenSecretDoor = true;
         }
 
-        // GRÜNER RAUM
-        if (!greenRoomOpen && hasCoin) {
-          if (isTouchingRoom(room1Coords)) {
+        // Coin
+        if (
+          !hasCoin &&
+          coin.style.display !== "none" &&
+          overlap(px.x, px.y, px.w, px.h, COIN.x, COIN.y, COIN.w, COIN.h)
+        ) {
+          interaction.style.display = "block";
+          interaction.innerText = "E - Coin aufheben";
+          canPickupCoin = true;
+        }
+
+        // Green
+        if (!g) {
+          if (hasCoin && touching(R1)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den grünen Raum zu öffnen";
+            interaction.innerText = "E - Grünen Raum öffnen";
             canOpenGreenRoom = true;
-          }
-        }
-
-        if (!greenRoomOpen && !hasCoin) {
-          if (isTouchingRoom(room1Coords)) {
+          } else if (!hasCoin && touching(R1)) {
             interaction.style.display = "block";
-            interaction.innerText = "Coin benötigt";
+            interaction.innerText = "💰 Coin benötigt";
           }
-        }
-
-        if (greenRoomOpen) {
-          room1.classList.remove("task");
-          room1.classList.add("green-open");
-
-          if (rectsOverlap(playerRect, room1Coords)) {
+        } else {
+          document.getElementById("room1").className = "room green-open";
+          if (overlap(px.x, px.y, px.w, px.h, R1.x, R1.y, R1.w, R1.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Level 1 starten";
             canEnterGreenRoom = true;
           }
         }
 
-        // ROTER RAUM
-        if (!redRoomOpen && hasKey) {
-          if (isTouchingRoom(room2Coords)) {
+        // Red
+        if (!r) {
+          if (hasKey && touching(R2)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den roten Raum zu öffnen";
+            interaction.innerText = "E - Roten Raum öffnen";
             canOpenRedRoom = true;
-          }
-        }
-
-        if (!redRoomOpen && !hasKey) {
-          if (isTouchingRoom(room2Coords)) {
+          } else if (!hasKey && touching(R2)) {
             interaction.style.display = "block";
-            interaction.innerText = "Schlüssel benötigt (Level 1 abschließen)";
+            interaction.innerText = "🔑 Schlüssel benötigt (Level 1)";
           }
-        }
-
-        if (redRoomOpen) {
-          room2.classList.remove("locked");
-          room2.classList.add("open");
-
-          if (rectsOverlap(playerRect, room2Coords)) {
+        } else {
+          document.getElementById("room2").className = "room open";
+          if (overlap(px.x, px.y, px.w, px.h, R2.x, R2.y, R2.w, R2.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Level 2 starten";
             canEnterRedRoom = true;
           }
         }
 
-        // LILA RAUM
-        if (!purpleRoomOpen && hasDiamond) {
-          if (isTouchingRoom(room3Coords)) {
+        // Purple
+        if (!p) {
+          if (hasDiamond && touching(R3)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den lila Raum zu öffnen";
+            interaction.innerText = "E - Lila Raum öffnen";
             canOpenPurpleRoom = true;
-          }
-        }
-
-        if (!purpleRoomOpen && !hasDiamond) {
-          if (isTouchingRoom(room3Coords)) {
+          } else if (!hasDiamond && touching(R3)) {
             interaction.style.display = "block";
-            interaction.innerText = "Diamant benötigt (Level 2 abschließen)";
+            interaction.innerText = "💎 Diamant benötigt (Level 2)";
           }
-        }
-
-        if (purpleRoomOpen) {
-          room3.classList.remove("purple-locked");
-          room3.classList.add("purple-open");
-
-          if (rectsOverlap(playerRect, room3Coords)) {
+        } else {
+          document.getElementById("room3").className = "room purple-open";
+          if (overlap(px.x, px.y, px.w, px.h, R3.x, R3.y, R3.w, R3.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Level 3 starten";
             canEnterPurpleRoom = true;
           }
         }
 
-        // ORANGENER RAUM
-        if (!orangeRoomOpen && hasRuby) {
-          if (isTouchingRoom(room4Coords)) {
+        // Orange
+        if (!o) {
+          if (hasRuby && touching(R4)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den orangenen Raum zu öffnen";
+            interaction.innerText = "E - Orangenen Raum öffnen";
             canOpenOrangeRoom = true;
-          }
-        }
-
-        if (!orangeRoomOpen && !hasRuby) {
-          if (isTouchingRoom(room4Coords)) {
+          } else if (!hasRuby && touching(R4)) {
             interaction.style.display = "block";
-            interaction.innerText = "Rubin benötigt (Level 3 abschließen)";
+            interaction.innerText = "💎 Rubin benötigt (Level 3)";
           }
-        }
-
-        if (orangeRoomOpen) {
-          room4.classList.remove("orange-locked");
-          room4.classList.add("orange-open");
-
-          if (rectsOverlap(playerRect, room4Coords)) {
+        } else {
+          document.getElementById("room4").className = "room orange-open";
+          if (overlap(px.x, px.y, px.w, px.h, R4.x, R4.y, R4.w, R4.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Level 4 starten";
             canEnterOrangeRoom = true;
           }
         }
 
-        // BLAUER RAUM
-        if (!blueRoomOpen && hasEmerald) {
-          if (isTouchingRoom(room5Coords)) {
+        // Blue
+        if (!b) {
+          if (hasEmerald && touching(R5)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den blauen Raum zu öffnen";
+            interaction.innerText = "E - Blauen Raum öffnen";
             canOpenBlueRoom = true;
-          }
-        }
-
-        if (!blueRoomOpen && !hasEmerald) {
-          if (isTouchingRoom(room5Coords)) {
+          } else if (!hasEmerald && touching(R5)) {
             interaction.style.display = "block";
-            interaction.innerText = "Smaragd benötigt (Level 4 abschließen)";
+            interaction.innerText = "💎 Smaragd benötigt (Level 4)";
           }
-        }
-
-        if (blueRoomOpen) {
-          room5.classList.remove("blue-locked");
-          room5.classList.add("blue-open");
-
-          if (rectsOverlap(playerRect, room5Coords)) {
+        } else {
+          document.getElementById("room5").className = "room blue-open";
+          if (overlap(px.x, px.y, px.w, px.h, R5.x, R5.y, R5.w, R5.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Level 5 starten";
             canEnterBlueRoom = true;
           }
         }
 
-        // GELBER RAUM
-        if (!yellowRoomOpen && hasSapphire) {
-          if (isTouchingRoom(room6Coords)) {
+        // Yellow
+        if (!y) {
+          if (hasSapphire && touching(R6)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den gelben Raum zu öffnen";
+            interaction.innerText = "E - Gelben Raum öffnen";
             canOpenYellowRoom = true;
-          }
-        }
-
-        if (!yellowRoomOpen && !hasSapphire) {
-          if (isTouchingRoom(room6Coords)) {
+          } else if (!hasSapphire && touching(R6)) {
             interaction.style.display = "block";
-            interaction.innerText = "Saphir benötigt (Level 5 abschließen)";
+            interaction.innerText = "💎 Saphir benötigt (Level 5)";
           }
-        }
-
-        if (yellowRoomOpen) {
-          room6.classList.remove("yellow-locked");
-          room6.classList.add("yellow-open");
-
-          if (rectsOverlap(playerRect, room6Coords)) {
+        } else {
+          document.getElementById("room6").className = "room yellow-open";
+          if (overlap(px.x, px.y, px.w, px.h, R6.x, R6.y, R6.w, R6.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Level 6 starten";
             canEnterYellowRoom = true;
           }
         }
 
-        // CYAN RAUM
-        if (!cyanRoomOpen && hasTopaz) {
-          if (isTouchingRoom(room7Coords)) {
+        // Cyan
+        if (!c) {
+          if (hasTopaz && touching(R7)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den cyan Raum zu öffnen";
+            interaction.innerText = "E - Cyan Raum öffnen";
             canOpenCyanRoom = true;
-          }
-        }
-
-        if (!cyanRoomOpen && !hasTopaz) {
-          if (isTouchingRoom(room7Coords)) {
+          } else if (!hasTopaz && touching(R7)) {
             interaction.style.display = "block";
-            interaction.innerText = "Topas benötigt (Level 6 abschließen)";
+            interaction.innerText = "💎 Topas benötigt (Level 6)";
           }
-        }
-
-        if (cyanRoomOpen) {
-          room7.classList.remove("cyan-locked");
-          room7.classList.add("cyan-open");
-
-          if (rectsOverlap(playerRect, room7Coords)) {
+        } else {
+          document.getElementById("room7").className = "room cyan-open";
+          if (overlap(px.x, px.y, px.w, px.h, R7.x, R7.y, R7.w, R7.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Level 7 starten";
             canEnterCyanRoom = true;
           }
         }
 
-        // MAGENTA RAUM
-        if (!magentaRoomOpen && hasAmethyst) {
-          if (isTouchingRoom(room8Coords)) {
+        // Magenta
+        if (!m) {
+          if (hasAmethyst && touching(R8)) {
             interaction.style.display = "block";
-            interaction.innerText = "Drücke E um den magenta Raum zu öffnen";
+            interaction.innerText = "E - Magenta Raum öffnen";
             canOpenMagentaRoom = true;
-          }
-        }
-
-        if (!magentaRoomOpen && !hasAmethyst) {
-          if (isTouchingRoom(room8Coords)) {
+          } else if (!hasAmethyst && touching(R8)) {
             interaction.style.display = "block";
-            interaction.innerText = "Amethyst benötigt (Level 7 abschließen)";
+            interaction.innerText = "💎 Amethyst benötigt (Level 7)";
           }
-        }
-
-        if (magentaRoomOpen) {
-          room8.classList.remove("magenta-locked");
-          room8.classList.add("magenta-open");
-
-          if (rectsOverlap(playerRect, room8Coords)) {
+        } else {
+          document.getElementById("room8").className = "room magenta-open";
+          if (overlap(px.x, px.y, px.w, px.h, R8.x, R8.y, R8.w, R8.h)) {
             interaction.style.display = "block";
             interaction.innerText = "E - Final Level starten";
             canEnterMagentaRoom = true;
           }
         }
 
-        requestAnimationFrame(update);
-      }
-
-      function isTouchingRoom(roomCoords) {
-        const touchingLeft =
-          Math.abs(playerX + 30 - roomCoords.x) < 10 &&
-          playerY + 30 > roomCoords.y &&
-          playerY < roomCoords.y + roomCoords.height;
-
-        const touchingRight =
-          Math.abs(playerX - (roomCoords.x + roomCoords.width)) < 10 &&
-          playerY + 30 > roomCoords.y &&
-          playerY < roomCoords.y + roomCoords.height;
-
-        const touchingTop =
-          Math.abs(playerY + 30 - roomCoords.y) < 10 &&
-          playerX + 30 > roomCoords.x &&
-          playerX < roomCoords.x + roomCoords.width;
-
-        const touchingBottom =
-          Math.abs(playerY - (roomCoords.y + roomCoords.height)) < 10 &&
-          playerX + 30 > roomCoords.x &&
-          playerX < roomCoords.x + roomCoords.width;
-
-        return touchingLeft || touchingRight || touchingTop || touchingBottom;
-      }
-
-      function rectsOverlap(r1, r2) {
-        return !(
-          r1.x > r2.x + r2.width ||
-          r1.x + r1.width < r2.x ||
-          r1.y > r2.y + r2.height ||
-          r1.y + r1.height < r2.y
-        );
+        requestAnimationFrame(gameLoop);
       }
 
       window.addEventListener("keydown", (e) => {
         const k = e.key.toLowerCase();
-        if (keys[k] !== undefined) keys[k] = true;
+        if (keysDown[k] !== undefined) keysDown[k] = true;
 
-        // Secret Room betreten
-        if (k === "e" && canEnterSecretRoom) {
-          window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+        if (lockOverlay.classList.contains("active")) {
+          if (k === "enter") checkLockCode();
+          if (k === "escape") lockOverlay.classList.remove("active");
+          return;
         }
 
-        // Coin aufheben
-        if (k === "e" && canPickupCoin) {
+        if (k !== "e") return;
+        if (canEnterEasterEgg) {
+          window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+          return;
+        }
+        if (canOpenSecretDoor) {
+          openLock();
+          return;
+        }
+        if (canPickupCoin) {
           localStorage.setItem("has_coin", "true");
           updateInventory();
+          return;
         }
-
-        // Grünen Raum öffnen
-        if (k === "e" && canOpenGreenRoom) {
+        if (canOpenGreenRoom) {
           localStorage.removeItem("has_coin");
-          updateInventory();
           localStorage.setItem("green_room_open", "true");
+          updateInventory();
+          return;
         }
-
-        // Grünen Raum betreten
-        if (k === "e" && canEnterGreenRoom) {
+        if (canEnterGreenRoom) {
           window.location.href = "level1.html";
+          return;
         }
-
-        // Roten Raum öffnen
-        if (k === "e" && canOpenRedRoom) {
+        if (canOpenRedRoom) {
           localStorage.removeItem("level1_key");
-          updateInventory();
           localStorage.setItem("red_room_open", "true");
+          updateInventory();
+          return;
         }
-
-        // Roten Raum betreten
-        if (k === "e" && canEnterRedRoom) {
+        if (canEnterRedRoom) {
           window.location.href = "level2.html";
+          return;
         }
-
-        // Lila Raum öffnen
-        if (k === "e" && canOpenPurpleRoom) {
+        if (canOpenPurpleRoom) {
           localStorage.removeItem("has_diamond");
-          updateInventory();
           localStorage.setItem("purple_room_open", "true");
+          updateInventory();
+          return;
         }
-
-        // Lila Raum betreten
-        if (k === "e" && canEnterPurpleRoom) {
+        if (canEnterPurpleRoom) {
           window.location.href = "level3.html";
+          return;
         }
-
-        // Orangenen Raum öffnen
-        if (k === "e" && canOpenOrangeRoom) {
+        if (canOpenOrangeRoom) {
           localStorage.removeItem("has_ruby");
-          updateInventory();
           localStorage.setItem("orange_room_open", "true");
+          updateInventory();
+          return;
         }
-
-        // Orangenen Raum betreten
-        if (k === "e" && canEnterOrangeRoom) {
+        if (canEnterOrangeRoom) {
           window.location.href = "level4.html";
+          return;
         }
-
-        // Blauen Raum öffnen
-        if (k === "e" && canOpenBlueRoom) {
+        if (canOpenBlueRoom) {
           localStorage.removeItem("has_emerald");
-          updateInventory();
           localStorage.setItem("blue_room_open", "true");
+          updateInventory();
+          return;
         }
-
-        // Blauen Raum betreten
-        if (k === "e" && canEnterBlueRoom) {
+        if (canEnterBlueRoom) {
           window.location.href = "level5.html";
+          return;
         }
-
-        // Gelben Raum öffnen
-        if (k === "e" && canOpenYellowRoom) {
+        if (canOpenYellowRoom) {
           localStorage.removeItem("has_sapphire");
-          updateInventory();
           localStorage.setItem("yellow_room_open", "true");
+          updateInventory();
+          return;
         }
-
-        // Gelben Raum betreten
-        if (k === "e" && canEnterYellowRoom) {
+        if (canEnterYellowRoom) {
           window.location.href = "level6.html";
+          return;
         }
-
-        // Cyan Raum öffnen
-        if (k === "e" && canOpenCyanRoom) {
+        if (canOpenCyanRoom) {
           localStorage.removeItem("has_topaz");
-          updateInventory();
           localStorage.setItem("cyan_room_open", "true");
-        }
-
-        // Cyan Raum betreten
-        if (k === "e" && canEnterCyanRoom) {
-          window.location.href = "level7.html";
-        }
-
-        // Magenta Raum öffnen
-        if (k === "e" && canOpenMagentaRoom) {
-          localStorage.removeItem("has_amethyst");
           updateInventory();
-          localStorage.setItem("magenta_room_open", "true");
+          return;
         }
-
-        // Magenta Raum betreten
-        if (k === "e" && canEnterMagentaRoom) {
+        if (canEnterCyanRoom) {
+          window.location.href = "level7.html";
+          return;
+        }
+        if (canOpenMagentaRoom) {
+          localStorage.removeItem("has_amethyst");
+          localStorage.setItem("magenta_room_open", "true");
+          updateInventory();
+          return;
+        }
+        if (canEnterMagentaRoom) {
           window.location.href = "level8.html";
+          return;
         }
       });
 
       window.addEventListener("keyup", (e) => {
         const k = e.key.toLowerCase();
-        if (keys[k] !== undefined) keys[k] = false;
+        if (keysDown[k] !== undefined) keysDown[k] = false;
       });
 
-      update();
+      gameLoop();
     </script>
   </body>
 </html>

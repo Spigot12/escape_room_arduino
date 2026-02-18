@@ -21,6 +21,11 @@
 // Level 7: Mikrofon KY-037
 #define MIC_PIN A3
 
+// Level 8: LED Memory Game
+#define LED_RED 10
+#define LED_YELLOW 11
+#define LED_BLUE 12
+
 int level = 0;
 unsigned long darkStart = 0;
 String input = "";
@@ -52,6 +57,12 @@ bool tempAboveActive = false;
 const int SOUND_THRESHOLD = 600;
 bool soundSolved = false;
 
+// Level 8: LED Memory Game
+String sequence[7];
+int l8Level = 1;
+int seqLen = 3;
+int inputIndex = 0;
+
 void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
   pinMode(PIR, INPUT);
@@ -63,6 +74,14 @@ void setup() {
     pinMode(buttonPins[i], INPUT_PULLUP);
   }
 
+  // Level 8: LED Pins
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_YELLOW, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_YELLOW, LOW);
+  digitalWrite(LED_BLUE, LOW);
+
   digitalWrite(RELAY, LOW);
   Serial.begin(9600);
 
@@ -73,6 +92,9 @@ void setup() {
   tempAboveStart = 0;
   tempAboveActive = false;
   soundSolved = false;
+  l8Level = 1;
+  seqLen = 3;
+  inputIndex = 0;
 
   while (!Serial) { ; }
   delay(1000);
@@ -132,6 +154,14 @@ void loop() {
       level = 7;
       soundSolved = false;
       Serial.println("LEVEL_SET_7");
+      return;
+    }
+    if (input == "SET_LEVEL_8") {
+      level = 8;
+      l8Level = 1;
+      seqLen = 3;
+      inputIndex = 0;
+      Serial.println("LEVEL_SET_8");
       return;
     }
   }
@@ -364,6 +394,98 @@ void loop() {
 
     delay(500);
   }
+
+  // LEVEL 8 - LED Memory Game
+  if (level == 8) {
+    // Befehle vom Frontend
+    if (input == "START") {
+      l8Level = 1;
+      startLevel8();
+      input = "";
+    }
+
+    if (input == "NEXT") {
+      if (l8Level < 3) l8Level++;
+      startLevel8();
+      input = "";
+    }
+
+    if (input == "FULLRESET") {
+      l8Level = 1;
+      startLevel8();
+      input = "";
+    }
+
+    if (input == "RELOADLEVEL") {
+      startLevel8();
+      input = "";
+    }
+
+    if (input.startsWith("BTN:")) {
+      String color = input.substring(4);
+      if (color == sequence[inputIndex]) {
+        inputIndex++;
+        if (inputIndex == seqLen) {
+          Serial.println("OK");
+          inputIndex = 0;
+        }
+      } else {
+        Serial.println("FAIL");
+        inputIndex = 0;
+      }
+      input = "";
+    }
+  }
+}
+
+void startLevel8() {
+  inputIndex = 0;
+  if (l8Level == 1) seqLen = 3;
+  if (l8Level == 2) seqLen = 5;
+  if (l8Level == 3) seqLen = 7;
+
+  generateRandomSequence();
+
+  Serial.print("LEVEL:");
+  Serial.println(seqLen);
+
+  delay(2000); // 2 Sekunden Pause vor dem Start der Sequenz
+
+  playSequence();
+  sendSequence();
+}
+
+void generateRandomSequence() {
+  String pool[3] = {"RED", "YELLOW", "BLUE"};
+  for (int i = 0; i < seqLen; i++) {
+    sequence[i] = pool[random(0, 3)];
+  }
+}
+
+void playSequence() {
+  for (int i = 0; i < seqLen; i++) {
+    flash(sequence[i]);
+    delay(300);
+  }
+}
+
+void sendSequence() {
+  for (int i = 0; i < seqLen; i++) {
+    Serial.println(sequence[i]);
+  }
+}
+
+void flash(String color) {
+  int pin = getLEDPin(color);
+  digitalWrite(pin, HIGH);
+  delay(250);
+  digitalWrite(pin, LOW);
+}
+
+int getLEDPin(String color) {
+  if (color == "RED") return LED_RED;
+  if (color == "YELLOW") return LED_YELLOW;
+  return LED_BLUE;
 }
 
 float readTemperature(int analogValue) {

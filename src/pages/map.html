@@ -715,7 +715,7 @@
                 <div class="wheel-drum" id="wheel3">
                   <div class="wheel-inner" id="inner3"></div>
                 </div>
-                <div class="wheel-label">L8</div>
+                <div class="wheel-label">L7</div>
               </div>
             </div>
           </div>
@@ -750,17 +750,34 @@
       function stopTimer() {
         const stored = sessionStorage.getItem("gameStartTime");
         if (!stored) return 0;
-        const elapsed = Math.floor((Date.now() - parseInt(stored)) / 1000);
+        const elapsedMillis = Date.now() - parseInt(stored);
+        const elapsedSeconds = Math.floor(elapsedMillis / 1000);
         // Speichere Endzeit für leaderboard.html
         sessionStorage.setItem("gameEndTime", Date.now().toString());
-        sessionStorage.setItem("gameFinalSeconds", elapsed.toString());
-        return elapsed;
+        sessionStorage.setItem("gameFinalSeconds", elapsedSeconds.toString());
+        sessionStorage.setItem("gameFinalMillis", elapsedMillis.toString());
+        return elapsedSeconds;
       }
 
       function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${minutes}:${secs.toString().padStart(2, "0")}`;
+      }
+
+      function formatTimeWithMillis(millis) {
+        const minutes = Math.floor(millis / 60000);
+        const seconds = Math.floor((millis % 60000) / 1000);
+        const ms = Math.floor((millis % 1000) / 10); // Zeige 2 Stellen ms
+        return `${minutes}:${seconds.toString().padStart(2, "0")}:${ms.toString().padStart(2, "0")}`;
+      }
+
+      // Sicherstellen, dass die Zeit ab "Level starten" läuft
+      function ensureTimerStarted() {
+        if (!sessionStorage.getItem("gameStartTime")) {
+          sessionStorage.setItem("gameStartTime", Date.now().toString());
+          console.log("Game timer auto-started on level enter");
+        }
       }
 
       // Live-Timer im UI updaten
@@ -951,12 +968,13 @@
 
         if (entered === correct) {
           // ── TIMER STOPPEN ──
-          const finalSeconds = stopTimer();
-          const formattedTime = formatTime(finalSeconds);
+          stopTimer();
+          const finalMillis = parseInt(sessionStorage.getItem("gameFinalMillis"));
+          const formattedTime = formatTimeWithMillis(finalMillis);
 
           localStorage.setItem("secret_door_unlocked", "true");
           // Zeit auch in localStorage für leaderboard
-          localStorage.setItem("game_completion_time", finalSeconds.toString());
+          localStorage.setItem("game_completion_time", finalMillis.toString());
           localStorage.setItem("game_completion_time_formatted", formattedTime);
 
           lockMessage.textContent = "";
@@ -1386,6 +1404,7 @@
           return;
         }
         if (canEnterGreenRoom) {
+          ensureTimerStarted();
           window.location.href = "level1.html";
           return;
         }
@@ -1396,6 +1415,7 @@
           return;
         }
         if (canEnterRedRoom) {
+          ensureTimerStarted();
           window.location.href = "level2.html";
           return;
         }
@@ -1406,6 +1426,7 @@
           return;
         }
         if (canEnterPurpleRoom) {
+          ensureTimerStarted();
           window.location.href = "level3.html";
           return;
         }
@@ -1416,6 +1437,7 @@
           return;
         }
         if (canEnterOrangeRoom) {
+          ensureTimerStarted();
           window.location.href = "level4.html";
           return;
         }
@@ -1426,6 +1448,7 @@
           return;
         }
         if (canEnterBlueRoom) {
+          ensureTimerStarted();
           window.location.href = "level5.html";
           return;
         }
@@ -1436,6 +1459,7 @@
           return;
         }
         if (canEnterYellowRoom) {
+          ensureTimerStarted();
           window.location.href = "level6.html";
           return;
         }
@@ -1446,6 +1470,7 @@
           return;
         }
         if (canEnterCyanRoom) {
+          ensureTimerStarted();
           window.location.href = "level7.html";
           return;
         }
@@ -1456,6 +1481,7 @@
           return;
         }
         if (canEnterMagentaRoom) {
+          ensureTimerStarted();
           window.location.href = "level8.html";
           return;
         }

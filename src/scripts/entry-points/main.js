@@ -368,7 +368,10 @@ async function startGame() {
   sessionStorage.setItem("gameStartTime", Date.now().toString());
   sessionStorage.removeItem("gameEndTime");
   sessionStorage.removeItem("gameFinalSeconds");
+  sessionStorage.removeItem("gameFinalMillis");
   sessionStorage.removeItem("gameTimeSaved"); // Damit neuer Lauf wieder gespeichert wird
+  // Sicherstellen, dass die Geheimtür beim neuen Run nicht als offen gilt
+  localStorage.removeItem("secret_door_unlocked");
   addLog("Timer gestartet ⏱️", "success");
 
   addLog("Sende Reset-Signal an Arduino...", "info");

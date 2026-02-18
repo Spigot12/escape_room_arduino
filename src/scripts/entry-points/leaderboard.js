@@ -10,14 +10,18 @@ const leaderboardContent = document.getElementById("leaderboard-content");
 // ===== ZEIT SPEICHERN =====
 async function saveTimeToLeaderboard() {
   // Finale Zeit aus sessionStorage holen
-  const finalSeconds = sessionStorage.getItem("gameFinalSeconds");
+  const finalMillis = sessionStorage.getItem("gameFinalMillis");
   const alreadySaved = sessionStorage.getItem("gameTimeSaved");
 
   // Nur speichern wenn eine Zeit vorhanden ist und noch nicht gespeichert wurde
-  if (!finalSeconds || alreadySaved === "true") return;
+  if (!finalMillis || alreadySaved === "true") return;
 
   // Warten bis Auth gecheckt ist
-  await checkAuth();
+  try {
+    await checkAuth();
+  } catch (e) {
+    console.warn("Auth check failed, continuing as guest", e);
+  }
 
   // Username bestimmen: eingeloggt oder anonym
   const user = getCurrentUser();
@@ -33,13 +37,13 @@ async function saveTimeToLeaderboard() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         username: username,
-        time: parseInt(finalSeconds),
+        time: parseInt(finalMillis),
         date: new Date().toISOString(),
       }),
     });
 
     if (response.ok) {
-      console.log("Zeit gespeichert:", username, finalSeconds, "s");
+      console.log("Zeit gespeichert:", username, finalMillis, "ms");
       // Markieren dass bereits gespeichert, damit kein Doppeleintrag entsteht
       sessionStorage.setItem("gameTimeSaved", "true");
     } else {
@@ -126,15 +130,11 @@ async function loadLeaderboard() {
   }
 }
 
-function formatTime(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  }
-  return `${minutes}:${secs.toString().padStart(2, "0")}`;
+function formatTime(millis) {
+  const minutes = Math.floor(millis / 60000);
+  const seconds = Math.floor((millis % 60000) / 1000);
+  const ms = Math.floor((millis % 1000) / 10); // Zeige 2 Stellen ms
+  return `${minutes}:${seconds.toString().padStart(2, "0")}:${ms.toString().padStart(2, "0")}`;
 }
 
 function escapeHtml(text) {
@@ -147,11 +147,7 @@ function escapeHtml(text) {
 if (backBtn) {
   backBtn.addEventListener("click", (e) => {
     e.preventDefault();
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      window.location.href = "/";
-    }
+    window.location.href = "index.html";
   });
 }
 

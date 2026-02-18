@@ -1,167 +1,167 @@
 <!-- level4.html -->
 <!doctype html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/assets/images/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" type="image/svg+xml" href="/assets/images/vite.svg"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Level 4 - Escape Room</title>
     <!-- Bootstrap CSS -->
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
     />
     <!-- Bootstrap Icons -->
     <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
     />
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  </head>
-  <body class="bg-white text-dark">
-    <div
-      id="arduino-indicator"
-      class="arduino-status-indicator disconnected"
-    ></div>
+</head>
+<body class="bg-white text-dark">
+<div
+        id="arduino-indicator"
+        class="arduino-status-indicator disconnected"
+></div>
 
-    <div class="container py-5">
-      <div id="app" class="row justify-content-center">
+<div class="container py-5">
+    <div id="app" class="row justify-content-center">
         <div class="col-md-10 col-lg-8">
-          <div
-            class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom"
-          >
-            <button id="back-btn" class="btn btn-dark btn-sm">
-              <i class="bi bi-arrow-left me-1"></i>Zurück
-            </button>
-            <h1 class="h4 mb-0 fw-bold">Level 04</h1>
-            <div class="d-flex gap-2">
-              <button
-                id="prev-level-btn"
-                class="btn btn-outline-warning btn-sm"
-                title="Vorheriges Level"
-              >
-                <i class="bi bi-chevron-left"></i>
-              </button>
-              <button
-                id="next-level-btn-nav"
-                class="btn btn-outline-warning btn-sm"
-                title="Nächstes Level"
-              >
-                <i class="bi bi-chevron-right"></i>
-              </button>
-              <button
-                id="toggle-log-btn"
-                class="btn btn-outline-secondary btn-sm"
-                title="System Log anzeigen"
-              >
-                <i class="bi bi-terminal"></i>
-              </button>
-              <button
-                id="toggle-wiring-btn"
-                class="btn btn-outline-info btn-sm"
-                title="Verkabelung anzeigen"
-              >
-                <i class="bi bi-diagram-3"></i>
-              </button>
+            <div
+                    class="d-flex justify-content-between align-items-center mb-5 pb-3 border-bottom"
+            >
+                <button id="back-btn" class="btn btn-dark btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Zurück
+                </button>
+                <h1 class="h4 mb-0 fw-bold">Level 04</h1>
+                <div class="d-flex gap-2">
+                    <button
+                            id="prev-level-btn"
+                            class="btn btn-outline-warning btn-sm"
+                            title="Vorheriges Level"
+                    >
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button
+                            id="next-level-btn-nav"
+                            class="btn btn-outline-warning btn-sm"
+                            title="Nächstes Level"
+                    >
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <button
+                            id="toggle-log-btn"
+                            class="btn btn-outline-secondary btn-sm"
+                            title="System Log anzeigen"
+                    >
+                        <i class="bi bi-terminal"></i>
+                    </button>
+                    <button
+                            id="toggle-wiring-btn"
+                            class="btn btn-outline-info btn-sm"
+                            title="Verkabelung anzeigen"
+                    >
+                        <i class="bi bi-diagram-3"></i>
+                    </button>
+                </div>
             </div>
-          </div>
 
-          <!-- WIRING PANEL (versteckt by default) -->
-          <div id="wiring-panel" class="mb-4" style="display: none">
-            <div class="card shadow-sm border-info">
-              <div
-                class="card-header bg-info text-white d-flex justify-content-between align-items-center"
-              >
+            <!-- WIRING PANEL (versteckt by default) -->
+            <div id="wiring-panel" class="mb-4" style="display: none">
+                <div class="card shadow-sm border-info">
+                    <div
+                            class="card-header bg-info text-white d-flex justify-content-between align-items-center"
+                    >
                 <span class="small fw-bold">
                   <i class="bi bi-diagram-3 me-2"></i>Verkabelung Level 4
                 </span>
-              </div>
-              <div
-                class="card-body p-3"
-                style="font-family: monospace; font-size: 0.9rem"
-              >
-                <div class="row">
-                  <div class="col-md-6">
-                    <h6 class="fw-bold text-info mb-2">Komponenten:</h6>
-                    <ul class="list-unstyled mb-3">
-                      <li>
-                        <i
-                          class="bi bi-circle-fill text-success me-2"
-                          style="font-size: 0.5rem"
-                        ></i
-                        >KY-023 Joystick
-                      </li>
-                    </ul>
-                  </div>
-                  <div class="col-md-6">
-                    <h6 class="fw-bold text-info mb-2">Pin-Belegung:</h6>
-                    <ul class="list-unstyled mb-0">
-                      <li><code>JOY_X → Pin A0</code></li>
-                      <li><code>JOY_Y → Pin A1</code></li>
-                      <li><code>JOY_BUTTON → Pin 3</code></li>
-                    </ul>
-                  </div>
+                    </div>
+                    <div
+                            class="card-body p-3"
+                            style="font-family: monospace; font-size: 0.9rem"
+                    >
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-info mb-2">Komponenten:</h6>
+                                <ul class="list-unstyled mb-3">
+                                    <li>
+                                        <i
+                                                class="bi bi-circle-fill text-success me-2"
+                                                style="font-size: 0.5rem"
+                                        ></i
+                                        >KY-023 Joystick
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-info mb-2">Pin-Belegung:</h6>
+                                <ul class="list-unstyled mb-0">
+                                    <li><code>JOY_X → Pin A0</code></li>
+                                    <li><code>JOY_Y → Pin A1</code></li>
+                                    <li><code>JOY_BUTTON → Pin 3</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
 
-          <!-- LOG PANEL (versteckt by default) -->
-          <div id="log-panel" class="mb-4" style="display: none">
-            <div class="card shadow-sm">
-              <div
-                class="card-header d-flex justify-content-between align-items-center"
-              >
-                <span class="small fw-bold">System Log</span>
-                <button
-                  id="clear-log-btn"
-                  class="btn btn-link btn-sm text-muted text-decoration-none p-0"
-                >
-                  Clear
-                </button>
-              </div>
-              <div
-                class="card-body p-3"
-                style="
+            <!-- LOG PANEL (versteckt by default) -->
+            <div id="log-panel" class="mb-4" style="display: none">
+                <div class="card shadow-sm">
+                    <div
+                            class="card-header d-flex justify-content-between align-items-center"
+                    >
+                        <span class="small fw-bold">System Log</span>
+                        <button
+                                id="clear-log-btn"
+                                class="btn btn-link btn-sm text-muted text-decoration-none p-0"
+                        >
+                            Clear
+                        </button>
+                    </div>
+                    <div
+                            class="card-body p-3"
+                            style="
                   max-height: 200px;
                   overflow-y: auto;
                   font-family: monospace;
                   font-size: 0.85rem;
                   background: #f8f9fa;
                 "
-              >
-                <div id="log-content"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="level-content text-center">
-            <div class="minimal-card p-5 mb-5 shadow-sm">
-              <h2 class="display-5 fw-bold mb-4">Snake Challenge</h2>
-              <p id="status-text" class="lead text-muted mb-0">
-                Sammle 5 Äpfel ohne gegen Wände oder dich selbst zu fahren!
-              </p>
+                    >
+                        <div id="log-content"></div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Game Canvas -->
-            <div class="mb-5 d-flex justify-content-center position-relative">
-              <canvas
-                id="game-canvas"
-                width="600"
-                height="400"
-                style="
+            <div class="level-content text-center">
+                <div class="minimal-card p-5 mb-5 shadow-sm">
+                    <h2 class="display-5 fw-bold mb-4">Snake Challenge</h2>
+                    <p id="status-text" class="lead text-muted mb-0">
+                        Sammle 5 Äpfel ohne gegen Wände oder dich selbst zu fahren!
+                    </p>
+                </div>
+
+                <!-- Game Canvas -->
+                <div class="mb-5 d-flex justify-content-center position-relative">
+                    <canvas
+                            id="game-canvas"
+                            width="600"
+                            height="400"
+                            style="
                   border: 3px solid #333;
                   border-radius: 12px;
                   background: #2d4a2b;
                 "
-              ></canvas>
+                    ></canvas>
 
-              <!-- Game Over Overlay -->
-              <div
-                id="game-over-overlay"
-                class="position-absolute top-50 start-50 translate-middle text-center p-5 rounded-4"
-                style="
+                    <!-- Game Over Overlay -->
+                    <div
+                            id="game-over-overlay"
+                            class="position-absolute top-50 start-50 translate-middle text-center p-5 rounded-4"
+                            style="
                   display: none;
                   z-index: 10;
                   width: 450px;
@@ -169,10 +169,10 @@
                   border: 3px solid #dc3545;
                   box-shadow: 0 0 40px rgba(220, 53, 69, 0.5);
                 "
-              >
-                <h1
-                  class="text-danger fw-bold mb-4"
-                  style="
+                    >
+                        <h1
+                                class="text-danger fw-bold mb-4"
+                                style="
                     font-family: &quot;Courier New&quot;, monospace;
                     font-size: 3.5rem;
                     text-shadow:
@@ -180,104 +180,104 @@
                       0 0 30px rgba(220, 53, 69, 0.6);
                     letter-spacing: 4px;
                   "
-                >
-                  GAME OVER
-                </h1>
-                <p
-                  class="text-white mb-4"
-                  style="
+                        >
+                            GAME OVER
+                        </h1>
+                        <p
+                                class="text-white mb-4"
+                                style="
                     font-family: &quot;Courier New&quot;, monospace;
                     font-size: 1.1rem;
                     opacity: 0.9;
                   "
-                ></p>
-                <button
-                  id="restart-snake-btn"
-                  class="btn btn-danger btn-lg px-5 py-3 fw-bold"
-                  style="
+                        ></p>
+                        <button
+                                id="restart-snake-btn"
+                                class="btn btn-danger btn-lg px-5 py-3 fw-bold"
+                                style="
                     font-family: &quot;Courier New&quot;, monospace;
                     font-size: 1.3rem;
                     letter-spacing: 2px;
                     border: 2px solid #fff;
                     box-shadow: 0 0 20px rgba(220, 53, 69, 0.6);
                   "
+                        >
+                            RESTART
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-start mb-5">
+                    <h3 class="small fw-bold text-muted text-uppercase mb-3 px-2">
+                        Steuerung:
+                    </h3>
+                    <ul id="task-list" class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="bi bi-joystick me-2"></i>Joystick bewegen = Snake
+                            steuern
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-circle-fill text-success me-2"></i>Grüne
+                            Quadrate = Deine Snake
+                        </li>
+                        <li class="list-group-item">
+                            <i class="bi bi-circle-fill text-danger me-2"></i>Roter Kreis
+                            = Apfel (sammeln!)
+                        </li>
+                        <li class="list-group-item">
+                            <i
+                                    class="bi bi-exclamation-triangle-fill text-warning me-2"
+                            ></i
+                            >Nicht gegen Wände oder eigenen Körper fahren!
+                        </li>
+                    </ul>
+                </div>
+
+                <div
+                        id="result-display"
+                        class="result-display hidden p-5 bg-light border-0 rounded-4 mb-4"
+                        style="display: none"
                 >
-                  RESTART
-                </button>
-              </div>
+                    <h2 class="display-5 fw-bold mb-3 text-success">
+                        <i class="bi bi-trophy-fill me-2"></i>Snake geschafft!
+                    </h2>
+                    <p class="lead mb-4 text-muted">
+                        Du hast einen Smaragd erhalten! 💎
+                    </p>
+                    <button
+                            id="next-level-btn"
+                            class="btn btn-primary btn-lg px-5 shadow-sm"
+                    >
+                        Zurück zur Map <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </div>
             </div>
-
-            <div class="text-start mb-5">
-              <h3 class="small fw-bold text-muted text-uppercase mb-3 px-2">
-                Steuerung:
-              </h3>
-              <ul id="task-list" class="list-group list-group-flush">
-                <li class="list-group-item">
-                  <i class="bi bi-joystick me-2"></i>Joystick bewegen = Snake
-                  steuern
-                </li>
-                <li class="list-group-item">
-                  <i class="bi bi-circle-fill text-success me-2"></i>Grüne
-                  Quadrate = Deine Snake
-                </li>
-                <li class="list-group-item">
-                  <i class="bi bi-circle-fill text-danger me-2"></i>Roter Kreis
-                  = Apfel (sammeln!)
-                </li>
-                <li class="list-group-item">
-                  <i
-                    class="bi bi-exclamation-triangle-fill text-warning me-2"
-                  ></i
-                  >Nicht gegen Wände oder eigenen Körper fahren!
-                </li>
-              </ul>
-            </div>
-
-            <div
-              id="result-display"
-              class="result-display hidden p-5 bg-light border-0 rounded-4 mb-4"
-              style="display: none"
-            >
-              <h2 class="display-5 fw-bold mb-3 text-success">
-                <i class="bi bi-trophy-fill me-2"></i>Snake geschafft!
-              </h2>
-              <p class="lead mb-4 text-muted">
-                Du hast einen Smaragd erhalten! 💎
-              </p>
-              <button
-                id="next-level-btn"
-                class="btn btn-primary btn-lg px-5 shadow-sm"
-              >
-                Zurück zur Map <i class="bi bi-arrow-right ms-2"></i>
-              </button>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script type="module" src="/scripts/auth-check.js"></script>
-    <script type="module" src="/scripts/entry-points/level.js"></script>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script type="module" src="/scripts/auth-check.js"></script>
+<script type="module" src="/scripts/entry-points/level.js"></script>
 
-    <!-- Back button navigation & Emerald reward -->
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
+<!-- Back button navigation & Emerald reward -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
         const backBtn = document.getElementById("back-btn");
         if (backBtn) {
-          backBtn.addEventListener("click", () => {
-            window.location.href = "map.html";
-          });
+            backBtn.addEventListener("click", () => {
+                window.location.href = "map.html";
+            });
         }
 
         const nextLevelBtn = document.getElementById("next-level-btn");
         if (nextLevelBtn) {
-          nextLevelBtn.addEventListener("click", () => {
-            // Smaragd geben
-            localStorage.setItem("has_emerald", "true");
-            window.location.href = "map.html";
-          });
+            nextLevelBtn.addEventListener("click", () => {
+                // Smaragd geben
+                localStorage.setItem("has_emerald", "true");
+                window.location.href = "map.html";
+            });
         }
-      });
-    </script>
-  </body>
+    });
+</script>
+</body>
 </html>

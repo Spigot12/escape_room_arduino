@@ -8,23 +8,23 @@ const leaderboardContent = document.getElementById('leaderboard-content');
 
 // Load and display leaderboard
 async function loadLeaderboard() {
-  try {
-    const response = await fetch('/api/leaderboard');
-    const data = await response.json();
+    try {
+        const response = await fetch('/api/leaderboard');
+        const data = await response.json();
 
-    if (data.length === 0) {
-      leaderboardContent.innerHTML = `
+        if (data.length === 0) {
+            leaderboardContent.innerHTML = `
         <div class="text-center py-5 text-muted">
           <i class="bi bi-trophy fs-1 mb-3 d-block"></i>
           <p class="lead">Noch keine Einträge im Leaderboard</p>
           <p class="small">Sei der Erste, der alle Level abschließt!</p>
         </div>
       `;
-      return;
-    }
+            return;
+        }
 
-    // Build leaderboard table
-    let html = `
+        // Build leaderboard table
+        let html = `
       <div class="table-responsive">
         <table class="table table-hover">
           <thead>
@@ -37,67 +37,67 @@ async function loadLeaderboard() {
           <tbody>
     `;
 
-    data.forEach((entry, index) => {
-      const rank = index + 1;
-      const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
-      const timeFormatted = formatTime(entry.time);
-      const rowClass = rank <= 3 ? 'table-warning' : '';
+        data.forEach((entry, index) => {
+            const rank = index + 1;
+            const icon = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+            const timeFormatted = formatTime(entry.time);
+            const rowClass = rank <= 3 ? 'table-warning' : '';
 
-      html += `
+            html += `
         <tr class="${rowClass}">
           <td class="text-center fw-bold">${icon}</td>
           <td class="fw-bold">${escapeHtml(entry.username)}</td>
           <td class="text-end font-monospace">${timeFormatted}</td>
         </tr>
       `;
-    });
+        });
 
-    html += `
+        html += `
           </tbody>
         </table>
       </div>
     `;
 
-    leaderboardContent.innerHTML = html;
-  } catch (error) {
-    console.error('Failed to load leaderboard:', error);
-    leaderboardContent.innerHTML = `
+        leaderboardContent.innerHTML = html;
+    } catch (error) {
+        console.error('Failed to load leaderboard:', error);
+        leaderboardContent.innerHTML = `
       <div class="alert alert-danger" role="alert">
         <i class="bi bi-exclamation-triangle me-2"></i>
         Fehler beim Laden des Leaderboards
       </div>
     `;
-  }
+    }
 }
 
 function formatTime(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
 
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${secs.toString().padStart(2, '0')}`;
 }
 
 function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Event listeners
 if (backBtn) {
-  backBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    // Gehe zur vorherigen Seite zurück, oder zur Startseite falls keine History
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      window.location.href = '/';
-    }
-  });
+    backBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Gehe zur vorherigen Seite zurück, oder zur Startseite falls keine History
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = '/';
+        }
+    });
 }
 
 // Initialize

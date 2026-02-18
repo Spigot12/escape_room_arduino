@@ -1,181 +1,193 @@
 /* ===== NEAL.FUN STYLE BUTTONS ===== */
 .btn {
-  border-radius: 12px;
-  padding: 0.8rem 1.5rem;
-  font-weight: 600;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 0.8rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid transparent;
 }
 
 .btn:hover:not(:disabled) {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.95);
+    transform: scale(0.95);
 }
 
 .btn-primary {
-  background-color: var(--primary);
-  color: white;
+    background-color: var(--primary);
+    color: white;
 }
 
 .btn-success {
-  background-color: var(--success);
-  color: white;
+    background-color: var(--success);
+    color: white;
 }
 
 .btn-dark {
-  background-color: #f5f5f7;
-  color: var(--text-main);
-  border-color: var(--border-color);
+    background-color: #f5f5f7;
+    color: var(--text-main);
+    border-color: var(--border-color);
 }
 
 .btn-outline-secondary {
-  border-color: var(--border-color);
-  color: var(--text-muted);
+    border-color: var(--border-color);
+    color: var(--text-muted);
 }
 
 /* ===== TASK LIST STYLING ===== */
 #task-list .list-group-item {
-  background: #f9f9fb !important;
-  border: 1px solid var(--border-color) !important;
-  margin-bottom: 0.75rem;
-  border-radius: 12px !important;
-  color: var(--text-muted);
-  padding: 1rem;
-  font-weight: 500;
+    background: #f9f9fb !important;
+    border: 1px solid var(--border-color) !important;
+    margin-bottom: 0.75rem;
+    border-radius: 12px !important;
+    color: var(--text-muted);
+    padding: 1rem;
+    font-weight: 500;
 }
 
 #task-list .list-group-item.completed {
-  background: #eefcf1 !important;
-  color: var(--success) !important;
-  border-color: #c7efd1 !important;
+    background: #eefcf1 !important;
+    color: var(--success) !important;
+    border-color: #c7efd1 !important;
 }
 
 #task-list .list-group-item.active-task {
-  background: #f0f7ff !important;
-  color: var(--primary) !important;
-  border-color: #cce3ff !important;
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
+    background: #f0f7ff !important;
+    color: var(--primary) !important;
+    border-color: #cce3ff !important;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.1);
 }
 
 /* ===== ARDUINO STATUS LED ===== */
 .arduino-status-indicator {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  z-index: 2000;
-  transition: background-color 0.3s ease;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 2000;
+    transition: background-color 0.3s ease;
 }
 
 .arduino-status-indicator.connected {
-  background-color: var(--success);
+    background-color: var(--success);
 }
 
 .arduino-status-indicator.disconnected {
-  background-color: var(--danger);
+    background-color: var(--danger);
 }
 
 /* ===== DEBUG LOG ===== */
 #debug-log {
-  background: #f5f5f7 !important;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  font-family: monospace;
+    background: #f5f5f7 !important;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    font-family: monospace;
 }
 
-.log-info { color: #666; }
-.log-success { color: var(--success); font-weight: bold; }
-.log-warn { color: var(--warning); }
-.log-error { color: var(--danger); }
+.log-info {
+    color: #666;
+}
+
+.log-success {
+    color: var(--success);
+    font-weight: bold;
+}
+
+.log-warn {
+    color: var(--warning);
+}
+
+.log-error {
+    color: var(--danger);
+}
 
 /* ===== AUTH BUTTONS ===== */
 .auth-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 2px solid var(--border-color);
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--text-main);
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  cursor: pointer;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--text-main);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
 }
 
 .auth-btn:hover {
-  transform: scale(1.1);
-  border-color: var(--primary);
-  background: var(--primary);
-  color: white;
+    transform: scale(1.1);
+    border-color: var(--primary);
+    background: var(--primary);
+    color: white;
 }
 
 .auth-btn:active {
-  transform: scale(0.95);
+    transform: scale(0.95);
 }
 
 .auth-btn.logout-btn:hover {
-  border-color: var(--danger);
-  background: var(--danger);
+    border-color: var(--danger);
+    background: var(--danger);
 }
 
 /* ===== AUTH MODAL ===== */
 .auth-modal {
-  border-radius: 24px;
-  border: 2px solid var(--border-color);
-  overflow: hidden;
+    border-radius: 24px;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
 }
 
 .auth-modal .modal-header {
-  padding: 1.5rem 2rem 1rem;
+    padding: 1.5rem 2rem 1rem;
 }
 
 .auth-modal .modal-body {
-  padding: 1rem 2rem 2rem;
+    padding: 1rem 2rem 2rem;
 }
 
 .auth-modal .modal-title {
-  font-size: 1.5rem;
-  letter-spacing: -0.02em;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
 }
 
 /* ===== AUTH FORM INPUTS ===== */
 .auth-input {
-  border-radius: 12px !important;
-  border: 2px solid var(--border-color) !important;
-  padding: 0.8rem 1rem !important;
-  font-size: 1rem;
-  transition: all 0.2s ease;
-  background: #f9f9fb !important;
+    border-radius: 12px !important;
+    border: 2px solid var(--border-color) !important;
+    padding: 0.8rem 1rem !important;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: #f9f9fb !important;
 }
 
 .auth-input:focus {
-  border-color: var(--primary) !important;
-  background: white !important;
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
+    border-color: var(--primary) !important;
+    background: white !important;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1) !important;
 }
 
 .auth-input.is-invalid {
-  border-color: var(--danger) !important;
+    border-color: var(--danger) !important;
 }
 
 .auth-form .form-label {
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
 }
 
 /* ===== AUTH ERROR ===== */
 .auth-error {
-  border-radius: 12px;
-  border: 2px solid var(--danger);
-  background: #fff5f5;
-  color: var(--danger);
-  padding: 0.75rem 1rem;
-  font-size: 0.9rem;
+    border-radius: 12px;
+    border: 2px solid var(--danger);
+    background: #fff5f5;
+    color: var(--danger);
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
 }

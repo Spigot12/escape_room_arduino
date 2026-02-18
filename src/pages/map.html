@@ -201,6 +201,17 @@
         background: #cc0000;
       }
 
+      /* Timer display in UI */
+      #timer-display {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #aaa;
+        font-family: "Courier New", monospace;
+        letter-spacing: 2px;
+        min-width: 70px;
+        text-align: center;
+      }
+
       /* SECRET DOOR */
       #secret-door {
         position: absolute;
@@ -241,9 +252,7 @@
         }
       }
 
-      /* =============================================
-         LOCK OVERLAY – Fahrradschloss-Style
-         ============================================= */
+      /* LOCK OVERLAY */
       #lock-overlay {
         display: none;
         position: fixed;
@@ -299,7 +308,6 @@
         margin-bottom: 28px;
       }
 
-      /* Bike lock body */
       #bike-lock-body {
         background: linear-gradient(
           180deg,
@@ -453,7 +461,7 @@
         color: #666;
       }
 
-      /* Unlocked / Entkommen screen */
+      /* SUCCESS SCREEN */
       #lock-unlocked {
         display: none;
         padding: 10px 0;
@@ -484,6 +492,15 @@
         color: #777;
         font-size: 0.9rem;
         margin-bottom: 24px;
+        line-height: 1.6;
+      }
+
+      /* Zeit-Highlight in der Erfolgsanzeige */
+      #lock-unlocked .time-highlight {
+        color: #ffd700;
+        font-weight: 900;
+        font-family: "Courier New", monospace;
+        font-size: 1.05rem;
       }
 
       #leaderboard-btn {
@@ -529,7 +546,6 @@
         box-shadow: 0 0 6px rgba(255, 215, 0, 0.5);
       }
 
-      /* Shake animation */
       @keyframes shake {
         0%,
         100% {
@@ -629,6 +645,8 @@
           <div id="slot4" class="slot"></div>
           <div id="slot5" class="slot"></div>
         </div>
+        <!-- Live-Timer im UI -->
+        <div id="timer-display">0:00</div>
         <button id="restart-btn">Restart</button>
       </div>
     </div>
@@ -645,7 +663,7 @@
           <div class="hint-dot" id="hint-d1" title="Level 2"></div>
           <div class="hint-dot" id="hint-d2" title="Level 3"></div>
           <div class="hint-dot" id="hint-d3" title="Level 5"></div>
-          <div class="hint-dot" id="hint-d4" title="Level 7"></div>
+          <div class="hint-dot" id="hint-d4" title="Level 8"></div>
         </div>
 
         <div id="lock-input-section">
@@ -658,7 +676,7 @@
                   align-items: center;
                 "
               >
-                <div class="wheel-drum" id="wheel0" data-index="0">
+                <div class="wheel-drum" id="wheel0">
                   <div class="wheel-inner" id="inner0"></div>
                 </div>
                 <div class="wheel-label">L2</div>
@@ -670,7 +688,7 @@
                   align-items: center;
                 "
               >
-                <div class="wheel-drum" id="wheel1" data-index="1">
+                <div class="wheel-drum" id="wheel1">
                   <div class="wheel-inner" id="inner1"></div>
                 </div>
                 <div class="wheel-label">L3</div>
@@ -682,7 +700,7 @@
                   align-items: center;
                 "
               >
-                <div class="wheel-drum" id="wheel2" data-index="2">
+                <div class="wheel-drum" id="wheel2">
                   <div class="wheel-inner" id="inner2"></div>
                 </div>
                 <div class="wheel-label">L5</div>
@@ -694,10 +712,10 @@
                   align-items: center;
                 "
               >
-                <div class="wheel-drum" id="wheel3" data-index="3">
+                <div class="wheel-drum" id="wheel3">
                   <div class="wheel-inner" id="inner3"></div>
                 </div>
-                <div class="wheel-label">L7</div>
+                <div class="wheel-label">L8</div>
               </div>
             </div>
           </div>
@@ -710,9 +728,9 @@
         <div id="lock-unlocked">
           <div class="unlock-icon">🏆</div>
           <h2>Du bist entkommen!</h2>
-          <p>
-            Du hast alle Ziffern gefunden und das Schloss geknackt.<br />Dein
-            Name gehört auf die Bestenliste!
+          <p id="success-text">
+            Du hast alle Ziffern gefunden und das Schloss geknackt.<br />
+            Dein Name gehört auf die Bestenliste!
           </p>
           <button id="leaderboard-btn">🏅 Leaderboard anzeigen</button>
         </div>
@@ -720,6 +738,42 @@
     </div>
 
     <script>
+      // =============================================
+      // TIMER – liest aus sessionStorage (game-timer.js kompatibel)
+      // =============================================
+      function getElapsedTime() {
+        const stored = sessionStorage.getItem("gameStartTime");
+        if (!stored) return 0;
+        return Math.floor((Date.now() - parseInt(stored)) / 1000);
+      }
+
+      function stopTimer() {
+        const stored = sessionStorage.getItem("gameStartTime");
+        if (!stored) return 0;
+        const elapsed = Math.floor((Date.now() - parseInt(stored)) / 1000);
+        // Speichere Endzeit für leaderboard.html
+        sessionStorage.setItem("gameEndTime", Date.now().toString());
+        sessionStorage.setItem("gameFinalSeconds", elapsed.toString());
+        return elapsed;
+      }
+
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${minutes}:${secs.toString().padStart(2, "0")}`;
+      }
+
+      // Live-Timer im UI updaten
+      const timerDisplay = document.getElementById("timer-display");
+      setInterval(() => {
+        if (timerDisplay) {
+          timerDisplay.textContent = formatTime(getElapsedTime());
+        }
+      }, 1000);
+
+      // =============================================
+      // CODES
+      // =============================================
       const player = document.getElementById("player");
       const mapEl = document.getElementById("map");
       const interaction = document.getElementById("interaction");
@@ -735,9 +789,6 @@
         document.getElementById(`slot${i}`),
       );
 
-      // =============================================
-      // CODES
-      // =============================================
       function initSecretCodes() {
         if (!localStorage.getItem("secret_code_l1")) {
           localStorage.setItem(
@@ -805,7 +856,6 @@
       for (let i = 0; i < NUM_WHEELS; i++) {
         const drum = document.getElementById(`wheel${i}`);
         const idx = i;
-
         drum.addEventListener(
           "wheel",
           (e) => {
@@ -898,11 +948,24 @@
         const correct = ["l1", "l3", "l5", "l7"]
           .map((k) => localStorage.getItem(`secret_code_${k}`))
           .join("");
+
         if (entered === correct) {
+          // ── TIMER STOPPEN ──
+          const finalSeconds = stopTimer();
+          const formattedTime = formatTime(finalSeconds);
+
           localStorage.setItem("secret_door_unlocked", "true");
+          // Zeit auch in localStorage für leaderboard
+          localStorage.setItem("game_completion_time", finalSeconds.toString());
+          localStorage.setItem("game_completion_time_formatted", formattedTime);
+
           lockMessage.textContent = "";
           lockInputSection.style.display = "none";
           lockUnlocked.style.display = "block";
+
+          // Erfolgstext mit Zeit befüllen
+          document.getElementById("success-text").innerHTML =
+            `Du hast alle Ziffern in <span class="time-highlight">${formattedTime}</span> gefunden und das Schloss geknackt.<br>Dein Name gehört auf die Bestenliste!`;
         } else {
           lockMessage.innerHTML =
             "<span style='color:#cc4444'>✗ Falscher Code!</span>";
@@ -1002,7 +1065,12 @@
           "secret_code_l7_found",
           "secret_door_unlocked",
           "secret_code_l5_led",
+          "game_completion_time",
+          "game_completion_time_formatted",
         ].forEach((k) => localStorage.removeItem(k));
+        sessionStorage.removeItem("gameStartTime");
+        sessionStorage.removeItem("gameEndTime");
+        sessionStorage.removeItem("gameFinalSeconds");
         window.location.reload();
       });
 
@@ -1126,14 +1194,11 @@
 
         const px = { x: playerX, y: playerY, w: 30, h: 30 };
 
-        // Easter egg – nur unten
         if (overlap(px.x, px.y, px.w, px.h, EGG.x, EGG.y, EGG.w, EGG.h)) {
           interaction.style.display = "block";
           interaction.innerText = "E - ??? 🥚";
           canEnterEasterEgg = true;
         }
-
-        // Secret door
         if (
           touching(DOOR) ||
           overlap(px.x, px.y, px.w, px.h, DOOR.x, DOOR.y, DOOR.w, DOOR.h)
@@ -1142,8 +1207,6 @@
           interaction.innerText = "E - 🔐 Geheimtür";
           canOpenSecretDoor = true;
         }
-
-        // Coin
         if (
           !hasCoin &&
           coin.style.display !== "none" &&
@@ -1154,7 +1217,6 @@
           canPickupCoin = true;
         }
 
-        // Green
         if (!g) {
           if (hasCoin && touching(R1)) {
             interaction.style.display = "block";
@@ -1172,8 +1234,6 @@
             canEnterGreenRoom = true;
           }
         }
-
-        // Red
         if (!r) {
           if (hasKey && touching(R2)) {
             interaction.style.display = "block";
@@ -1191,8 +1251,6 @@
             canEnterRedRoom = true;
           }
         }
-
-        // Purple
         if (!p) {
           if (hasDiamond && touching(R3)) {
             interaction.style.display = "block";
@@ -1210,8 +1268,6 @@
             canEnterPurpleRoom = true;
           }
         }
-
-        // Orange
         if (!o) {
           if (hasRuby && touching(R4)) {
             interaction.style.display = "block";
@@ -1229,8 +1285,6 @@
             canEnterOrangeRoom = true;
           }
         }
-
-        // Blue
         if (!b) {
           if (hasEmerald && touching(R5)) {
             interaction.style.display = "block";
@@ -1248,8 +1302,6 @@
             canEnterBlueRoom = true;
           }
         }
-
-        // Yellow
         if (!y) {
           if (hasSapphire && touching(R6)) {
             interaction.style.display = "block";
@@ -1267,8 +1319,6 @@
             canEnterYellowRoom = true;
           }
         }
-
-        // Cyan
         if (!c) {
           if (hasTopaz && touching(R7)) {
             interaction.style.display = "block";
@@ -1286,8 +1336,6 @@
             canEnterCyanRoom = true;
           }
         }
-
-        // Magenta
         if (!m) {
           if (hasAmethyst && touching(R8)) {
             interaction.style.display = "block";
@@ -1312,13 +1360,11 @@
       window.addEventListener("keydown", (e) => {
         const k = e.key.toLowerCase();
         if (keysDown[k] !== undefined) keysDown[k] = true;
-
         if (lockOverlay.classList.contains("active")) {
           if (k === "enter") checkLockCode();
           if (k === "escape") lockOverlay.classList.remove("active");
           return;
         }
-
         if (k !== "e") return;
         if (canEnterEasterEgg) {
           window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";

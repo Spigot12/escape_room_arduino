@@ -1,44 +1,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
 :root {
-  --bg-color: #ffffff;
-  --text-main: #1a1a1a;
-  --text-muted: #666666;
-  --primary: #007aff;
-  --success: #34c759;
-  --warning: #ffcc00;
-  --danger: #ff3b30;
-  --border-color: #eeeeee;
-  --font-main: 'Inter', sans-serif;
+    --bg-color: #ffffff;
+    --text-main: #1a1a1a;
+    --text-muted: #666666;
+    --primary: #007aff;
+    --success: #34c759;
+    --warning: #ffcc00;
+    --danger: #ff3b30;
+    --border-color: #eeeeee;
+    --font-main: 'Inter', sans-serif;
 }
 
 body {
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  font-family: var(--font-main);
-  min-height: 100vh;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    font-family: var(--font-main);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 h1, h2, h3, h4, h5 {
-  font-weight: 800;
-  letter-spacing: -0.02em;
+    font-weight: 800;
+    letter-spacing: -0.02em;
 }
 
 .minimal-card {
-  background: white;
-  border: 2px solid var(--border-color);
-  border-radius: 24px;
-  padding: 2rem;
-  transition: transform 0.2s ease, border-color 0.2s ease;
+    background: white;
+    border: 2px solid var(--border-color);
+    border-radius: 24px;
+    padding: 2rem;
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .minimal-card:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
+    border-color: var(--primary);
+    transform: translateY(-2px);
 }
 
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}

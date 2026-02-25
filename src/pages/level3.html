@@ -226,24 +226,6 @@
             window.location.href = "map.html";
           });
 
-        const toggleWiring = document.getElementById("toggle-wiring-btn");
-        if (toggleWiring) {
-          toggleWiring.addEventListener("click", () => {
-            const panel = document.getElementById("wiring-panel");
-            panel.style.display =
-              panel.style.display === "none" ? "block" : "none";
-          });
-        }
-
-        const toggleLog = document.getElementById("toggle-log-btn");
-        if (toggleLog) {
-          toggleLog.addEventListener("click", () => {
-            const panel = document.getElementById("log-panel");
-            panel.style.display =
-              panel.style.display === "none" ? "block" : "none";
-          });
-        }
-
         // Geheimziffer – oben rechts in der Canvas-Box als HTML-Span
         const secretDigit = localStorage.getItem("secret_code_l3");
         if (secretDigit !== null) {

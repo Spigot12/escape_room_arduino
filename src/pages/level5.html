@@ -301,24 +301,6 @@
           }
         }
 
-        const toggleWiring = document.getElementById("toggle-wiring-btn");
-        if (toggleWiring) {
-          toggleWiring.addEventListener("click", () => {
-            const panel = document.getElementById("wiring-panel");
-            panel.style.display =
-              panel.style.display === "none" ? "block" : "none";
-          });
-        }
-
-        const toggleLog = document.getElementById("toggle-log-btn");
-        if (toggleLog) {
-          toggleLog.addEventListener("click", () => {
-            const panel = document.getElementById("log-panel");
-            panel.style.display =
-              panel.style.display === "none" ? "block" : "none";
-          });
-        }
-
         const nextLevelBtn = document.getElementById("next-level-btn");
         if (nextLevelBtn) {
           nextLevelBtn.addEventListener("click", () => {

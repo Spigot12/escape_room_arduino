@@ -613,10 +613,7 @@ function setupEventListeners() {
     if (toggleLogBtn) {
         toggleLogBtn.addEventListener("click", () => {
             if (logPanel) {
-                const isHidden =
-                    logPanel.style.display === "none" ||
-                    getComputedStyle(logPanel).display === "none";
-                if (isHidden) {
+                if (logPanel.style.display === "none") {
                     logPanel.style.display = "block";
                     toggleLogBtn.classList.add("active");
                 } else {
@@ -638,10 +635,7 @@ function setupEventListeners() {
     if (toggleWiringBtn) {
         toggleWiringBtn.addEventListener("click", () => {
             if (wiringPanel) {
-                const isHidden =
-                    wiringPanel.style.display === "none" ||
-                    getComputedStyle(wiringPanel).display === "none";
-                if (isHidden) {
+                if (wiringPanel.style.display === "none") {
                     wiringPanel.style.display = "block";
                     toggleWiringBtn.classList.add("active");
                 } else {

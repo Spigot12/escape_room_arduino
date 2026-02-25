@@ -1,10 +1,8 @@
-#define BUTTON 6
-#define LDR A1
-#define PIR 3
-#define BUZZER 4
-#define RELAY 5
+// Level 1: Button 2x drücken
 
-// KY-023 Joystick
+#define BUTTON 6
+
+// Level 2,3,4: Joystick
 #define JOY_X A0
 #define JOY_Y A1
 #define JOY_BUTTON 3
@@ -65,9 +63,6 @@ int inputIndex = 0;
 
 void setup() {
   pinMode(BUTTON, INPUT_PULLUP);
-  pinMode(PIR, INPUT);
-  pinMode(BUZZER, OUTPUT);
-  pinMode(RELAY, OUTPUT);
 
   // Level 5: Button Pins
   for (int i = 0; i < 4; i++) {
@@ -82,7 +77,6 @@ void setup() {
   digitalWrite(LED_YELLOW, LOW);
   digitalWrite(LED_BLUE, LOW);
 
-  digitalWrite(RELAY, LOW);
   Serial.begin(9600);
 
   level = 0;
@@ -110,7 +104,6 @@ void loop() {
       level = 0;
       darkStart = 0;
       Serial.println("SYSTEM_RESET_OK");
-      tone(BUZZER, 500, 500);
       delay(500); // Kleine Pause nach Reset
       return; // Loop neu starten
     }
@@ -190,12 +183,10 @@ void loop() {
     if (level == 0) {
       level = 1;
       Serial.println("L1_SYSTEM_START");
-      tone(BUZZER, 1000, 200);
     }
     else if (level == 1) {
-      level = 2; 
+      level = 2;
       Serial.println("L1_ZUGANG_OK");
-      tone(BUZZER, 2000, 500);
     }
   }
 
@@ -221,7 +212,6 @@ void loop() {
     // Prüfe ob Level gelöst (wird vom Frontend gesendet)
     if (input == "L2_SOLVED") {
       Serial.println("L2_GELOEST");
-      tone(BUZZER, 2000, 300);
       level = 3;
       darkStart = 0;
       input = "";
@@ -252,7 +242,6 @@ void loop() {
     // Prüfe ob Level gelöst (wird vom Frontend gesendet)
     if (input == "L3_SOLVED") {
       Serial.println("L3_GELOEST");
-      tone(BUZZER, 2500, 500);
       level = 4;
       input = "";
     }
@@ -282,8 +271,6 @@ void loop() {
     // Prüfe ob Level gelöst (wird vom Frontend gesendet)
     if (input == "L4_SOLVED") {
       Serial.println("L4_GELOEST");
-      digitalWrite(RELAY, HIGH);
-      tone(BUZZER, 3000, 1500);
       level = 5;
       input = "";
     }
@@ -301,11 +288,9 @@ void loop() {
           currentStep++;
           Serial.print("LED_ON:");
           Serial.println(currentStep);
-          tone(BUZZER, 1000 + (currentStep * 200), 100);
 
           if (currentStep == 4) {
             Serial.println("L5_SOLVED");
-            tone(BUZZER, 2500, 500);
             level = 6;
             currentStep = 0;
             input = "";
@@ -314,7 +299,6 @@ void loop() {
           // Falsche Reihenfolge - Reset
           currentStep = 0;
           Serial.println("RESET_SEQUENCE");
-          tone(BUZZER, 200, 300);
         }
         delay(200);
       }
@@ -353,7 +337,6 @@ void loop() {
         } else if (millis() - tempAboveStart >= 3000) {
           iceMelted = true;
           Serial.println("ICE_MELTED");
-          tone(BUZZER, 1500, 500);
         }
       } else {
         tempAboveActive = false;
@@ -364,7 +347,6 @@ void loop() {
     // Prüfe Code vom Frontend
     if (input == "CODE_CORRECT") {
       Serial.println("L6_SOLVED");
-      tone(BUZZER, 3000, 1000);
       level = 7;
       input = "";
     }
@@ -381,13 +363,11 @@ void loop() {
     if (!soundSolved && micValue >= SOUND_THRESHOLD) {
       soundSolved = true;
       Serial.println("SOUND_SOLVED");
-      tone(BUZZER, 2000, 300);
     }
 
     // Aufgabe gelöst?
     if (soundSolved) {
       Serial.println("L7_SOLVED");
-      tone(BUZZER, 3000, 1500);
       level = 8; // Nächstes Level oder Ende
       input = "";
     }

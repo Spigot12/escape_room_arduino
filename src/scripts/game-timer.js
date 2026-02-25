@@ -57,6 +57,10 @@ export function resetTimer() {
   startTime = null;
   elapsedSeconds = 0;
   sessionStorage.removeItem("gameStartTime");
+  sessionStorage.removeItem("gameEndTime");
+  sessionStorage.removeItem("gameFinalSeconds");
+  sessionStorage.removeItem("gameFinalMillis");
+  sessionStorage.removeItem("gameTimeSaved");
 
   if (timerInterval) {
     clearInterval(timerInterval);

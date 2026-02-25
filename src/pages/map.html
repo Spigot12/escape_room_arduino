@@ -1000,7 +1000,7 @@
       // =============================================
       let playerX = 200,
         playerY = 200;
-      const SPEED = 3;
+      const SPEED = 6;
       const keysDown = { w: false, a: false, s: false, d: false };
 
       let canPickupCoin = false;
@@ -1086,9 +1086,14 @@
           "game_completion_time",
           "game_completion_time_formatted",
         ].forEach((k) => localStorage.removeItem(k));
+
+        // Timer zurücksetzen
         sessionStorage.removeItem("gameStartTime");
         sessionStorage.removeItem("gameEndTime");
         sessionStorage.removeItem("gameFinalSeconds");
+        sessionStorage.removeItem("gameFinalMillis");
+        sessionStorage.removeItem("gameTimeSaved");
+
         window.location.reload();
       });
 
@@ -1493,6 +1498,7 @@
       });
 
       gameLoop();
+      ensureTimerStarted();
     </script>
   </body>
 </html>

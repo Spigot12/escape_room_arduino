@@ -1,4 +1,4 @@
-#define BUTTON 2
+#define BUTTON 6
 #define LDR A1
 #define PIR 3
 #define BUZZER 4

@@ -35,7 +35,7 @@ const MAX_DEBUG_LOGS = 50;
 
 // ===== JOYSTICK GAME STATE (Level 2 & 3) =====
 let canvas, ctx;
-let player = {x: 50, y: 200, radius: 15, speed: 3};
+let player = {x: 50, y: 200, radius: 15, speed: 6};
 let collectibles = [];
 let obstacles = [];
 let collectedCount = 0;
@@ -697,6 +697,12 @@ function setupEventListeners() {
     if (restartBtn) {
         restartBtn.addEventListener("click", (e) => {
             e.preventDefault();
+            // Timer zurücksetzen
+            sessionStorage.removeItem("gameStartTime");
+            sessionStorage.removeItem("gameEndTime");
+            sessionStorage.removeItem("gameFinalSeconds");
+            sessionStorage.removeItem("gameFinalMillis");
+            sessionStorage.removeItem("gameTimeSaved");
             window.location.href = "/pages/index.html";
         });
     }
@@ -719,6 +725,12 @@ function setupEventListeners() {
                 } else {
                     await ArduinoManager.sendToArduino("RESET");
                     addLog("Arduino zurückgesetzt", "info");
+                    // Timer zurücksetzen
+                    sessionStorage.removeItem("gameStartTime");
+                    sessionStorage.removeItem("gameEndTime");
+                    sessionStorage.removeItem("gameFinalSeconds");
+                    sessionStorage.removeItem("gameFinalMillis");
+                    sessionStorage.removeItem("gameTimeSaved");
                     window.location.href = "/pages/index.html";
                 }
             }

@@ -4,6 +4,7 @@ import "../../styles/components.css";
 import "../../styles/animations.css";
 import * as ArduinoManager from "../arduino/arduino-manager.js";
 import { isAuthenticated } from "../auth.js";
+import { resetTimer } from "../game-timer.js";
 
 // ===== STATE =====
 let debugLogs = [];
@@ -365,11 +366,8 @@ async function startGame() {
   }
 
   // ===== TIMER & SESSION ZURÜCKSETZEN =====
+  resetTimer();
   sessionStorage.setItem("gameStartTime", Date.now().toString());
-  sessionStorage.removeItem("gameEndTime");
-  sessionStorage.removeItem("gameFinalSeconds");
-  sessionStorage.removeItem("gameFinalMillis");
-  sessionStorage.removeItem("gameTimeSaved"); // Damit neuer Lauf wieder gespeichert wird
   // Sicherstellen, dass die Geheimtür beim neuen Run nicht als offen gilt
   localStorage.removeItem("secret_door_unlocked");
   addLog("Timer gestartet ⏱️", "success");

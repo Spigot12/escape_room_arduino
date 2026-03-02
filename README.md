@@ -160,8 +160,8 @@ npm run dev:all
 npm run dev:all:no-arduino
 ```
 Zugriff:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000
+- Frontend (Vite Dev Server): http://localhost:5173
+- Backend API (Port 3000): http://localhost:3000
 
 ### Production Mode
 ```bash
@@ -191,16 +191,16 @@ Mit Dockerfile starten:
 # Image bauen
 docker build -t escape-room-arduino .
 
-# Container starten
-docker run -p 3000:3000 escape-room-arduino
+# Container starten (Mapped Host 5173 auf Container 3000)
+docker run -p 5173:3000 escape-room-arduino
 
 # Mit Arduino-Zugriff (Linux/macOS)
-docker run -p 3000:3000 --device=/dev/ttyUSB0 escape-room-arduino
+docker run -p 5173:3000 --device=/dev/ttyUSB0 escape-room-arduino
 
 # Mit Port-Mapping
 docker run -p 8080:3000 escape-room-arduino
 ```
-Zugriff: http://localhost:3000 (oder localhost:8080)
+Zugriff: http://localhost:5173 (oder localhost:8080)
 
 ---
 

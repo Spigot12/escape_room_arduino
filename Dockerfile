@@ -1,33 +1,34 @@
 
-# Stage 1: Build Frontend mit Vite
-FROM node:18-alpine AS build
+# Stage 1: Build frontend mit Vite
+FROM node:22-bullseye-slim AS build
 
 WORKDIR /app
 
-# Installiere Dependencies
+# Installiere Dependencies (inkl. Dev-Tools fuer Vite)
 COPY package*.json ./
 RUN npm ci
 
-# Baue Frontend mit Vite
-COPY . .
+# Projektdateien (ohne node_modules) fuer den Build
+COPY vite.config.js ./
+COPY src ./src
+COPY server ./server
+
+# Baue Frontend und entferne Dev-Dependencies
 RUN npm run build
+RUN npm prune --omit=dev
 
 # Stage 2: Production Server
-FROM node:18-alpine
+FROM node:22-bullseye-slim
 
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Installiere nur Production Dependencies
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Kopiere nur notwendige Dateien vom Build
+# Runtime-Dateien und Production-Dependencies
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY server ./server
-COPY src/pages ./src/pages
-COPY src/scripts ./src/scripts
-COPY src/styles ./src/styles
-COPY src/assets ./src/assets
+COPY --from=build /app/server ./server
+COPY --from=build /app/src ./src
 
 # Expose Port
 EXPOSE 3000

@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.idea
+*.log
+npm-debug.log*
+.env
+.DS_Store
+arduino_sketch
+*.md
+Dockerfile
+.dockerignore
